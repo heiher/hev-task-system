@@ -1,0 +1,27 @@
+/*
+ ============================================================================
+ Name        : hev-task-execute.S
+ Author      : Heiher <r@hev.cc>
+ Copyright   : Copyright (c) 2017 everyone.
+ Description :
+ ============================================================================
+ */
+
+#if defined(__x86_64__)
+
+# include "hev-task-execute-x86_64.s"
+
+#elif defined(__mips__)
+
+# if (_MIPS_SIM == _ABI64)
+#  include "hev-task-execute-mips64.s"
+# else
+#  include "hev-task-execute-mips32.s"
+# endif
+
+#else
+
+# error "Unsupported platform!"
+
+#endif
+
