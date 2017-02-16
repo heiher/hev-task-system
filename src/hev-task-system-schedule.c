@@ -94,32 +94,8 @@ retry:
 	count = epoll_wait (hev_task_system_get_epoll_fd (), events, 128, timeout);
 	for (i=0; i<count; i++) {
 		HevTask *task = events[i].data.ptr;
-		priority = hev_task_get_priority (task);
 
-		/* remove task from running/waitting list */
-		if (task->prev) {
-			task->prev->next = task->next;
-		} else {
-			int j;
-
-			if(running_lists[priority] == task)
-				running_lists[priority] = task->next;
-			for (j=HEV_TASK_SYSTEM_YIELD; j<HEV_TASK_SYSTEM_YIELD_COUNT; j++)
-				if (waitting_lists[priority][j] == task) {
-					waitting_lists[priority][j] = task->next;
-					break;
-				}
-		}
-		if (task->next) {
-			task->next->prev = task->prev;
-		}
-
-		/* insert task to running list */
-		task->prev = NULL;
-		task->next = running_lists[priority];
-		if (running_lists[priority])
-			running_lists[priority]->prev = task;
-		running_lists[priority] = task;
+		hev_task_system_wakeup_task (task);
 	}
 
 	/* get a ready task */
@@ -172,6 +148,37 @@ retry:
 
 	/* switch to task */
 	longjmp (current_task->context, 1);
+}
+
+void
+hev_task_system_wakeup_task (HevTask *task)
+{
+	int priority = hev_task_get_priority (task);
+
+	/* remove task from running/waitting list */
+	if (task->prev) {
+		task->prev->next = task->next;
+	} else {
+		int j;
+
+		if(running_lists[priority] == task)
+			running_lists[priority] = task->next;
+		for (j=HEV_TASK_SYSTEM_YIELD; j<HEV_TASK_SYSTEM_YIELD_COUNT; j++)
+			if (waitting_lists[priority][j] == task) {
+				waitting_lists[priority][j] = task->next;
+				break;
+			}
+	}
+	if (task->next) {
+		task->next->prev = task->prev;
+	}
+
+	/* insert task to running list */
+	task->prev = NULL;
+	task->next = running_lists[priority];
+	if (running_lists[priority])
+		running_lists[priority]->prev = task;
+	running_lists[priority] = task;
 }
 
 HevTask *
