@@ -135,7 +135,10 @@ hev_task_del_fd (HevTask *self, int fd)
 void
 hev_task_wakeup (HevTask *task)
 {
-	hev_task_system_wakeup_task (task);
+	HevTask *current_task = hev_task_system_get_current_task ();
+
+	if (task != current_task)
+		hev_task_system_wakeup_task (task);
 }
 
 void
