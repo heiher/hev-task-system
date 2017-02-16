@@ -22,6 +22,8 @@ HevTask * hev_task_new (int stack_size);
 HevTask * hev_task_ref (HevTask *self);
 void hev_task_unref (HevTask *self);
 
+HevTask * hev_task_self (void);
+
 void hev_task_set_priority (HevTask *self, int priority);
 int hev_task_get_priority (HevTask *self);
 

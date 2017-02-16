@@ -73,6 +73,12 @@ hev_task_unref (HevTask *self)
 	hev_free (self);
 }
 
+HevTask *
+hev_task_self (void)
+{
+	return hev_task_system_get_current_task ();
+}
+
 void
 hev_task_set_priority (HevTask *self, int priority)
 {
