@@ -79,6 +79,12 @@ hev_task_self (void)
 	return hev_task_system_get_current_task ();
 }
 
+HevTaskState
+hev_task_get_state (HevTask *self)
+{
+	return self->state;
+}
+
 void
 hev_task_set_priority (HevTask *self, int priority)
 {

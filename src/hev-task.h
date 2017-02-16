@@ -16,8 +16,16 @@
 #define HEV_TASK_PRIORITY_MAX	(15)
 
 typedef struct _HevTask HevTask;
+typedef enum _HevTaskState HevTaskState;
 typedef enum _HevTaskYieldType HevTaskYieldType;
 typedef void (*HevTaskEntry) (void *data);
+
+enum _HevTaskState
+{
+	HEV_TASK_STOPPED,
+	HEV_TASK_RUNNING,
+	HEV_TASK_WAITING,
+};
 
 enum _HevTaskYieldType
 {
@@ -32,6 +40,7 @@ void hev_task_unref (HevTask *self);
 
 HevTask * hev_task_self (void);
 
+HevTaskState hev_task_get_state (HevTask *self);
 void hev_task_set_priority (HevTask *self, int priority);
 int hev_task_get_priority (HevTask *self);
 

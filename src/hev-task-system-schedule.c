@@ -44,6 +44,9 @@ hev_task_system_schedule (HevTaskYieldType type, HevTask *_new_task)
 			waiting_lists[priority][type]->prev = current_task;
 		waiting_lists[priority][type] = current_task;
 
+		/* set task state = WAITING */
+		current_task->state = HEV_TASK_WAITING;
+
 		/* resume to kernel context */
 		longjmp (kernel_context, 1);
 	}
@@ -62,12 +65,18 @@ hev_task_system_schedule (HevTaskYieldType type, HevTask *_new_task)
 			running_lists[priority]->prev = new_task;
 		running_lists[priority] = new_task;
 
+		/* set task state = RUNNING */
+		new_task->state = HEV_TASK_RUNNING;
+
 		/* save context in new task */
 		if (setjmp (new_task->context)) {
 			/* NOTE: the new task will run at next schedule */
 
 			/* execute new task entry */
 			hev_task_execute (current_task);
+
+			/* set task state = STOPPED */
+			current_task->state = HEV_TASK_STOPPED;
 
 			hev_task_unref (current_task);
 			task_count --;
@@ -112,8 +121,14 @@ retry:
 	if (!current_task) {
 		/* move tasks from yield watting list to running list */
 		for (i=HEV_TASK_PRIORITY_MIN; i<=HEV_TASK_PRIORITY_MAX; i++) {
+			HevTask *task;
+
 			running_lists[i] = waiting_lists[i][HEV_TASK_YIELD];
 			waiting_lists[i][HEV_TASK_YIELD] = NULL;
+
+			/* set task state = RUNNING */
+			for (task=running_lists[i]; task; task=task->next)
+				task->state = HEV_TASK_RUNNING;
 		}
 
 		/* get a ready task again */
@@ -179,6 +194,9 @@ hev_task_system_wakeup_task (HevTask *task)
 	if (running_lists[priority])
 		running_lists[priority]->prev = task;
 	running_lists[priority] = task;
+
+	/* set task state = RUNNING */
+	task->state = HEV_TASK_RUNNING;
 }
 
 HevTask *

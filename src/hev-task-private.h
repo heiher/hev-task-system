@@ -27,6 +27,7 @@ struct _HevTask
 	int priority;
 	int next_priority;
 	int stack_size;
+	HevTaskState state;
 
 	jmp_buf context;
 };
