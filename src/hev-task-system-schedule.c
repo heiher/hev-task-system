@@ -171,3 +171,9 @@ retry:
 	longjmp (current_task->context, 1);
 }
 
+HevTask *
+hev_task_system_get_current_task (void)
+{
+	return current_task;
+}
+

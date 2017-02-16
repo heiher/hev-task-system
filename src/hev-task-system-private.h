@@ -15,6 +15,7 @@
 
 void hev_task_system_schedule (HevTaskSystemYieldType type, HevTask *new_task);
 
+HevTask * hev_task_system_get_current_task (void);
 int hev_task_system_get_epoll_fd (void);
 
 #endif /* __HEV_TASK_SYSTEM_PRIVATE_H__ */
