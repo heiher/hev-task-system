@@ -27,7 +27,7 @@ task_socket_accept (int fd, struct sockaddr *restrict addr,
 retry:
 	new_fd = accept (fd, addr, addr_len);
 	if (new_fd == -1 && errno == EAGAIN) {
-		hev_task_system_yield (HEV_TASK_SYSTEM_WAITIO);
+		hev_task_yield (HEV_TASK_WAITIO);
 		goto retry;
 	}
 
@@ -42,7 +42,7 @@ task_socket_recv (int fd, void *buf, size_t len, int flags)
 retry:
 	size = recv (fd, buf, len, flags);
 	if (size == -1 && errno == EAGAIN) {
-		hev_task_system_yield (HEV_TASK_SYSTEM_WAITIO);
+		hev_task_yield (HEV_TASK_WAITIO);
 		goto retry;
 	}
 
@@ -57,7 +57,7 @@ task_socket_send (int fd, const void *buf, size_t len, int flags)
 retry:
 	size = send (fd, buf, len, flags);
 	if (size == -1 && errno == EAGAIN) {
-		hev_task_system_yield (HEV_TASK_SYSTEM_WAITIO);
+		hev_task_yield (HEV_TASK_WAITIO);
 		goto retry;
 	}
 

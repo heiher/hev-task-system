@@ -45,7 +45,7 @@ retry:
 	size = read (fd, &time, sizeof (time));
 	if (size == -1) {
 		if (errno == EAGAIN) {
-			hev_task_system_yield (HEV_TASK_SYSTEM_WAITIO);
+			hev_task_yield (HEV_TASK_WAITIO);
 			goto retry;
 		}
 

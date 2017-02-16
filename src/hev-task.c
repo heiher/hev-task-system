@@ -142,12 +142,18 @@ hev_task_wakeup (HevTask *task)
 }
 
 void
+hev_task_yield (HevTaskYieldType type)
+{
+	hev_task_system_schedule (type, NULL);
+}
+
+void
 hev_task_run (HevTask *self, HevTaskEntry entry, void *data)
 {
 	self->entry = entry;
 	self->data = data;
 	self->priority = self->next_priority;
 
-	hev_task_system_schedule (HEV_TASK_SYSTEM_YIELD, self);
+	hev_task_system_schedule (HEV_TASK_YIELD, self);
 }
 

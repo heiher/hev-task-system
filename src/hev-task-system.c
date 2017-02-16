@@ -45,13 +45,7 @@ hev_task_system_fini (void)
 void
 hev_task_system_run (void)
 {
-	hev_task_system_schedule (HEV_TASK_SYSTEM_YIELD_COUNT, NULL);
-}
-
-void
-hev_task_system_yield (HevTaskSystemYieldType type)
-{
-	hev_task_system_schedule (type, NULL);
+	hev_task_system_schedule (HEV_TASK_YIELD_COUNT, NULL);
 }
 
 int

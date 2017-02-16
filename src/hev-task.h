@@ -16,7 +16,15 @@
 #define HEV_TASK_PRIORITY_MAX	(15)
 
 typedef struct _HevTask HevTask;
+typedef enum _HevTaskYieldType HevTaskYieldType;
 typedef void (*HevTaskEntry) (void *data);
+
+enum _HevTaskYieldType
+{
+	HEV_TASK_YIELD,
+	HEV_TASK_WAITIO,
+	HEV_TASK_YIELD_COUNT,
+};
 
 HevTask * hev_task_new (int stack_size);
 HevTask * hev_task_ref (HevTask *self);
@@ -32,6 +40,7 @@ int hev_task_mod_fd (HevTask *self, int fd, unsigned int events);
 int hev_task_del_fd (HevTask *self, int fd);
 
 void hev_task_wakeup (HevTask *task);
+void hev_task_yield (HevTaskYieldType type);
 void hev_task_run (HevTask *self, HevTaskEntry entry, void *data);
 
 #endif /* __HEV_TASK_H__ */

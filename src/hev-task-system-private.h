@@ -13,7 +13,7 @@
 #include "hev-task.h"
 #include "hev-task-system.h"
 
-void hev_task_system_schedule (HevTaskSystemYieldType type, HevTask *new_task);
+void hev_task_system_schedule (HevTaskYieldType type, HevTask *new_task);
 void hev_task_system_wakeup_task (HevTask *task);
 
 HevTask * hev_task_system_get_current_task (void);

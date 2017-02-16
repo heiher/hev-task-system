@@ -19,7 +19,7 @@ task_entry1 (void *data)
 
 	for (i=0; i<2; i++) {
 		printf ("hello 1\n");
-		hev_task_system_yield (HEV_TASK_SYSTEM_YIELD);
+		hev_task_yield (HEV_TASK_YIELD);
 	}
 }
 
@@ -30,7 +30,7 @@ task_entry2 (void *data)
 
 	for (i=0; i<2; i++) {
 		printf ("hello 2\n");
-		hev_task_system_yield (HEV_TASK_SYSTEM_YIELD);
+		hev_task_yield (HEV_TASK_YIELD);
 	}
 }
 

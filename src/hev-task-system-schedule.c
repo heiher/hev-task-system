@@ -17,14 +17,14 @@
 #define PRIORITY_COUNT	(HEV_TASK_PRIORITY_MAX - HEV_TASK_PRIORITY_MIN + 1)
 
 static HevTask *running_lists[PRIORITY_COUNT];
-static HevTask *waitting_lists[PRIORITY_COUNT][HEV_TASK_SYSTEM_YIELD_COUNT];
+static HevTask *waitting_lists[PRIORITY_COUNT][HEV_TASK_YIELD_COUNT];
 static HevTask *current_task;
 static HevTask *new_task;
 static unsigned int task_count;
 static jmp_buf kernel_context;
 
 void
-hev_task_system_schedule (HevTaskSystemYieldType type, HevTask *_new_task)
+hev_task_system_schedule (HevTaskYieldType type, HevTask *_new_task)
 {
 	int i, count, timeout, priority;
 	struct epoll_event events[128];
@@ -48,7 +48,7 @@ hev_task_system_schedule (HevTaskSystemYieldType type, HevTask *_new_task)
 		longjmp (kernel_context, 1);
 	}
 
-	if (type == HEV_TASK_SYSTEM_YIELD_COUNT)
+	if (type == HEV_TASK_YIELD_COUNT)
 		setjmp (kernel_context);
 
 	/* NOTE: in kernel context */
@@ -112,8 +112,8 @@ retry:
 	if (!current_task) {
 		/* move tasks from yield watting list to running list */
 		for (i=HEV_TASK_PRIORITY_MIN; i<=HEV_TASK_PRIORITY_MAX; i++) {
-			running_lists[i] = waitting_lists[i][HEV_TASK_SYSTEM_YIELD];
-			waitting_lists[i][HEV_TASK_SYSTEM_YIELD] = NULL;
+			running_lists[i] = waitting_lists[i][HEV_TASK_YIELD];
+			waitting_lists[i][HEV_TASK_YIELD] = NULL;
 		}
 
 		/* get a ready task again */
@@ -163,7 +163,7 @@ hev_task_system_wakeup_task (HevTask *task)
 
 		if(running_lists[priority] == task)
 			running_lists[priority] = task->next;
-		for (j=HEV_TASK_SYSTEM_YIELD; j<HEV_TASK_SYSTEM_YIELD_COUNT; j++)
+		for (j=HEV_TASK_YIELD; j<HEV_TASK_YIELD_COUNT; j++)
 			if (waitting_lists[priority][j] == task) {
 				waitting_lists[priority][j] = task->next;
 				break;
