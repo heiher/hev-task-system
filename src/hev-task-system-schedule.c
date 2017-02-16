@@ -168,16 +168,19 @@ retry:
 void
 hev_task_system_wakeup_task (HevTask *task)
 {
-	int priority = hev_task_get_priority (task);
+	int priority;
 
-	/* remove task from running/waiting list */
+	/* skip to wakeup task that already in running */
+	if (task->state == HEV_TASK_RUNNING)
+		return;
+
+	priority = hev_task_get_priority (task);
+	/* remove task from waiting list */
 	if (task->prev) {
 		task->prev->next = task->next;
 	} else {
 		int j;
 
-		if(running_lists[priority] == task)
-			running_lists[priority] = task->next;
 		for (j=HEV_TASK_YIELD; j<HEV_TASK_YIELD_COUNT; j++)
 			if (waiting_lists[priority][j] == task) {
 				waiting_lists[priority][j] = task->next;
