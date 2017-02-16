@@ -6,8 +6,11 @@
  Description :
  ============================================================================
  */
+#if defined(__i386__)
 
-#if defined(__x86_64__)
+# include "hev-task-execute-x86.s"
+
+#elif defined(__x86_64__)
 
 # include "hev-task-execute-x86_64.s"
 
