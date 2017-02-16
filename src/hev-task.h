@@ -31,6 +31,7 @@ int hev_task_add_fd (HevTask *self, int fd, unsigned int events);
 int hev_task_mod_fd (HevTask *self, int fd, unsigned int events);
 int hev_task_del_fd (HevTask *self, int fd);
 
+void hev_task_wakeup (HevTask *task);
 void hev_task_run (HevTask *self, HevTaskEntry entry, void *data);
 
 #endif /* __HEV_TASK_H__ */
