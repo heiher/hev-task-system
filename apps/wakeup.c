@@ -40,7 +40,7 @@ task_entry1 (void *data)
 	spec.it_value.tv_nsec = (interval % 1000) * 1000 * 1000;
 	timerfd_settime (fd, 0, &spec, NULL);
 
-	printf ("task1: waitting for timeout %ums ...\n", interval);
+	printf ("task1: waiting for timeout %ums ...\n", interval);
 retry:
 	size = read (fd, &time, sizeof (time));
 	if (size == -1) {
