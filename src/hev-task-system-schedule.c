@@ -17,7 +17,7 @@
 #define PRIORITY_COUNT	(HEV_TASK_PRIORITY_MAX - HEV_TASK_PRIORITY_MIN + 1)
 
 static HevTask *running_lists[PRIORITY_COUNT];
-static HevTask *waitting_lists[PRIORITY_COUNT][HEV_TASK_YIELD_COUNT];
+static HevTask *waiting_lists[PRIORITY_COUNT][HEV_TASK_YIELD_COUNT];
 static HevTask *current_task;
 static HevTask *new_task;
 static unsigned int task_count;
@@ -36,13 +36,13 @@ hev_task_system_schedule (HevTaskYieldType type, HevTask *_new_task)
 		if (setjmp (current_task->context))
 			return; /* resume to task context */
 
-		/* insert current task to waitting list by type */
+		/* insert current task to waiting list by type */
 		priority = hev_task_get_priority (current_task);
 		current_task->prev = NULL;
-		current_task->next = waitting_lists[priority][type];
-		if (waitting_lists[priority][type])
-			waitting_lists[priority][type]->prev = current_task;
-		waitting_lists[priority][type] = current_task;
+		current_task->next = waiting_lists[priority][type];
+		if (waiting_lists[priority][type])
+			waiting_lists[priority][type]->prev = current_task;
+		waiting_lists[priority][type] = current_task;
 
 		/* resume to kernel context */
 		longjmp (kernel_context, 1);
@@ -112,8 +112,8 @@ retry:
 	if (!current_task) {
 		/* move tasks from yield watting list to running list */
 		for (i=HEV_TASK_PRIORITY_MIN; i<=HEV_TASK_PRIORITY_MAX; i++) {
-			running_lists[i] = waitting_lists[i][HEV_TASK_YIELD];
-			waitting_lists[i][HEV_TASK_YIELD] = NULL;
+			running_lists[i] = waiting_lists[i][HEV_TASK_YIELD];
+			waiting_lists[i][HEV_TASK_YIELD] = NULL;
 		}
 
 		/* get a ready task again */
@@ -155,7 +155,7 @@ hev_task_system_wakeup_task (HevTask *task)
 {
 	int priority = hev_task_get_priority (task);
 
-	/* remove task from running/waitting list */
+	/* remove task from running/waiting list */
 	if (task->prev) {
 		task->prev->next = task->next;
 	} else {
@@ -164,8 +164,8 @@ hev_task_system_wakeup_task (HevTask *task)
 		if(running_lists[priority] == task)
 			running_lists[priority] = task->next;
 		for (j=HEV_TASK_YIELD; j<HEV_TASK_YIELD_COUNT; j++)
-			if (waitting_lists[priority][j] == task) {
-				waitting_lists[priority][j] = task->next;
+			if (waiting_lists[priority][j] == task) {
+				waiting_lists[priority][j] = task->next;
 				break;
 			}
 	}
