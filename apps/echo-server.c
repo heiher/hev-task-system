@@ -95,7 +95,7 @@ quit:
 static void
 task_listener_entry (void *data)
 {
-	HevTask *task = data;
+	HevTask *task = hev_task_self ();
 	int fd, ret, nonblock = 1, reuseaddr = 1;
 	struct sockaddr_in addr;
 
@@ -177,7 +177,7 @@ main (int argc, char *argv[])
 	hev_task_system_init ();
 
 	task = hev_task_new (-1);
-	hev_task_run (task, task_listener_entry, task);
+	hev_task_run (task, task_listener_entry, NULL);
 
 	hev_task_system_run ();
 
