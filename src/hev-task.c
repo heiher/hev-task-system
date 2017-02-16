@@ -87,13 +87,13 @@ hev_task_set_priority (HevTask *self, int priority)
 	else if (priority > HEV_TASK_PRIORITY_MAX)
 		priority = HEV_TASK_PRIORITY_MAX;
 
-	self->priority = priority;
+	self->next_priority = priority;
 }
 
 int
 hev_task_get_priority (HevTask *self)
 {
-	return self->priority;
+	return self->next_priority;
 }
 
 int
@@ -137,6 +137,7 @@ hev_task_run (HevTask *self, HevTaskEntry entry, void *data)
 {
 	self->entry = entry;
 	self->data = data;
+	self->priority = self->next_priority;
 
 	hev_task_system_schedule (HEV_TASK_SYSTEM_YIELD, self);
 }

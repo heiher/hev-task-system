@@ -167,6 +167,9 @@ retry:
 		current_task->next->prev = current_task->prev;
 	}
 
+	/* apply task's next_priority */
+	current_task->priority = current_task->next_priority;
+
 	/* switch to task */
 	longjmp (current_task->context, 1);
 }
