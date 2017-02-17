@@ -9,19 +9,22 @@
 
 #include <stdlib.h>
 #include <unistd.h>
-#include <sys/mman.h>
 
 #include "hev-task.h"
 #include "hev-task-private.h"
 #include "hev-task-system-private.h"
 #include "hev-memory-allocator.h"
 
-#define HEV_TASK_STACK_SIZE	(512 * 1024)
+#define HEV_TASK_STACK_SIZE	(64 * 1024)
+
+#define ALIGN_DOWN(addr, align) \
+	((addr) & ~((typeof (addr)) align - 1))
 
 HevTask *
 hev_task_new (int stack_size)
 {
 	HevTask *self;
+	uintptr_t stack_addr;
 
 	self = hev_malloc0 (sizeof (HevTask));
 	if (!self)
@@ -31,24 +34,16 @@ hev_task_new (int stack_size)
 
 	if (stack_size == -1) {
 		stack_size = HEV_TASK_STACK_SIZE;
-	} else {
-		static long page_size;
-
-		if (!page_size)
-			page_size = sysconf (_SC_PAGESIZE);
-
-		stack_size = (stack_size + page_size - 1) & ~(page_size - 1);
 	}
 
-	self->stack = mmap (NULL, stack_size,
-				PROT_READ | PROT_WRITE,
-				MAP_PRIVATE | MAP_ANONYMOUS,
-				-1, 0);
-	if (self->stack == MAP_FAILED) {
+	self->stack = hev_malloc0 (stack_size);
+	if (!self->stack) {
 		hev_free (self);
 		return NULL;
 	}
-	self->stack += stack_size;
+
+	stack_addr = (uintptr_t) (self->stack + stack_size);
+	self->stack_top = (void *) ALIGN_DOWN (stack_addr, 16);
 	self->stack_size = stack_size;
 
 	return self;
@@ -69,7 +64,7 @@ hev_task_unref (HevTask *self)
 	if (self->ref_count)
 		return;
 
-	munmap (self->stack - self->stack_size, self->stack_size);
+	hev_free (self->stack);
 	hev_free (self);
 }
 

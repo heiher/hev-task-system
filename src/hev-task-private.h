@@ -16,12 +16,14 @@
 
 struct _HevTask
 {
-	void *stack;
+	void *stack_top;
 	HevTaskEntry entry;
 	void *data;
 
 	HevTask *prev;
 	HevTask *next;
+
+	void *stack;
 
 	int ref_count;
 	int priority;
