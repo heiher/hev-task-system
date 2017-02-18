@@ -8,10 +8,6 @@
  */
 
 #include <stdio.h>
-#include <stdint.h>
-#include <errno.h>
-#include <unistd.h>
-#include <sys/timerfd.h>
 
 #include <hev-task.h>
 #include <hev-task-system.h>
@@ -19,89 +15,27 @@
 static void
 task_entry1 (void *data)
 {
-	HevTask *task = hev_task_self ();
-	int fd;
-	struct itimerspec spec;
 	const unsigned int interval = 5000;
-	ssize_t size;
-	uint64_t time;
-
-	fd = timerfd_create (CLOCK_MONOTONIC, TFD_NONBLOCK);
-	if (fd == -1) {
-		fprintf (stderr, "Create timer fd failed!\n");
-		return;
-	}
-
-	hev_task_add_fd (task, fd, EPOLLIN);
-
-	spec.it_interval.tv_sec = 0;
-	spec.it_interval.tv_nsec = 0;
-	spec.it_value.tv_sec = interval / 1000;
-	spec.it_value.tv_nsec = (interval % 1000) * 1000 * 1000;
-	timerfd_settime (fd, 0, &spec, NULL);
+	unsigned int left_ms;
 
 	printf ("task1: waiting for timeout %ums ...\n", interval);
-retry:
-	size = read (fd, &time, sizeof (time));
-	if (size == -1) {
-		if (errno == EAGAIN) {
-			hev_task_yield (HEV_TASK_WAITIO);
-			printf ("task1: wakeup\n", interval);
-			goto retry;
-		}
-
-		close (fd);
-		fprintf (stderr, "Read timer fd failed!\n");
-		return;
-	}
-
-	printf ("task1: timeout\n");
-
-	close (fd);
+	left_ms = hev_task_sleep (interval);
+	if (left_ms == 0)
+		printf ("task1: timeout\n");
+	else
+		printf ("task1: awake now, left: %ums\n", left_ms);
 }
 
 static void
 task_entry2 (void *data)
 {
-	HevTask *task = hev_task_self ();
-	int fd;
-	struct itimerspec spec;
+	HevTask *task1 = data;
 	const unsigned int interval = 1000;
-	ssize_t size;
-	uint64_t time;
-
-	fd = timerfd_create (CLOCK_MONOTONIC, TFD_NONBLOCK);
-	if (fd == -1) {
-		fprintf (stderr, "Create timer fd failed!\n");
-		return;
-	}
-
-	hev_task_add_fd (task, fd, EPOLLIN);
-
-	spec.it_interval.tv_sec = 0;
-	spec.it_interval.tv_nsec = 0;
-	spec.it_value.tv_sec = interval / 1000;
-	spec.it_value.tv_nsec = (interval % 1000) * 1000 * 1000;
-	timerfd_settime (fd, 0, &spec, NULL);
 
 	printf ("task2: wakeup task1 after %dms...\n", interval);
-retry:
-	size = read (fd, &time, sizeof (time));
-	if (size == -1) {
-		if (errno == EAGAIN) {
-			hev_task_yield (HEV_TASK_WAITIO);
-			goto retry;
-		}
-
-		close (fd);
-		fprintf (stderr, "Read timer fd failed!\n");
-		return;
-	}
-
+	hev_task_sleep (interval);
 	printf ("task2: wakeup task1 ...\n");
-	hev_task_wakeup (data);
-
-	close (fd);
+	hev_task_wakeup (task1);
 }
 
 int
