@@ -15,6 +15,9 @@
 #define HEV_TASK_PRIORITY_MIN	(0)
 #define HEV_TASK_PRIORITY_MAX	(15)
 
+#define HEV_TASK_PRIORITY_HIGH	HEV_TASK_PRIORITY_MIN
+#define HEV_TASK_PRIORITY_LOW	HEV_TASK_PRIORITY_MAX
+
 typedef struct _HevTask HevTask;
 typedef enum _HevTaskState HevTaskState;
 typedef enum _HevTaskYieldType HevTaskYieldType;
