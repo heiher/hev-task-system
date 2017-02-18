@@ -50,6 +50,8 @@ int hev_task_del_fd (HevTask *self, int fd);
 
 void hev_task_wakeup (HevTask *task);
 void hev_task_yield (HevTaskYieldType type);
+unsigned int hev_task_sleep (unsigned int milliseconds);
+
 void hev_task_run (HevTask *self, HevTaskEntry entry, void *data);
 
 #endif /* __HEV_TASK_H__ */

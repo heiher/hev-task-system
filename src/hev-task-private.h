@@ -25,6 +25,7 @@ struct _HevTask
 
 	void *stack;
 
+	int timer_fd;
 	int ref_count;
 	int priority;
 	int next_priority;

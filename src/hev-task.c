@@ -8,7 +8,10 @@
  */
 
 #include <stdlib.h>
+#include <stdint.h>
+#include <errno.h>
 #include <unistd.h>
+#include <sys/timerfd.h>
 
 #include "hev-task.h"
 #include "hev-task-private.h"
@@ -30,6 +33,7 @@ hev_task_new (int stack_size)
 	if (!self)
 		return NULL;
 
+	self->timer_fd = -1;
 	self->ref_count = 1;
 
 	if (stack_size == -1) {
@@ -64,6 +68,8 @@ hev_task_unref (HevTask *self)
 	if (self->ref_count)
 		return;
 
+	if (self->timer_fd != -1)
+		close (self->timer_fd);
 	hev_free (self->stack);
 	hev_free (self);
 }
@@ -143,6 +149,50 @@ void
 hev_task_yield (HevTaskYieldType type)
 {
 	hev_task_system_schedule (type, NULL);
+}
+
+unsigned int
+hev_task_sleep (unsigned int milliseconds)
+{
+	HevTask *self = hev_task_self ();
+	struct itimerspec spec;
+	ssize_t size;
+	uint64_t time;
+
+	if (self->timer_fd == -1) {
+		self->timer_fd = timerfd_create (CLOCK_MONOTONIC, TFD_NONBLOCK);
+		if (self->timer_fd == -1)
+			return milliseconds;
+
+		if (hev_task_add_fd (self, self->timer_fd, EPOLLIN) == -1)
+			return milliseconds;
+	}
+
+	spec.it_interval.tv_sec = 0;
+	spec.it_interval.tv_nsec = 0;
+	spec.it_value.tv_sec = milliseconds / 1000;
+	spec.it_value.tv_nsec = (milliseconds % 1000) * 1000 * 1000;
+	if (timerfd_settime (self->timer_fd, 0, &spec, NULL) == -1)
+		return milliseconds;
+
+	size = read (self->timer_fd, &time, sizeof (time));
+	if (size == -1) {
+		if (errno == EAGAIN) {
+			hev_task_yield (HEV_TASK_WAITIO);
+
+			/* get the number of milliseconds left to sleep */
+			if (timerfd_gettime (self->timer_fd, &spec) == -1)
+				return milliseconds;
+			if ((spec.it_value.tv_sec + spec.it_value.tv_nsec) == 0)
+				return 0;
+			return (spec.it_value.tv_sec * 1000) +
+				(spec.it_value.tv_nsec / 1000 / 1000);
+		}
+
+		return milliseconds;
+	}
+
+	return 0;
 }
 
 void
