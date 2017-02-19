@@ -22,6 +22,10 @@
 #  include "hev-task-execute-mips32.s"
 # endif
 
+#elif defined(__arm__)
+
+#include "hev-task-execute-arm.s"
+
 #elif defined(__aarch64__)
 
 #include "hev-task-execute-aarch64.s"
