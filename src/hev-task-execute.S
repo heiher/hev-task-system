@@ -25,11 +25,11 @@
 
 #elif defined(__arm__)
 
-#include "hev-task-execute-arm.s"
+# include "hev-task-execute-arm.s"
 
 #elif defined(__aarch64__)
 
-#include "hev-task-execute-aarch64.s"
+# include "hev-task-execute-aarch64.s"
 
 #else
 
