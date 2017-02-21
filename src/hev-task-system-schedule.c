@@ -7,6 +7,11 @@
  ============================================================================
  */
 
+/* Disable signal stack check in longjmp */
+#ifdef _FORTIFY_SOURCE
+# undef _FORTIFY_SOURCE
+#endif
+
 #include <stdlib.h>
 #include <setjmp.h>
 
