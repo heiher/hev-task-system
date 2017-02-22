@@ -198,6 +198,10 @@ hev_task_sleep (unsigned int milliseconds)
 void
 hev_task_run (HevTask *self, HevTaskEntry entry, void *data)
 {
+	/* Skip to run task that already running */
+	if (self->state != HEV_TASK_STOPPED)
+		return;
+
 	self->entry = entry;
 	self->data = data;
 	self->priority = self->next_priority;
