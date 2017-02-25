@@ -18,8 +18,6 @@ and to do I/O operations in synchronized mode.
 ```bash
 git clone git://github.com/heiher/hev-task-system
 cd hev-task-system
-git submodule init
-git submodule update
 make
 ```
 
@@ -28,9 +26,6 @@ make
 mkdir hev-task-system
 cd hev-task-system
 git clone git://github.com/heiher/hev-task-system jni
-cd jni
-git submodule init
-git submodule update
 nkd-build
 ```
 
