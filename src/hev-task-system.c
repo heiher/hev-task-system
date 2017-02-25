@@ -26,7 +26,7 @@ hev_task_system_init (void)
 	if (allocator) {
 		allocator = hev_memory_allocator_set_default (allocator);
 		if (allocator)
-		  hev_memory_allocator_unref (allocator);
+			hev_memory_allocator_unref (allocator);
 	}
 
 	epoll_fd = epoll_create (128);
