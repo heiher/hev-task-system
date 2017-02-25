@@ -39,7 +39,13 @@ hev_task_system_init (void)
 void
 hev_task_system_fini (void)
 {
+	HevMemoryAllocator *allocator;
+
 	close (epoll_fd);
+
+	allocator = hev_memory_allocator_set_default (NULL);
+	if (allocator)
+		hev_memory_allocator_unref (allocator);
 }
 
 void
