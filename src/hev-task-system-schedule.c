@@ -98,8 +98,10 @@ hev_task_system_schedule (HevTaskYieldType type, HevTask *_new_task)
 	}
 
 	/* All tasks exited, Bye! */
-	if (!task_count)
+	if (!task_count) {
+		current_task = NULL;
 		return;
+	}
 
 	/* schedule */
 	timeout = 0;
