@@ -44,7 +44,7 @@ hev_memory_allocator_slice_new (void)
 
 	allocator = malloc (sizeof (HevMemoryAllocatorSlice));
 	if (!allocator)
-	  return NULL;
+		return NULL;
 
 	allocator->ref_count = 1;
 	allocator->alloc = _hev_memory_allocator_alloc;
@@ -89,7 +89,7 @@ _hev_memory_allocator_alloc (HevMemoryAllocator *allocator, size_t size)
 #endif
 		slice = malloc (sizeof (HevMemorySlice) + size);
 		if (!slice)
-		  return NULL;
+			return NULL;
 
 		slice->owner = owner;
 	}
