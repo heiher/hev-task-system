@@ -21,7 +21,7 @@ HevMemoryAllocator *
 hev_memory_allocator_default (void)
 {
 	if (!default_allocator)
-	  default_allocator = hev_memory_allocator_new ();
+		default_allocator = hev_memory_allocator_new ();
 
 	return default_allocator;
 }
@@ -44,7 +44,7 @@ hev_memory_allocator_new (void)
 
 	self = malloc (sizeof (HevMemoryAllocator));
 	if (!self)
-	  return NULL;
+		return NULL;
 
 	self->ref_count = 1;
 	self->alloc = _hev_memory_allocator_alloc;
@@ -66,10 +66,10 @@ hev_memory_allocator_unref (HevMemoryAllocator *self)
 {
 	self->ref_count --;
 	if (0 < self->ref_count)
-	  return;
+		return;
 
 	if (self->destroy)
-	  self->destroy (self);
+		self->destroy (self);
 	free (self);
 }
 
@@ -108,7 +108,7 @@ hev_malloc0 (size_t size)
 {
 	void *data = HEV_MEMORY_ALLOCATOR_ALLOC (size);
 	if (data)
-	  memset (data, 0, size);
+		memset (data, 0, size);
 	return data;
 }
 
