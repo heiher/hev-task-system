@@ -2,6 +2,9 @@
 
 PROJECT=hev-task-system
 
+# Configs
+ENABLE_PTHREAD := 1
+
 PP=cpp
 CC=cc
 LD=ld
@@ -12,6 +15,10 @@ LDFLAGS=
 SRCDIR=src
 BINDIR=bin
 BUILDDIR=build
+
+ifeq ($(ENABLE_PTHREAD),1)
+	CCFLAGS+=-DENABLE_PTHREAD
+endif
 
 STATIC_TARGET=$(BINDIR)/libhev-task-system.a
 SHARED_TARGET=$(BINDIR)/libhev-task-system.so
