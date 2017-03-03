@@ -15,7 +15,7 @@
 #include "hev-task-system-private.h"
 #include "hev-memory-allocator-slice.h"
 
-static int epoll_fd;
+static HevTaskSystemContext *default_context;
 
 int
 hev_task_system_init (void)
@@ -29,9 +29,16 @@ hev_task_system_init (void)
 			hev_memory_allocator_unref (allocator);
 	}
 
-	epoll_fd = epoll_create (128);
-	if (-1 == epoll_fd)
+	if (default_context)
 		return -1;
+
+	default_context = hev_malloc0 (sizeof (HevTaskSystemContext));
+	if (!default_context)
+		return -2;
+
+	default_context->epoll_fd = epoll_create (128);
+	if (-1 == default_context->epoll_fd)
+		return -3;
 
 	return 0;
 }
@@ -41,7 +48,9 @@ hev_task_system_fini (void)
 {
 	HevMemoryAllocator *allocator;
 
-	close (epoll_fd);
+	close (default_context->epoll_fd);
+	hev_free (default_context);
+	default_context = NULL;
 
 	allocator = hev_memory_allocator_set_default (NULL);
 	if (allocator)
@@ -54,9 +63,9 @@ hev_task_system_run (void)
 	hev_task_system_schedule (HEV_TASK_YIELD_COUNT, NULL);
 }
 
-int
-hev_task_system_get_epoll_fd (void)
+HevTaskSystemContext *
+hev_task_system_get_context (void)
 {
-	return epoll_fd;
+	return default_context;
 }
 

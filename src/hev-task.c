@@ -11,6 +11,7 @@
 #include <stdint.h>
 #include <errno.h>
 #include <unistd.h>
+#include <sys/epoll.h>
 #include <sys/timerfd.h>
 
 #include "hev-task.h"
@@ -77,7 +78,7 @@ hev_task_unref (HevTask *self)
 HevTask *
 hev_task_self (void)
 {
-	return hev_task_system_get_current_task ();
+	return hev_task_system_get_context ()->current_task;
 }
 
 HevTaskState
@@ -109,7 +110,7 @@ hev_task_add_fd (HevTask *self, int fd, unsigned int events)
 	int epoll_fd;
 	struct epoll_event event;
 
-	epoll_fd = hev_task_system_get_epoll_fd ();
+	epoll_fd = hev_task_system_get_context ()->epoll_fd;
 
 	event.events = EPOLLET | events;
 	event.data.ptr = self;
@@ -122,7 +123,7 @@ hev_task_mod_fd (HevTask *self, int fd, unsigned int events)
 	int epoll_fd;
 	struct epoll_event event;
 
-	epoll_fd = hev_task_system_get_epoll_fd ();
+	epoll_fd = hev_task_system_get_context ()->epoll_fd;
 
 	event.events = EPOLLET | events;
 	event.data.ptr = self;
@@ -134,7 +135,7 @@ hev_task_del_fd (HevTask *self, int fd)
 {
 	int epoll_fd;
 
-	epoll_fd = hev_task_system_get_epoll_fd ();
+	epoll_fd = hev_task_system_get_context ()->epoll_fd;
 
 	return epoll_ctl (epoll_fd, EPOLL_CTL_DEL, fd, NULL);
 }

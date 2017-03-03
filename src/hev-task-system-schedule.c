@@ -13,101 +13,93 @@
 #endif
 
 #include <stdlib.h>
-#include <setjmp.h>
+#include <sys/epoll.h>
 
 #include "hev-task-system.h"
 #include "hev-task-system-private.h"
 #include "hev-task-private.h"
 
-#define PRIORITY_COUNT	(HEV_TASK_PRIORITY_MAX - HEV_TASK_PRIORITY_MIN + 1)
-
-static HevTask *running_lists[PRIORITY_COUNT];
-static HevTask *waiting_lists[PRIORITY_COUNT][HEV_TASK_YIELD_COUNT];
-static HevTask *current_task;
-static HevTask *new_task;
-static unsigned int task_count;
-static jmp_buf kernel_context;
-
 void
 hev_task_system_schedule (HevTaskYieldType type, HevTask *_new_task)
 {
+	HevTaskSystemContext *ctx = hev_task_system_get_context ();
 	int i, count, timeout, priority;
 	struct epoll_event events[128];
 
-	new_task = _new_task;
+	ctx->new_task = _new_task;
 
-	if (current_task) {
+	if (ctx->current_task) {
 		/* save current task context */
-		if (setjmp (current_task->context))
+		if (setjmp (ctx->current_task->context))
 			return; /* resume to task context */
 
 		/* insert current task to waiting list by type */
-		priority = hev_task_get_priority (current_task);
-		current_task->prev = NULL;
-		current_task->next = waiting_lists[priority][type];
-		if (waiting_lists[priority][type])
-			waiting_lists[priority][type]->prev = current_task;
-		waiting_lists[priority][type] = current_task;
+		priority = hev_task_get_priority (ctx->current_task);
+		ctx->current_task->prev = NULL;
+		ctx->current_task->next = ctx->waiting_lists[priority][type];
+		if (ctx->waiting_lists[priority][type])
+			ctx->waiting_lists[priority][type]->prev = ctx->current_task;
+		ctx->waiting_lists[priority][type] = ctx->current_task;
 
 		/* set task state = WAITING */
-		current_task->state = HEV_TASK_WAITING;
+		ctx->current_task->state = HEV_TASK_WAITING;
 
 		/* resume to kernel context */
-		longjmp (kernel_context, 1);
+		longjmp (ctx->kernel_context, 1);
 	}
 
 	if (type == HEV_TASK_YIELD_COUNT)
-		setjmp (kernel_context);
+		if (setjmp (ctx->kernel_context))
+			ctx = hev_task_system_get_context ();
 
 	/* NOTE: in kernel context */
-	if (new_task) {
-		priority = hev_task_get_priority (new_task);
+	if (ctx->new_task) {
+		priority = hev_task_get_priority (ctx->new_task);
 
 		/* insert new task to running list */
-		new_task->prev = NULL;
-		new_task->next = running_lists[priority];
-		if (running_lists[priority])
-			running_lists[priority]->prev = new_task;
-		running_lists[priority] = new_task;
+		ctx->new_task->prev = NULL;
+		ctx->new_task->next = ctx->running_lists[priority];
+		if (ctx->running_lists[priority])
+			ctx->running_lists[priority]->prev = ctx->new_task;
+		ctx->running_lists[priority] = ctx->new_task;
 
 		/* set task state = RUNNING */
-		new_task->state = HEV_TASK_RUNNING;
+		ctx->new_task->state = HEV_TASK_RUNNING;
 
 		/* save context in new task */
-		if (setjmp (new_task->context)) {
+		if (setjmp (ctx->new_task->context)) {
 			/* NOTE: the new task will run at next schedule */
+			ctx = hev_task_system_get_context ();
 
 			/* execute new task entry */
-			hev_task_execute (current_task);
+			hev_task_execute (ctx->current_task);
 
 			/* set task state = STOPPED */
-			current_task->state = HEV_TASK_STOPPED;
+			ctx->current_task->state = HEV_TASK_STOPPED;
 
-			hev_task_unref (current_task);
-			task_count --;
+			hev_task_unref (ctx->current_task);
+			ctx->task_count --;
 
-			longjmp (kernel_context, 1);
+			longjmp (ctx->kernel_context, 1);
 		}
 
-		task_count ++;
-		new_task = NULL;
+		ctx->task_count ++;
+		ctx->new_task = NULL;
 
 		/* for task_run before task_system_run */
-		if (!current_task)
+		if (!ctx->current_task)
 			return;
 	}
 
 	/* All tasks exited, Bye! */
-	if (!task_count) {
-		current_task = NULL;
+	if (!ctx->task_count)
 		return;
-	}
 
 	/* schedule */
 	timeout = 0;
 retry:
 	/* io poll */
-	count = epoll_wait (hev_task_system_get_epoll_fd (), events, 128, timeout);
+	count = epoll_wait (ctx->epoll_fd, events, 128, timeout);
 	for (i=0; i<count; i++) {
 		HevTask *task = events[i].data.ptr;
 
@@ -115,66 +107,67 @@ retry:
 	}
 
 	/* get a ready task */
-	current_task = NULL;
+	ctx->current_task = NULL;
 	for (i=HEV_TASK_PRIORITY_MIN; i<=HEV_TASK_PRIORITY_MAX; i++) {
-		if (!running_lists[i])
+		if (!ctx->running_lists[i])
 			continue;
 
-		current_task = running_lists[i];
+		ctx->current_task = ctx->running_lists[i];
 		break;
 	}
 
 	/* no task ready */
-	if (!current_task) {
+	if (!ctx->current_task) {
 		/* move tasks from yield watting list to running list */
 		for (i=HEV_TASK_PRIORITY_MIN; i<=HEV_TASK_PRIORITY_MAX; i++) {
 			HevTask *task;
 
-			running_lists[i] = waiting_lists[i][HEV_TASK_YIELD];
-			waiting_lists[i][HEV_TASK_YIELD] = NULL;
+			ctx->running_lists[i] = ctx->waiting_lists[i][HEV_TASK_YIELD];
+			ctx->waiting_lists[i][HEV_TASK_YIELD] = NULL;
 
 			/* set task state = RUNNING */
-			for (task=running_lists[i]; task; task=task->next)
+			for (task=ctx->running_lists[i]; task; task=task->next)
 				task->state = HEV_TASK_RUNNING;
 		}
 
 		/* get a ready task again */
 		for (i=HEV_TASK_PRIORITY_MIN; i<=HEV_TASK_PRIORITY_MAX; i++) {
-			if (!running_lists[i])
+			if (!ctx->running_lists[i])
 				continue;
 
-			current_task = running_lists[i];
+			ctx->current_task = ctx->running_lists[i];
 			break;
 		}
 	}
 
 	/* no task ready again, retry */
-	if (!current_task) {
+	if (!ctx->current_task) {
 		timeout = -1;
 		goto retry;
 	}
 
 	/* remove task from running list */
-	if (current_task->prev) {
-		current_task->prev->next = current_task->next;
+	if (ctx->current_task->prev) {
+		ctx->current_task->prev->next = ctx->current_task->next;
 	} else {
-		priority = hev_task_get_priority (current_task);
-		running_lists[priority] = current_task->next;
+		priority = hev_task_get_priority (ctx->current_task);
+		ctx->running_lists[priority] = ctx->current_task->next;
 	}
-	if (current_task->next) {
-		current_task->next->prev = current_task->prev;
+	if (ctx->current_task->next) {
+		ctx->current_task->next->prev = ctx->current_task->prev;
 	}
 
 	/* apply task's next_priority */
-	current_task->priority = current_task->next_priority;
+	ctx->current_task->priority = ctx->current_task->next_priority;
 
 	/* switch to task */
-	longjmp (current_task->context, 1);
+	longjmp (ctx->current_task->context, 1);
 }
 
 void
 hev_task_system_wakeup_task (HevTask *task)
 {
+	HevTaskSystemContext *ctx = hev_task_system_get_context ();
 	int priority;
 
 	/* skip to wakeup task that already in running */
@@ -189,8 +182,8 @@ hev_task_system_wakeup_task (HevTask *task)
 		int j;
 
 		for (j=HEV_TASK_YIELD; j<HEV_TASK_YIELD_COUNT; j++)
-			if (waiting_lists[priority][j] == task) {
-				waiting_lists[priority][j] = task->next;
+			if (ctx->waiting_lists[priority][j] == task) {
+				ctx->waiting_lists[priority][j] = task->next;
 				break;
 			}
 	}
@@ -200,18 +193,12 @@ hev_task_system_wakeup_task (HevTask *task)
 
 	/* insert task to running list */
 	task->prev = NULL;
-	task->next = running_lists[priority];
-	if (running_lists[priority])
-		running_lists[priority]->prev = task;
-	running_lists[priority] = task;
+	task->next = ctx->running_lists[priority];
+	if (ctx->running_lists[priority])
+		ctx->running_lists[priority]->prev = task;
+	ctx->running_lists[priority] = task;
 
 	/* set task state = RUNNING */
 	task->state = HEV_TASK_RUNNING;
-}
-
-HevTask *
-hev_task_system_get_current_task (void)
-{
-	return current_task;
 }
 
