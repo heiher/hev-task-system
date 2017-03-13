@@ -24,6 +24,7 @@ LOCAL_SRC_FILES := \
 	src/hev-task-execute.S \
 	src/hev-task-system.c \
 	src/hev-task-system-schedule.c
+LOCAL_CFLAGS += -DENABLE_PTHREAD
 ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
 LOCAL_CFLAGS += -mfpu=neon
 endif
