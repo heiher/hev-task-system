@@ -37,9 +37,8 @@ hev_task_new (int stack_size)
 	self->timer_fd = -1;
 	self->ref_count = 1;
 
-	if (stack_size == -1) {
+	if (stack_size == -1)
 		stack_size = HEV_TASK_STACK_SIZE;
-	}
 
 	self->stack = hev_malloc0 (stack_size);
 	if (!self->stack) {
