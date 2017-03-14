@@ -197,12 +197,19 @@ retry:
 	for (i=HEV_TASK_PRIORITY_MIN; i<=HEV_TASK_PRIORITY_MAX; i++) {
 		HevTask *task;
 
-		ctx->running_lists[i] = ctx->waiting_lists[i][HEV_TASK_YIELD];
-		ctx->waiting_lists[i][HEV_TASK_YIELD] = NULL;
+		/* swap prev with next and set task state = RUNNING */
+		for (task=ctx->waiting_lists[i][HEV_TASK_YIELD]; task; task=task->prev) {
+			HevTask *saved_prev;
 
-		/* set task state = RUNNING */
-		for (task=ctx->running_lists[i]; task; task=task->next)
+			saved_prev = task->prev;
+			task->prev = task->next;
+			task->next = saved_prev;
 			task->state = HEV_TASK_RUNNING;
+
+			ctx->running_lists[i] = task;
+		}
+
+		ctx->waiting_lists[i][HEV_TASK_YIELD] = NULL;
 	}
 
 	/* get a task from running list again */
