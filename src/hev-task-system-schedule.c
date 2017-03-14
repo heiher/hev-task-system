@@ -48,16 +48,11 @@ schedule:
 	/* pick a task */
 	ctx->current_task = hev_task_system_pick (ctx);
 
-	/* remove task from running list */
-	if (ctx->current_task->prev) {
-		ctx->current_task->prev->next = ctx->current_task->next;
-	} else {
-		priority = hev_task_get_priority (ctx->current_task);
-		ctx->running_lists[priority] = ctx->current_task->next;
-	}
-	if (ctx->current_task->next) {
-		ctx->current_task->next->prev = ctx->current_task->prev;
-	}
+	/* remove task from running list head */
+	priority = hev_task_get_priority (ctx->current_task);
+	ctx->running_lists[priority] = ctx->current_task->next;
+	if (ctx->current_task->next)
+		ctx->current_task->next->prev = NULL;
 
 	/* apply task's next_priority */
 	ctx->current_task->priority = ctx->current_task->next_priority;
