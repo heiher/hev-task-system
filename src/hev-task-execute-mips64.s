@@ -22,9 +22,8 @@ hev_task_execute:
 	ld	$a0, 0x10($a0)
 	jalr	$t9
 
-	daddiu	$sp, 0x10
-	ld	$ra, -0x10($sp)
-	ld	$sp, -0x08($sp)
+	ld	$ra, ($sp)
+	ld	$sp, 0x08($sp)
 	jr	$ra
 
 	.end    hev_task_execute

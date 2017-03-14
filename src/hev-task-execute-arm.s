@@ -21,9 +21,8 @@ hev_task_execute:
 	ldr	r0, [r0, #0x8]
 	blx	r1
 
-	add	sp, #0x8
-	ldr	lr, [sp, #-0x8]
-	ldr	sp, [sp, #-0x4]
+	ldr	lr, [sp]
+	ldr	sp, [sp, #0x4]
 	bx	lr
 
 	.size   hev_task_execute, . - hev_task_execute

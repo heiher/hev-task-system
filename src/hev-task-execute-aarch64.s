@@ -20,8 +20,7 @@ hev_task_execute:
 	ldp	x1, x0, [x0, 0x08]
 	blr	x1
 
-	add	sp, sp, 0x10
-	ldp	x2, x30, [sp, -0x10]
+	ldp	x2, x30, [sp]
 	mov	sp, x2
 	ret
 

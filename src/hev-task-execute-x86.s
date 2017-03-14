@@ -25,9 +25,8 @@ hev_task_execute:
 	mov	%edx, (%esp)
 	call	*%eax
 
-	add	$0x10, %esp
-	mov	-0x8(%esp), %eax
-	mov	-0x4(%esp), %esp
+	mov	0x8(%esp), %eax
+	mov	0xc(%esp), %esp
 	jmp	*%eax
 
 	.size   hev_task_execute, . - hev_task_execute

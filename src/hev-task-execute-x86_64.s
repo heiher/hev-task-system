@@ -23,9 +23,8 @@ hev_task_execute:
 	movq	0x10(%rdi), %rdi
 	callq	*%rax
 
-	addq	$0x10, %rsp
-	movq	-0x10(%rsp), %rax
-	movq	-0x08(%rsp), %rsp
+	movq	(%rsp), %rax
+	movq	0x8(%rsp), %rsp
 	jmpq	*%rax
 
 	.size   hev_task_execute, . - hev_task_execute
