@@ -16,7 +16,7 @@
 #define CACHED_SLICE_ALIGN	(64)
 #define MAX_CACHED_SLICE_SIZE	(1024 * 1024)
 #define MAX_CACHED_SLICE_INDEX	(MAX_CACHED_SLICE_SIZE / CACHED_SLICE_ALIGN)
-#define MAX_CACHED_SLICE_COUNT	(1000)
+#define MAX_CACHED_SLICE_COUNT	(10000)
 
 #define ALIGN_UP(addr, align) \
 	((addr + (typeof (addr)) align - 1) & ~((typeof (addr)) align - 1))
