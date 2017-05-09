@@ -159,6 +159,9 @@ hev_task_sleep (unsigned int milliseconds)
 	ssize_t size;
 	uint64_t time;
 
+	if (milliseconds == 0)
+		return 0;
+
 	if (self->timer_fd == -1) {
 		self->timer_fd = timerfd_create (CLOCK_MONOTONIC, TFD_NONBLOCK);
 		if (self->timer_fd == -1)
