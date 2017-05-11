@@ -21,6 +21,7 @@ LOCAL_SRC_FILES := \
 	src/hev-memory-allocator.c \
 	src/hev-memory-allocator-slice.c \
 	src/hev-task.c \
+	src/hev-task-poll.c \
 	src/hev-task-execute.S \
 	src/hev-task-system.c \
 	src/hev-task-system-schedule.c
