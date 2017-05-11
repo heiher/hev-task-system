@@ -183,6 +183,9 @@ retry:
 	for (i=0; i<count; i++) {
 		HevTask *task = events[i].data.ptr;
 
+		if (task->state == HEV_TASK_STOPPED)
+			continue;
+
 		hev_task_system_wakeup_task (task);
 	}
 
