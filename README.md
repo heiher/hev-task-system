@@ -35,6 +35,7 @@ nkd-build
 1. [wakeup](https://github.com/heiher/hev-task-system/blob/master/apps/wakeup.c)
 1. [echo-server](https://github.com/heiher/hev-task-system/blob/master/apps/echo-server.c)
 1. [gtk](https://github.com/heiher/hev-task-system/blob/master/apps/gtk.c)
+1. [curl](https://github.com/heiher/hev-task-system/blob/master/apps/curl.c)
 
 ## Authors
 * **Heiher** - https://hev.cc
