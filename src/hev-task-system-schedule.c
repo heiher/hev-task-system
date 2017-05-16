@@ -102,6 +102,8 @@ new_task:
 		/* execute new task entry */
 		hev_task_execute (ctx->current_task);
 
+		ctx = hev_task_system_get_context ();
+
 		/* set task state = STOPPED */
 		ctx->current_task->state = HEV_TASK_STOPPED;
 
