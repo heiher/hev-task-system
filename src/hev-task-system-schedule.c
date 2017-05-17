@@ -73,7 +73,6 @@ save_task:
 		ctx->waiting_lists[type]->prev = ctx->current_task;
 	ctx->waiting_lists[type] = ctx->current_task;
 
-	/* set task state = WAITING */
 	ctx->current_task->state = HEV_TASK_WAITING;
 
 	/* resume to kernel context */
@@ -90,7 +89,6 @@ new_task:
 		ctx->running_lists[priority]->prev = ctx->new_task;
 	ctx->running_lists[priority] = ctx->new_task;
 
-	/* set task state = RUNNING */
 	ctx->new_task->state = HEV_TASK_RUNNING;
 
 	/* save context in new task */
@@ -103,7 +101,6 @@ new_task:
 
 		ctx = hev_task_system_get_context ();
 
-		/* set task state = STOPPED */
 		ctx->current_task->state = HEV_TASK_STOPPED;
 
 		hev_task_unref (ctx->current_task);
@@ -152,7 +149,6 @@ hev_task_system_wakeup_task (HevTask *task)
 		ctx->running_lists[priority]->prev = task;
 	ctx->running_lists[priority] = task;
 
-	/* set task state = RUNNING */
 	task->state = HEV_TASK_RUNNING;
 }
 
