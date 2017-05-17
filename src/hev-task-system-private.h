@@ -25,7 +25,7 @@ struct _HevTaskSystemContext
 	unsigned int task_count;
 
 	HevTask *running_lists[PRIORITY_COUNT];
-	HevTask *waiting_lists[PRIORITY_COUNT][HEV_TASK_YIELD_COUNT];
+	HevTask *waiting_lists[HEV_TASK_YIELD_COUNT];
 	HevTask *current_task;
 	HevTask *new_task;
 

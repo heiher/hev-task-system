@@ -48,7 +48,7 @@ schedule:
 	/* pick a task */
 	ctx->current_task = hev_task_system_pick (ctx);
 
-	/* remove task from running list head */
+	/* remove task from running lists head */
 	priority = ctx->current_task->priority;
 	ctx->running_lists[priority] = ctx->current_task->next;
 	if (ctx->current_task->next)
@@ -66,13 +66,12 @@ save_task:
 	if (setjmp (ctx->current_task->context))
 		return; /* resume to task context */
 
-	/* insert current task to waiting list by type */
-	priority = ctx->current_task->priority;
+	/* insert current task to waiting lists by type */
 	ctx->current_task->prev = NULL;
-	ctx->current_task->next = ctx->waiting_lists[priority][type];
-	if (ctx->waiting_lists[priority][type])
-		ctx->waiting_lists[priority][type]->prev = ctx->current_task;
-	ctx->waiting_lists[priority][type] = ctx->current_task;
+	ctx->current_task->next = ctx->waiting_lists[type];
+	if (ctx->waiting_lists[type])
+		ctx->waiting_lists[type]->prev = ctx->current_task;
+	ctx->waiting_lists[type] = ctx->current_task;
 
 	/* set task state = WAITING */
 	ctx->current_task->state = HEV_TASK_WAITING;
@@ -84,7 +83,7 @@ new_task:
 	/* NOTE: in kernel context */
 	priority = ctx->new_task->priority;
 
-	/* insert new task to running list */
+	/* insert new task to running lists */
 	ctx->new_task->prev = NULL;
 	ctx->new_task->next = ctx->running_lists[priority];
 	if (ctx->running_lists[priority])
@@ -130,23 +129,23 @@ hev_task_system_wakeup_task (HevTask *task)
 	if (task->state == HEV_TASK_RUNNING)
 		return;
 
-	priority = task->priority;
-	/* remove task from waiting list */
+	/* remove task from waiting lists */
 	if (task->prev) {
 		task->prev->next = task->next;
 	} else {
 		int i;
 
 		for (i=HEV_TASK_YIELD; i<HEV_TASK_YIELD_COUNT; i++)
-			if (ctx->waiting_lists[priority][i] == task) {
-				ctx->waiting_lists[priority][i] = task->next;
+			if (ctx->waiting_lists[i] == task) {
+				ctx->waiting_lists[i] = task->next;
 				break;
 			}
 	}
 	if (task->next)
 		task->next->prev = task->prev;
 
-	/* insert task to running list */
+	priority = task->priority;
+	/* insert task to running lists */
 	task->prev = NULL;
 	task->next = ctx->running_lists[priority];
 	if (ctx->running_lists[priority])
@@ -191,33 +190,28 @@ retry:
 		hev_task_system_wakeup_task (task);
 	}
 
-	/* get a task from running list */
+	/* get a task from running lists */
 	task = hev_task_system_running_lists_head (ctx->running_lists);
 
 	/* got a task */
 	if (task)
 		return task;
 
-	/* move tasks from yield watting list to running list */
-	for (i=HEV_TASK_PRIORITY_MIN; i<=HEV_TASK_PRIORITY_MAX; i++) {
-		HevTask *task;
+	/* move tasks from yield waiting lists to running lists */
+	for (task=ctx->waiting_lists[HEV_TASK_YIELD]; task;) {
+		HevTask *curr_task = task;
+		int priority = curr_task->priority;
 
-		/* swap prev with next and set task state = RUNNING */
-		for (task=ctx->waiting_lists[i][HEV_TASK_YIELD]; task; task=task->prev) {
-			HevTask *saved_prev;
+		task = task->next;
+		curr_task->state = HEV_TASK_RUNNING;
 
-			saved_prev = task->prev;
-			task->prev = task->next;
-			task->next = saved_prev;
-			task->state = HEV_TASK_RUNNING;
-
-			ctx->running_lists[i] = task;
-		}
-
-		ctx->waiting_lists[i][HEV_TASK_YIELD] = NULL;
+		curr_task->prev = NULL;
+		curr_task->next = ctx->running_lists[priority];
+		ctx->running_lists[priority] = curr_task;
 	}
+	ctx->waiting_lists[HEV_TASK_YIELD] = NULL;
 
-	/* get a task from running list again */
+	/* get a task from running lists again */
 	task = hev_task_system_running_lists_head (ctx->running_lists);
 
 	/* no task ready again, retry */
