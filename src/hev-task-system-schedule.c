@@ -49,7 +49,7 @@ schedule:
 	ctx->current_task = hev_task_system_pick (ctx);
 
 	/* remove task from running list head */
-	priority = hev_task_get_priority (ctx->current_task);
+	priority = ctx->current_task->priority;
 	ctx->running_lists[priority] = ctx->current_task->next;
 	if (ctx->current_task->next)
 		ctx->current_task->next->prev = NULL;
@@ -67,7 +67,7 @@ save_task:
 		return; /* resume to task context */
 
 	/* insert current task to waiting list by type */
-	priority = hev_task_get_priority (ctx->current_task);
+	priority = ctx->current_task->priority;
 	ctx->current_task->prev = NULL;
 	ctx->current_task->next = ctx->waiting_lists[priority][type];
 	if (ctx->waiting_lists[priority][type])
@@ -82,7 +82,7 @@ save_task:
 
 new_task:
 	/* NOTE: in kernel context */
-	priority = hev_task_get_priority (ctx->new_task);
+	priority = ctx->new_task->priority;
 
 	/* insert new task to running list */
 	ctx->new_task->prev = NULL;
@@ -130,7 +130,7 @@ hev_task_system_wakeup_task (HevTask *task)
 	if (task->state == HEV_TASK_RUNNING)
 		return;
 
-	priority = hev_task_get_priority (task);
+	priority = task->priority;
 	/* remove task from waiting list */
 	if (task->prev) {
 		task->prev->next = task->next;
