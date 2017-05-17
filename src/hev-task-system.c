@@ -31,6 +31,11 @@ static HevTaskSystemContext *default_context;
 int
 hev_task_system_init (void)
 {
+	HevTask *task_nodes;
+	const int priority_min = HEV_TASK_PRIORITY_MIN;
+	const int priority_max = HEV_TASK_PRIORITY_MAX;
+	int i;
+
 	HevMemoryAllocator *allocator;
 #ifdef ENABLE_PTHREAD
 	HevTaskSystemContext *default_context;
@@ -62,6 +67,23 @@ hev_task_system_init (void)
 	default_context->epoll_fd = epoll_create (128);
 	if (-1 == default_context->epoll_fd)
 		return -3;
+
+	/*
+         * .--> task_nodes[0] <--> task_nodes[1] <--.
+         * |                                        |
+         * \--> task_nodes[N] <--> task_nodes[2] <--/
+	 */
+	task_nodes = default_context->task_nodes;
+	task_nodes[priority_min].prev = &task_nodes[priority_max];
+	task_nodes[priority_min].next = &task_nodes[priority_min + 1];
+
+	for (i=priority_min+1; i<priority_max; i++) {
+		task_nodes[i].prev = &task_nodes[i - 1];
+		task_nodes[i].next = &task_nodes[i + 1];
+	}
+
+	task_nodes[priority_max].prev = &task_nodes[priority_max - 1];
+	task_nodes[priority_max].next = &task_nodes[priority_min];
 
 	return 0;
 }

@@ -13,6 +13,7 @@
 #include <setjmp.h>
 
 #include "hev-task.h"
+#include "hev-task-private.h"
 #include "hev-task-system.h"
 
 #define PRIORITY_COUNT	(HEV_TASK_PRIORITY_MAX - HEV_TASK_PRIORITY_MIN + 1)
@@ -23,11 +24,11 @@ struct _HevTaskSystemContext
 {
 	int epoll_fd;
 	unsigned int task_count;
+	unsigned int running_task_count;
 
-	HevTask *running_lists[PRIORITY_COUNT];
-	HevTask *waiting_lists[HEV_TASK_YIELD_COUNT];
-	HevTask *current_task;
 	HevTask *new_task;
+	HevTask *current_task;
+	HevTask task_nodes[PRIORITY_COUNT];
 
 	jmp_buf kernel_context;
 };
