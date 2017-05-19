@@ -117,10 +117,10 @@ hev_task_system_wakeup_task (HevTask *task)
 	if (task->state == HEV_TASK_RUNNING)
 		return;
 
+	task->state = HEV_TASK_RUNNING;
+
 	ctx = hev_task_system_get_context ();
 	ctx->running_task_count ++;
-
-	task->state = HEV_TASK_RUNNING;
 }
 
 static inline void
