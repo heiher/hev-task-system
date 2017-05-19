@@ -59,7 +59,7 @@ hev_task_system_schedule (HevTaskYieldType type, HevTask *_new_task)
 
 schedule:
 	/* All tasks exited, Bye! */
-	if (!ctx->task_count)
+	if (ctx->total_task_count == 0)
 		return;
 
 	/* pick a task */
@@ -137,7 +137,7 @@ hev_task_system_insert_task (HevTaskSystemContext *ctx)
 	task->state = HEV_TASK_RUNNING;
 
 	ctx->new_task = NULL;
-	ctx->task_count ++;
+	ctx->total_task_count ++;
 	ctx->running_task_count ++;
 }
 
@@ -152,7 +152,7 @@ hev_task_system_remove_task (HevTaskSystemContext *ctx)
 	task->state = HEV_TASK_STOPPED;
 
 	ctx->current_task = task->prev;
-	ctx->task_count --;
+	ctx->total_task_count --;
 	ctx->running_task_count --;
 
 	hev_task_unref (task);

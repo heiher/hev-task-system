@@ -23,7 +23,7 @@ typedef struct _HevTaskSystemContext HevTaskSystemContext;
 struct _HevTaskSystemContext
 {
 	int epoll_fd;
-	unsigned int task_count;
+	unsigned int total_task_count;
 	unsigned int running_task_count;
 
 	HevTask *new_task;
