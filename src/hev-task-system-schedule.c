@@ -111,6 +111,12 @@ hev_task_system_wakeup_task (HevTask *task)
 	ctx->running_task_count ++;
 }
 
+void
+hev_task_system_kill_current_task (jmp_buf kernel_context)
+{
+	longjmp (kernel_context, 2);
+}
+
 static inline void
 hev_task_system_insert_task (HevTaskSystemContext *ctx)
 {

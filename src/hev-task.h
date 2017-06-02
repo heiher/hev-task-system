@@ -227,5 +227,14 @@ unsigned int hev_task_sleep (unsigned int milliseconds);
  */
 void hev_task_run (HevTask *self, HevTaskEntry entry, void *data);
 
+/**
+ * hev_task_exit:
+ *
+ * The function terminates the calling process immediately.
+ *
+ * Since: 1.4
+ */
+void hev_task_exit (void);
+
 #endif /* __HEV_TASK_H__ */
 

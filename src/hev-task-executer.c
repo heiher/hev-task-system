@@ -8,6 +8,7 @@
  */
 
 #include "hev-task-executer.h"
+#include "hev-task-system-private.h"
 
 void
 hev_task_executer (HevTask *task, jmp_buf kernel_context)
@@ -17,6 +18,6 @@ hev_task_executer (HevTask *task, jmp_buf kernel_context)
 
 	task->entry (task->data);
 
-	longjmp (kernel_context, 2);
+	hev_task_system_kill_current_task (kernel_context);
 }
 
