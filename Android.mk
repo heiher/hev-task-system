@@ -23,6 +23,7 @@ LOCAL_SRC_FILES := \
 	src/hev-task.c \
 	src/hev-task-poll.c \
 	src/hev-task-execute.S \
+	src/hev-task-executer.c \
 	src/hev-task-system.c \
 	src/hev-task-system-schedule.c
 LOCAL_CFLAGS += -DENABLE_PTHREAD
