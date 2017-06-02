@@ -18,8 +18,7 @@ hev_task_execute:
 	move	$sp, $t0
 	daddiu	$sp, -0x10
 
-	ld	$t9, 0x08($a0)
-	ld	$a0, 0x10($a0)
+	move	$t9, $a2
 	jalr	$t9
 
 	ld	$ra, ($sp)

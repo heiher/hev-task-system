@@ -18,6 +18,7 @@
 #include "hev-task-system.h"
 #include "hev-task-system-private.h"
 #include "hev-task-private.h"
+#include "hev-task-executer.h"
 
 static inline void hev_task_system_insert_task (HevTaskSystemContext *ctx);
 static inline void hev_task_system_remove_task (HevTaskSystemContext *ctx);
@@ -50,8 +51,8 @@ hev_task_system_schedule (HevTaskYieldType type, HevTask *_new_task)
 		goto save_task;
 
 	if (type == HEV_TASK_YIELD_COUNT)
-		if (setjmp (ctx->kernel_context))
-			ctx = hev_task_system_get_context ();
+		if (setjmp (ctx->kernel_context) == 2)
+			hev_task_system_remove_task (ctx);
 
 	/* NOTE: in kernel context */
 	if (ctx->new_task)
@@ -88,20 +89,7 @@ save_task:
 
 new_task:
 	/* NOTE: in kernel context */
-	/* save new task context */
-	if (setjmp (ctx->new_task->context)) {
-		/* NOTE: the new task will run at next schedule */
-		ctx = hev_task_system_get_context ();
-
-		/* execute new task entry */
-		hev_task_execute (ctx->current_task);
-
-		ctx = hev_task_system_get_context ();
-		hev_task_system_remove_task (ctx);
-
-		longjmp (ctx->kernel_context, 1);
-	}
-
+	hev_task_execute (ctx->new_task, ctx->kernel_context, hev_task_executer);
 	hev_task_system_insert_task (ctx);
 
 	if (ctx->current_task)

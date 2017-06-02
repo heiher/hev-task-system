@@ -11,17 +11,15 @@
 	.type   hev_task_execute, @function
 
 hev_task_execute:
-	movq	(%rdi), %rsi
+	movq	(%rdi), %rcx
 	movq	(%rsp), %rax
 	addq	$0x08, %rsp
-	movq	%rsp, -0x08(%rsi)
-	movq	%rax, -0x10(%rsi)
-	movq	%rsi, %rsp
+	movq	%rsp, -0x08(%rcx)
+	movq	%rax, -0x10(%rcx)
+	movq	%rcx, %rsp
 	subq	$0x10, %rsp
 
-	movq	0x08(%rdi), %rax
-	movq	0x10(%rdi), %rdi
-	callq	*%rax
+	callq	*%rdx
 
 	movq	(%rsp), %rax
 	movq	0x8(%rsp), %rsp

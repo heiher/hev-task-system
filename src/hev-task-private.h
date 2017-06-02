@@ -35,7 +35,7 @@ struct _HevTask
 	jmp_buf context;
 };
 
-extern void hev_task_execute (HevTask *self);
+extern void hev_task_execute (HevTask *self, jmp_buf kernel_context, void *executer);
 
 #endif /* __HEV_TASK_PRIVATE_H__ */
 
