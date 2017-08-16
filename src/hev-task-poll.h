@@ -8,7 +8,7 @@
  */
 
 #ifndef __HEV_TASK_POLL_H__
-#define __HEV_TASK_POLLH__
+#define __HEV_TASK_POLL_H__
 
 #include <poll.h>
 
