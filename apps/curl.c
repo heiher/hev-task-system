@@ -106,27 +106,29 @@ handle_socket (CURL *easy, curl_socket_t s, int action, void *userp, void *socke
 
 	switch (action) {
 	case CURL_POLL_IN:
+		events = EPOLLIN;
+		goto poll_apply;
 	case CURL_POLL_OUT:
+		events = EPOLLOUT;
+		goto poll_apply;
 	case CURL_POLL_INOUT:
-		if (action == CURL_POLL_IN)
-			events = EPOLLIN;
-		else if (action == CURL_POLL_OUT)
-			events = EPOLLOUT;
-		else
-			events = EPOLLIN | EPOLLOUT;
+		events = EPOLLIN | EPOLLOUT;
 
+poll_apply:
 		if (socketp) {
 			hev_task_mod_fd (task, s, events);
-		} else {
-			hev_task_add_fd (task, s, events);
-			curl_multi_assign (curl_handle, s, task);
+			break;
 		}
+
+		hev_task_add_fd (task, s, events);
+		curl_multi_assign (curl_handle, s, task);
 		break;
 	case CURL_POLL_REMOVE:
-		if (socketp) {
-			hev_task_del_fd (task, s);
-			curl_multi_assign (curl_handle, s, NULL);
-		}
+		if (!socketp)
+			break;
+
+		hev_task_del_fd (task, s);
+		curl_multi_assign (curl_handle, s, NULL);
 		break;
 	}
 
