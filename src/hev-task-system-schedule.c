@@ -101,8 +101,8 @@ hev_task_system_wakeup_task (HevTask *task)
 {
 	HevTaskSystemContext *ctx;
 
-	/* skip to wakeup task that already in running */
-	if (task->state == HEV_TASK_RUNNING)
+	/* skip to wakeup task that already in running or stopped */
+	if (task->state == HEV_TASK_RUNNING || task->state == HEV_TASK_STOPPED)
 		return;
 
 	task->state = HEV_TASK_RUNNING;
