@@ -7,6 +7,7 @@
  ============================================================================
  */
 
+#include <assert.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <errno.h>
@@ -18,6 +19,8 @@
 #include "hev-task-private.h"
 #include "hev-task-system-private.h"
 #include "hev-memory-allocator.h"
+
+#define STACK_OVERFLOW_DETECTION_TAG	(0xdeadbeefu)
 
 #define HEV_TASK_STACK_SIZE	(64 * 1024)
 
@@ -45,6 +48,9 @@ hev_task_new (int stack_size)
 		hev_free (self);
 		return NULL;
 	}
+#ifdef ENABLE_STACK_OVERFLOW_DETECTION
+	*(unsigned int *) self->stack = STACK_OVERFLOW_DETECTION_TAG;
+#endif
 
 	stack_addr = (uintptr_t) (self->stack + stack_size);
 	self->stack_top = (void *) ALIGN_DOWN (stack_addr, 16);
@@ -70,6 +76,9 @@ hev_task_unref (HevTask *self)
 
 	if (self->timer_fd != -1)
 		close (self->timer_fd);
+#ifdef ENABLE_STACK_OVERFLOW_DETECTION
+	assert (*(unsigned int *) self->stack == STACK_OVERFLOW_DETECTION_TAG);
+#endif
 	hev_free (self->stack);
 	hev_free (self);
 }
