@@ -26,7 +26,7 @@ make
 mkdir hev-task-system
 cd hev-task-system
 git clone git://github.com/heiher/hev-task-system jni
-nkd-build
+ndk-build
 ```
 
 ## Demos
