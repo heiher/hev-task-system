@@ -36,17 +36,21 @@ hev_task_system_init (void)
 	const int priority_max = HEV_TASK_PRIORITY_MAX;
 	int i;
 
+#ifdef ENABLE_MEMALLOC_SLICE
 	HevMemoryAllocator *allocator;
+#endif
 #ifdef ENABLE_PTHREAD
 	HevTaskSystemContext *default_context;
 #endif
 
+#ifdef ENABLE_MEMALLOC_SLICE
 	allocator = hev_memory_allocator_slice_new ();
 	if (allocator) {
 		allocator = hev_memory_allocator_set_default (allocator);
 		if (allocator)
 			hev_memory_allocator_unref (allocator);
 	}
+#endif
 
 #ifdef ENABLE_PTHREAD
 	pthread_once (&key_once, pthread_key_creator);
@@ -91,7 +95,9 @@ hev_task_system_init (void)
 void
 hev_task_system_fini (void)
 {
+#ifdef ENABLE_MEMALLOC_SLICE
 	HevMemoryAllocator *allocator;
+#endif
 #ifdef ENABLE_PTHREAD
 	HevTaskSystemContext *default_context = pthread_getspecific (key);
 #endif
@@ -105,9 +111,11 @@ hev_task_system_fini (void)
 	default_context = NULL;
 #endif
 
+#ifdef ENABLE_MEMALLOC_SLICE
 	allocator = hev_memory_allocator_set_default (NULL);
 	if (allocator)
 		hev_memory_allocator_unref (allocator);
+#endif
 }
 
 void
