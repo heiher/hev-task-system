@@ -50,9 +50,12 @@ hev_task_system_schedule (HevTaskYieldType type, HevTask *_new_task)
 	if (ctx->current_task)
 		goto save_task;
 
-	if (type == HEV_TASK_YIELD_COUNT)
+	if (type == HEV_TASK_YIELD_COUNT) {
+		/* Set current_task before first schedule */
+		ctx->current_task = &ctx->task_nodes[HEV_TASK_PRIORITY_MIN];
 		if (setjmp (ctx->kernel_context) == 2)
 			hev_task_system_remove_task (ctx);
+	}
 
 	/* NOTE: in kernel context */
 	if (ctx->new_task)
@@ -197,9 +200,7 @@ retry:
 	}
 
 	/* pick a running task */
-	task = ctx->current_task ? ctx->current_task->next :
-		&ctx->task_nodes[HEV_TASK_PRIORITY_MIN];
-	for (; task->state!=HEV_TASK_RUNNING;)
+	for (task=ctx->current_task; task->state!=HEV_TASK_RUNNING;)
 		task = task->next;
 
 	return task;
