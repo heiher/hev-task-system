@@ -50,7 +50,7 @@ hev_task_system_schedule (HevTaskYieldType type, HevTask *_new_task)
 	if (ctx->current_task)
 		goto save_task;
 
-	if (type == HEV_TASK_YIELD_COUNT) {
+	if (type == HEV_TASK_RUN_SCHEDULER) {
 		/* Set current_task before first schedule */
 		ctx->current_task = &ctx->task_nodes[HEV_TASK_PRIORITY_MIN];
 		if (setjmp (ctx->kernel_context) == 2)
