@@ -187,9 +187,6 @@ retry:
 	count = epoll_wait (ctx->epoll_fd, events, 128, timeout);
 	for (i=0; i<count; i++) {
 		task = events[i].data.ptr;
-
-		if (task->state == HEV_TASK_STOPPED)
-			continue;
 		hev_task_system_wakeup_task (task);
 	}
 
