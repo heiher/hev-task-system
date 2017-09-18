@@ -2,10 +2,11 @@
 
 PROJECT=hev-task-system
 
-PP=cpp
-CC=cc
-LD=ld
-AR=ar
+CROSS_PREFIX :=
+PP=$(CROSS_PREFIX)cpp
+CC=$(CROSS_PREFIX)gcc
+LD=$(CROSS_PREFIX)ld
+AR=$(CROSS_PREFIX)ar
 CCFLAGS=-O3 -Werror -Wall
 LDFLAGS=
 
