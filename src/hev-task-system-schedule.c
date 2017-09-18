@@ -53,8 +53,14 @@ hev_task_system_schedule (HevTaskYieldType type, HevTask *_new_task)
 	if (type == HEV_TASK_RUN_SCHEDULER) {
 		/* Set current_task before first schedule */
 		ctx->current_task = &ctx->task_nodes[HEV_TASK_PRIORITY_MIN];
-		if (setjmp (ctx->kernel_context) == 2)
+		switch (setjmp (ctx->kernel_context)) {
+		case 2:
 			hev_task_system_remove_task (ctx);
+			break;
+		case 3:
+			hev_task_system_update_task (ctx);
+			break;
+		}
 	}
 
 	/* NOTE: in kernel context */
@@ -69,10 +75,6 @@ schedule:
 	/* pick a task */
 	ctx->current_task = hev_task_system_pick (ctx);
 
-	/* apply task's next priority */
-	if (ctx->current_task->priority != ctx->current_task->next_priority)
-		hev_task_system_update_task (ctx);
-
 	/* switch to task */
 	longjmp (ctx->current_task->context, 1);
 
@@ -86,6 +88,10 @@ save_task:
 		ctx->running_task_count --;
 		ctx->current_task->state = HEV_TASK_WAITING;
 	}
+
+	/* check task's next priority and apply in kernel context */
+	if (ctx->current_task->priority != ctx->current_task->next_priority)
+		longjmp (ctx->kernel_context, 3);
 
 	/* resume to kernel context */
 	longjmp (ctx->kernel_context, 1);
@@ -167,6 +173,7 @@ hev_task_system_update_task (HevTaskSystemContext *ctx)
 
 	priority = task->next_priority;
 	task->priority = priority;
+	ctx->current_task = task->next;
 
 	/* insert into task list */
 	task->prev = &ctx->task_nodes[priority];
