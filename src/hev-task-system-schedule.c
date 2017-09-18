@@ -173,7 +173,7 @@ hev_task_system_update_task (HevTaskSystemContext *ctx)
 
 	priority = task->next_priority;
 	task->priority = priority;
-	ctx->current_task = task->next;
+	ctx->current_task = task->prev;
 
 	/* insert into task list */
 	task->prev = &ctx->task_nodes[priority];
@@ -185,7 +185,7 @@ hev_task_system_update_task (HevTaskSystemContext *ctx)
 static inline HevTask *
 hev_task_system_pick (HevTaskSystemContext *ctx)
 {
-	HevTask *task;
+	HevTask *task = ctx->current_task;
 	int i, count, timeout = 0;
 	struct epoll_event events[128];
 
@@ -204,8 +204,9 @@ retry:
 	}
 
 	/* pick a running task */
-	for (task=ctx->current_task; task->state!=HEV_TASK_RUNNING;)
+	do {
 		task = task->next;
+	} while (task->state != HEV_TASK_RUNNING);
 
 	return task;
 }
