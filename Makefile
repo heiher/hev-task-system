@@ -2,11 +2,6 @@
 
 PROJECT=hev-task-system
 
-# Configs
-ENABLE_PTHREAD := 1
-ENABLE_STACK_OVERFLOW_DETECTION := 1
-ENABLE_MEMALLOC_SLICE := 1
-
 PP=cpp
 CC=cc
 LD=ld
@@ -18,23 +13,14 @@ SRCDIR=src
 BINDIR=bin
 BUILDDIR=build
 
-ifeq ($(ENABLE_PTHREAD),1)
-	CCFLAGS+=-DENABLE_PTHREAD
-endif
-
-ifeq ($(ENABLE_STACK_OVERFLOW_DETECTION),1)
-	CCFLAGS+=-DENABLE_STACK_OVERFLOW_DETECTION
-endif
-
-ifeq ($(ENABLE_MEMALLOC_SLICE),1)
-	CCFLAGS+=-DENABLE_MEMALLOC_SLICE
-endif
-
 STATIC_TARGET=$(BINDIR)/libhev-task-system.a
 SHARED_TARGET=$(BINDIR)/libhev-task-system.so
 
 $(SHARED_TARGET) : CCFLAGS+=-fPIC
 $(SHARED_TARGET) : LDFLAGS+=-shared -pthread
+
+-include configs.mk
+CCFLAGS+=$(CONFIG_CFLAGS)
 
 CCOBJS = $(wildcard $(SRCDIR)/*.c)
 ASOBJS = $(wildcard $(SRCDIR)/*.S)
