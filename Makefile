@@ -33,34 +33,40 @@ BUILDMSG="\e[1;31mBUILD\e[0m $<"
 LINKMSG="\e[1;34mLINK\e[0m  \e[1;32m$@\e[0m"
 CLEANMSG="\e[1;34mCLEAN\e[0m $(PROJECT)"
 
+V :=
+ECHO_PREFIX := @
+ifeq ($(V),1)
+	undefine ECHO_PREFIX
+endif
+
 static : $(STATIC_TARGET)
 
 shared : $(SHARED_TARGET)
 
 clean : 
-	@$(RM) $(BINDIR)/* $(BUILDDIR)/*
+	$(ECHO_PREFIX) $(RM) $(BINDIR)/* $(BUILDDIR)/*
 	@echo -e $(CLEANMSG)
 
 $(STATIC_TARGET) : $(LDOBJS)
-	@$(AR) csq $@ $^
+	$(ECHO_PREFIX) $(AR) csq $@ $^
 	@echo -e $(LINKMSG)
 
 $(SHARED_TARGET) : $(LDOBJS)
-	@$(CC) -o $@ $^ $(LDFLAGS)
+	$(ECHO_PREFIX) $(CC) -o $@ $^ $(LDFLAGS)
 	@echo -e $(LINKMSG)
 
 $(BUILDDIR)/%.dep : $(SRCDIR)/%.c
-	@$(PP) $(CCFLAGS) -MM -MT $(@:.dep=.o) -o $@ $<
+	$(ECHO_PREFIX) $(PP) $(CCFLAGS) -MM -MT $(@:.dep=.o) -o $@ $<
 
 $(BUILDDIR)/%.dep : $(SRCDIR)/%.S
-	@$(PP) $(CCFLAGS) -MM -MT $(@:.dep=.o) -o $@ $<
+	$(ECHO_PREFIX) $(PP) $(CCFLAGS) -MM -MT $(@:.dep=.o) -o $@ $<
 
 $(BUILDDIR)/%.o : $(SRCDIR)/%.c
-	@$(CC) $(CCFLAGS) -c -o $@ $<
+	$(ECHO_PREFIX) $(CC) $(CCFLAGS) -c -o $@ $<
 	@echo -e $(BUILDMSG)
 
 $(BUILDDIR)/%.o : $(SRCDIR)/%.S
-	@$(CC) $(CCFLAGS) -c -o $@ $<
+	$(ECHO_PREFIX) $(CC) $(CCFLAGS) -c -o $@ $<
 	@echo -e $(BUILDMSG)
 
 -include $(DEPEND)
