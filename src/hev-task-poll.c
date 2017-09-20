@@ -23,14 +23,26 @@ hev_task_poll (HevTaskPollFD fds[], unsigned int nfds, int timeout)
 	for (i=0; i<nfds; i++)
 		hev_task_add_fd (task, fds[i].fd, fds[i].events);
 
-	if (timeout >= 0)
-		hev_task_sleep (timeout);
-	else
+	if (timeout >= 0) {
+retry_sleep:
+		timeout = hev_task_sleep (timeout);
+		ret = poll (fds, nfds, 0);
+		if (timeout > 0 && ret == 0)
+			goto retry_sleep;
+
+		return ret;
+	}
+
+retry:
+	ret = poll (fds, nfds, 0);
+	if (ret == 0) {
 		hev_task_yield (HEV_TASK_WAITIO);
+		goto retry;
+	}
 
 	for (i=0; i<nfds; i++)
 		hev_task_del_fd (task, fds[i].fd);
 
-	return poll (fds, nfds, 0);
+	return ret;
 }
 
