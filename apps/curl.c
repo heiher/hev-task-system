@@ -7,163 +7,108 @@
  ============================================================================
  */
 
+#define _GNU_SOURCE
 #include <stdio.h>
-#include <stdlib.h>
+#include <poll.h>
+#include <dlfcn.h>
 
 #include <hev-task.h>
+#include <hev-task-poll.h>
 #include <hev-task-system.h>
 
 #include <curl/curl.h>
 
-static CURLM *curl_handle;
+typedef int (*posix_poll_func) (struct pollfd[], nfds_t, int);
 
-static void
-add_download (const char *url, int num)
+static posix_poll_func posix_poll;
+
+int
+poll (struct pollfd fds[], nfds_t nfds, int timeout)
 {
-	char filename[50];
-	FILE *file;
-	CURL *handle;
+	HevTask *task = hev_task_self ();
+	int i, ret;
 
-	snprintf (filename, 50, "%d.download", num);
+	if (!task)
+		return posix_poll (fds, nfds, timeout);
 
-	file = fopen (filename, "wb");
-	if (!file) {
-		fprintf (stderr, "Error opening %s\n", filename);
-		return;
+	ret = posix_poll (fds, nfds, 0);
+	if (ret > 0)
+		return ret;
+
+	for (i=0; i<nfds; i++)
+		hev_task_add_fd (task, fds[i].fd, fds[i].events);
+
+	if (timeout >= 0) {
+retry_sleep:
+		timeout = hev_task_sleep (timeout);
+		ret = posix_poll (fds, nfds, 0);
+		if (timeout > 0 && ret == 0)
+			goto retry_sleep;
+
+		return ret;
 	}
 
-	handle = curl_easy_init ();
-	curl_easy_setopt (handle, CURLOPT_WRITEDATA, file);
-	curl_easy_setopt (handle, CURLOPT_PRIVATE, file);
-	curl_easy_setopt (handle, CURLOPT_URL, url);
-	curl_multi_add_handle (curl_handle, handle);
-	fprintf (stderr, "Added download %s -> %s\n", url, filename);
-}
-
-static void
-check_multi_info (void)
-{
-	char *done_url;
-	CURLMsg *message;
-	int pending;
-	CURL *easy_handle;
-	FILE *file;
-
-	while ((message = curl_multi_info_read (curl_handle, &pending))) {
-		switch (message->msg) {
-		case CURLMSG_DONE:
-			easy_handle = message->easy_handle;
-
-			curl_easy_getinfo (easy_handle, CURLINFO_EFFECTIVE_URL, &done_url);
-			curl_easy_getinfo (easy_handle, CURLINFO_PRIVATE, &file);
-			printf ("%s DONE\n", done_url);
-
-			curl_multi_remove_handle (curl_handle, easy_handle);
-			curl_easy_cleanup (easy_handle);
-			if (file)
-				fclose (file);
-			break;
-
-		default:
-			fprintf (stderr, "CURLMSG default\n");
-			break;
-		}
+retry:
+	ret = posix_poll (fds, nfds, 0);
+	if (ret == 0) {
+		hev_task_yield (HEV_TASK_WAITIO);
+		goto retry;
 	}
+
+	for (i=0; i<nfds; i++)
+		hev_task_del_fd (task, fds[i].fd);
+
+	return ret;
 }
 
 static void
 task_socket_entry (void *data)
 {
-	int running_handles;
+	const char *url = data;
+	CURL *curl;
+	FILE *fp;
+	static int index = 0;
+	char path[32];
 
-	curl_multi_perform (curl_handle, &running_handles);
-	if (!running_handles)
+	curl = curl_easy_init ();
+	if (!curl)
 		return;
 
-	do {
-		long timeout_ms;
+	snprintf (path, 32, "%d.dat", index ++);
+	fp = fopen (path, "w");
+	if (!fp)
+		return;
 
-		curl_multi_timeout (curl_handle, &timeout_ms);
+	curl_easy_setopt (curl, CURLOPT_URL, url);
+	curl_easy_setopt (curl, CURLOPT_ACCEPT_ENCODING, "");
+	curl_easy_setopt (curl, CURLOPT_WRITEDATA, fp);
+	curl_easy_perform (curl);
 
-		if (timeout_ms < 0) {
-			hev_task_yield (HEV_TASK_WAITIO);
-			curl_multi_perform (curl_handle, &running_handles);
-		} else {
-			hev_task_sleep (timeout_ms);
-			curl_multi_socket_action (curl_handle, CURL_SOCKET_TIMEOUT,
-						0, &running_handles);
-		}
+	fclose (fp);
+	curl_easy_cleanup (curl);
 
-		check_multi_info ();
-	} while (running_handles);
-}
-
-static int
-handle_socket (CURL *easy, curl_socket_t s, int action, void *userp, void *socketp)
-{
-	HevTask *task = userp;
-	int events = 0;
-
-	switch (action) {
-	case CURL_POLL_IN:
-		events = EPOLLIN;
-		goto poll_apply;
-	case CURL_POLL_OUT:
-		events = EPOLLOUT;
-		goto poll_apply;
-	case CURL_POLL_INOUT:
-		events = EPOLLIN | EPOLLOUT;
-
-poll_apply:
-		if (socketp) {
-			hev_task_mod_fd (task, s, events);
-			break;
-		}
-
-		hev_task_add_fd (task, s, events);
-		curl_multi_assign (curl_handle, s, task);
-		break;
-	case CURL_POLL_REMOVE:
-		if (!socketp)
-			break;
-
-		hev_task_del_fd (task, s);
-		curl_multi_assign (curl_handle, s, NULL);
-		break;
-	}
-
-	return 0;
+	printf ("%s DONE\n", url);
 }
 
 int
 main (int argc, char **argv)
 {
-	HevTask *task;
+	int i;
 
-	if (argc <= 1)
-		return 0;
+	posix_poll = dlsym (RTLD_NEXT, "poll");
+	if (!posix_poll || posix_poll == poll)
+		return -1;
 
 	hev_task_system_init ();
 
-	if (curl_global_init (CURL_GLOBAL_ALL)) {
-		fprintf (stderr, "Could not init curl\n");
-		return 1;
+	for (i=1; i<argc; i++) {
+		HevTask *task;
+
+		task = hev_task_new (-1);
+		hev_task_run (task, task_socket_entry, argv[i]);
 	}
 
-	curl_handle = curl_multi_init ();
-
-	task = hev_task_new (-1);
-	hev_task_run (task, task_socket_entry, NULL);
-
-	curl_multi_setopt (curl_handle, CURLMOPT_SOCKETDATA, task);
-	curl_multi_setopt (curl_handle, CURLMOPT_SOCKETFUNCTION, handle_socket);
-
-	while (argc-- > 1)
-		add_download (argv[argc], argc);
-
 	hev_task_system_run ();
-
-	curl_multi_cleanup (curl_handle);
 
 	hev_task_system_fini ();
 
