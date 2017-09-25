@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <sys/epoll.h>
 #include <sys/timerfd.h>
@@ -172,8 +173,11 @@ hev_task_sleep (unsigned int milliseconds)
 		return 0;
 
 	if (self->timer_fd == -1) {
-		self->timer_fd = timerfd_create (CLOCK_MONOTONIC, TFD_NONBLOCK);
+		self->timer_fd = timerfd_create (CLOCK_MONOTONIC, 0);
 		if (self->timer_fd == -1)
+			return milliseconds;
+
+		if (fcntl (self->timer_fd, F_SETFL, O_NONBLOCK) == -1)
 			return milliseconds;
 
 		if (hev_task_add_fd (self, self->timer_fd, EPOLLIN) == -1)
