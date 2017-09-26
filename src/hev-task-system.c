@@ -7,6 +7,7 @@
  ============================================================================
  */
 
+#include <fcntl.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/epoll.h>
@@ -34,7 +35,7 @@ hev_task_system_init (void)
 	HevTask *task_nodes;
 	const int priority_min = HEV_TASK_PRIORITY_MIN;
 	const int priority_max = HEV_TASK_PRIORITY_MAX;
-	int i;
+	int i, flags;
 
 #ifdef ENABLE_MEMALLOC_SLICE
 	HevMemoryAllocator *allocator;
@@ -71,6 +72,14 @@ hev_task_system_init (void)
 	default_context->epoll_fd = epoll_create (128);
 	if (-1 == default_context->epoll_fd)
 		return -3;
+
+	flags = fcntl (default_context->epoll_fd, F_GETFD);
+	if (-1 == flags)
+		return -4;
+
+	flags |= FD_CLOEXEC;
+	if (-1 == fcntl (default_context->epoll_fd, F_SETFD, flags))
+		return -5;
 
 	/*
          * .--> task_nodes[0] <--> task_nodes[1] <--.
