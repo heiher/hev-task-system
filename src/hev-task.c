@@ -173,11 +173,21 @@ hev_task_sleep (unsigned int milliseconds)
 		return 0;
 
 	if (self->timer_fd == -1) {
+		int flags;
+
 		self->timer_fd = timerfd_create (CLOCK_MONOTONIC, 0);
 		if (self->timer_fd == -1)
 			return milliseconds;
 
 		if (fcntl (self->timer_fd, F_SETFL, O_NONBLOCK) == -1)
+			return milliseconds;
+
+		flags = fcntl (self->timer_fd, F_GETFD);
+		if (flags == -1)
+			return milliseconds;
+
+		flags |= FD_CLOEXEC;
+		if (fcntl (self->timer_fd, F_SETFD, flags) == -1)
 			return milliseconds;
 
 		if (hev_task_add_fd (self, self->timer_fd, EPOLLIN) == -1)
