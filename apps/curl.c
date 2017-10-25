@@ -45,7 +45,7 @@ retry_sleep:
 		if (timeout > 0 && ret == 0)
 			goto retry_sleep;
 
-		return ret;
+		goto quit;
 	}
 
 retry:
@@ -55,6 +55,7 @@ retry:
 		goto retry;
 	}
 
+quit:
 	for (i=0; i<nfds; i++)
 		hev_task_del_fd (task, fds[i].fd);
 
