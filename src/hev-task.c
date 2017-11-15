@@ -164,12 +164,18 @@ hev_task_yield (HevTaskYieldType type)
 unsigned int
 hev_task_sleep (unsigned int milliseconds)
 {
+	return hev_task_usleep (milliseconds * 1000) / 1000;
+}
+
+unsigned int
+hev_task_usleep (unsigned int microseconds)
+{
 	HevTask *self = hev_task_self ();
 	struct itimerspec spec;
 	ssize_t size;
 	uint64_t time;
 
-	if (milliseconds == 0)
+	if (microseconds == 0)
 		return 0;
 
 	if (self->timer_fd == -1) {
@@ -177,45 +183,45 @@ hev_task_sleep (unsigned int milliseconds)
 
 		self->timer_fd = timerfd_create (CLOCK_MONOTONIC, 0);
 		if (self->timer_fd == -1)
-			return milliseconds;
+			return microseconds;
 
 		if (fcntl (self->timer_fd, F_SETFL, O_NONBLOCK) == -1)
-			return milliseconds;
+			return microseconds;
 
 		flags = fcntl (self->timer_fd, F_GETFD);
 		if (flags == -1)
-			return milliseconds;
+			return microseconds;
 
 		flags |= FD_CLOEXEC;
 		if (fcntl (self->timer_fd, F_SETFD, flags) == -1)
-			return milliseconds;
+			return microseconds;
 
 		if (hev_task_add_fd (self, self->timer_fd, EPOLLIN) == -1)
-			return milliseconds;
+			return microseconds;
 	}
 
 	spec.it_interval.tv_sec = 0;
 	spec.it_interval.tv_nsec = 0;
-	spec.it_value.tv_sec = milliseconds / 1000;
-	spec.it_value.tv_nsec = (milliseconds % 1000) * 1000 * 1000;
+	spec.it_value.tv_sec = microseconds / (1000 * 1000);
+	spec.it_value.tv_nsec = (microseconds % (1000 * 1000)) * 1000;
 	if (timerfd_settime (self->timer_fd, 0, &spec, NULL) == -1)
-		return milliseconds;
+		return microseconds;
 
 	size = read (self->timer_fd, &time, sizeof (time));
 	if (size == -1) {
 		if (errno == EAGAIN) {
 			hev_task_yield (HEV_TASK_WAITIO);
 
-			/* get the number of milliseconds left to sleep */
+			/* get the number of microseconds left to sleep */
 			if (timerfd_gettime (self->timer_fd, &spec) == -1)
-				return milliseconds;
+				return microseconds;
 			if ((spec.it_value.tv_sec + spec.it_value.tv_nsec) == 0)
 				return 0;
-			return (spec.it_value.tv_sec * 1000) +
-				(spec.it_value.tv_nsec / 1000 / 1000);
+			return (spec.it_value.tv_sec * 1000 * 1000) +
+				(spec.it_value.tv_nsec / 1000);
 		}
 
-		return milliseconds;
+		return microseconds;
 	}
 
 	return 0;

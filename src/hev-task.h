@@ -215,6 +215,21 @@ void hev_task_yield (HevTaskYieldType type);
 unsigned int hev_task_sleep (unsigned int milliseconds);
 
 /**
+ * hev_task_usleep:
+ * @microseconds: time to sleep
+ *
+ * Like yield. The task will be waked up by two condition:
+ * 1. Timer. time has elapsed.
+ * 2. I/O events. The task will be waked up by file descriptors events.
+ *
+ * Returns: Zero if the requested time has elapsed, or
+ * the number of microseconds left to sleep.
+ *
+ * Since: 1.5.3
+ */
+unsigned int hev_task_usleep (unsigned int microseconds);
+
+/**
  * hev_task_run:
  * @self (transfer full): a #HevTask
  * @entry: A #HevTaskEntry
