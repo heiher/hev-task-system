@@ -22,14 +22,7 @@
 	((addr + (typeof (addr)) align - 1) & ~((typeof (addr)) align - 1))
 
 typedef struct _HevMemorySlice HevMemorySlice;
-
-struct _HevMemoryAllocatorSlice
-{
-	HevMemoryAllocator base;
-
-	unsigned int cached_count;
-	HevMemorySlice *cached_mslices[MAX_CACHED_SLICE_INDEX];
-};
+typedef struct _HevMemoryLRUNode HevMemoryLRUNode;
 
 struct _HevMemorySlice
 {
@@ -37,9 +30,31 @@ struct _HevMemorySlice
 	HevMemorySlice **owner;
 };
 
+struct _HevMemoryLRUNode
+{
+	HevMemoryLRUNode *prev;
+	HevMemoryLRUNode *next;
+};
+
+struct _HevMemoryAllocatorSlice
+{
+	HevMemoryAllocator base;
+
+	HevMemoryLRUNode *lru_head;
+	HevMemoryLRUNode *lru_tail;
+	HevMemoryLRUNode lru_nodes[MAX_CACHED_SLICE_INDEX];
+
+	unsigned int cached_count;
+	HevMemorySlice *cached_mslices[MAX_CACHED_SLICE_INDEX];
+};
+
 static void * _hev_memory_allocator_alloc (HevMemoryAllocator *self, size_t size);
 static void _hev_memory_allocator_free (HevMemoryAllocator *self, void *ptr);
 static void _hev_memory_allocator_destroy (HevMemoryAllocator *self);
+static void _hev_memory_allocator_lru_insert (HevMemoryAllocatorSlice *self,
+			HevMemoryLRUNode *node);
+static void _hev_memory_allocator_lru_remove (HevMemoryAllocatorSlice *self,
+			HevMemoryLRUNode *node);
 
 HevMemoryAllocator *
 hev_memory_allocator_slice_new (void)
@@ -57,6 +72,8 @@ hev_memory_allocator_slice_new (void)
 	allocator->destroy = _hev_memory_allocator_destroy;
 
 	self = (HevMemoryAllocatorSlice *) allocator;
+	self->lru_head = NULL;
+	self->lru_tail = NULL;
 	self->cached_count = 0;
 	memset (self->cached_mslices, 0, sizeof (self->cached_mslices));
 
@@ -84,14 +101,23 @@ _hev_memory_allocator_alloc (HevMemoryAllocator *allocator, size_t size)
 		printf ("default alloc size: %lu\n", size);
 #endif
 		slice = malloc (sizeof (HevMemorySlice) + size);
+		if (!slice)
+			return NULL;
 		slice->owner = NULL;
 		return slice + 1;
 	}
 
 	if (*owner) {
+		HevMemoryLRUNode *node;
+
 		slice = *owner;
 		*owner = slice->next;
 		self->cached_count --;
+
+		node = &self->lru_nodes[index - 1];
+		_hev_memory_allocator_lru_remove (self, node);
+		if (*owner)
+			_hev_memory_allocator_lru_insert (self, node);
 	} else {
 #ifdef _DEBUG
 		printf ("alloc size: %lu\n", size);
@@ -112,32 +138,83 @@ _hev_memory_allocator_free (HevMemoryAllocator *allocator, void *ptr)
 	HevMemoryAllocatorSlice *self = (HevMemoryAllocatorSlice *) allocator;
 	HevMemorySlice *slice = (HevMemorySlice *) ptr - 1;
 
-	if (!slice->owner || self->cached_count >= MAX_CACHED_SLICE_COUNT) {
+	if (!slice->owner) {
 		free (slice);
-	} else {
-		slice->next = *slice->owner;
-		*slice->owner = slice;
-		self->cached_count ++;
-#ifdef _DEBUG
-		printf ("cached_count: %u\n", self->cached_count);
-#endif
+		return;
 	}
+
+	if (self->cached_count >= MAX_CACHED_SLICE_COUNT) {
+		HevMemoryLRUNode *node = self->lru_tail;
+		HevMemorySlice **owner = &self->cached_mslices[node - self->lru_nodes];
+		HevMemorySlice *free_slice = *owner;
+
+		*owner = free_slice->next;
+		self->cached_count --;
+
+		if (!*owner)
+			_hev_memory_allocator_lru_remove (self, node);
+
+		free (free_slice);
+	}
+
+	slice->next = *slice->owner;
+	*slice->owner = slice;
+	self->cached_count ++;
+
+	if (!slice->next) {
+		HevMemoryLRUNode *node;
+
+		node = &self->lru_nodes[slice->owner - self->cached_mslices];
+		_hev_memory_allocator_lru_insert (self, node);
+	}
+
+#ifdef _DEBUG
+	printf ("cached_count: %u\n", self->cached_count);
+#endif
 }
 
 static void
 _hev_memory_allocator_destroy (HevMemoryAllocator *allocator)
 {
 	HevMemoryAllocatorSlice *self = (HevMemoryAllocatorSlice *) allocator;
-	unsigned int i;
+	HevMemoryLRUNode *node;
 
-	for (i=0; i<MAX_CACHED_SLICE_INDEX; i++) {
-		HevMemorySlice *iter;
+	for (node=self->lru_head; node; node=node->next) {
+		HevMemorySlice *iter = self->cached_mslices[node - self->lru_nodes];
 
-		for (iter=self->cached_mslices[i]; iter;) {
+		while (iter) {
 			HevMemorySlice *next = iter->next;
 			free (iter);
 			iter = next;
 		}
 	}
+}
+
+static void
+_hev_memory_allocator_lru_insert (HevMemoryAllocatorSlice *self, HevMemoryLRUNode *node)
+{
+	node->prev = NULL;
+	if (self->lru_head) {
+		node->next = self->lru_head;
+		self->lru_head->prev = node;
+	} else {
+		node->next = NULL;
+	}
+	self->lru_head = node;
+	if (!self->lru_tail)
+		self->lru_tail = node;
+}
+
+static void
+_hev_memory_allocator_lru_remove (HevMemoryAllocatorSlice *self, HevMemoryLRUNode *node)
+{
+	if (node->prev)
+		node->prev->next = node->next;
+	if (node->next)
+		node->next->prev = node->prev;
+	if (self->lru_head == node)
+		self->lru_head = node->next;
+	if (self->lru_tail == node)
+		self->lru_tail = node->prev;
 }
 
