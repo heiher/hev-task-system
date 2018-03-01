@@ -12,7 +12,7 @@
 
 #include "hev-task-private.h"
 
-extern void hev_task_executer (HevTask *task, jmp_buf kernel_context);
+extern void hev_task_executer (HevTask *task);
 
 #endif /* __HEV_TASK_EXECUTER_H__ */
 
