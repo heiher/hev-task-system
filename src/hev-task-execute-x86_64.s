@@ -19,7 +19,7 @@ hev_task_execute:
 	movq	%rcx, %rsp
 	subq	$0x10, %rsp
 
-	callq	*%rdx
+	callq	*%rsi
 
 	movq	(%rsp), %rax
 	movq	0x8(%rsp), %rsp
