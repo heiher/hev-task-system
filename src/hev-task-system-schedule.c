@@ -121,6 +121,17 @@ hev_task_system_wakeup_task (HevTask *task)
 }
 
 void
+hev_task_system_run_new_task (HevTask *task)
+{
+	HevTaskSystemContext *ctx = hev_task_system_get_context ();
+
+	hev_task_execute (task, hev_task_executer);
+
+	ctx->new_task = task;
+	hev_task_system_insert_task (ctx);
+}
+
+void
 hev_task_system_kill_current_task (void)
 {
 	HevTaskSystemContext *ctx = hev_task_system_get_context ();

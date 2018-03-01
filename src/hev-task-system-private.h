@@ -36,6 +36,7 @@ struct _HevTaskSystemContext
 
 void hev_task_system_schedule (HevTaskYieldType type, HevTask *new_task);
 void hev_task_system_wakeup_task (HevTask *task);
+void hev_task_system_run_new_task (HevTask *task);
 void hev_task_system_kill_current_task (void);
 
 HevTaskSystemContext * hev_task_system_get_context (void);
