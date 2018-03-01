@@ -17,12 +17,10 @@ hev_task_execute:
 	add	$0x4, %esp
 	mov	%esp, -0x4(%ecx)
 	mov	%eax, -0x8(%ecx)
-	mov	0x4(%esp), %ebx
-	mov	0x8(%esp), %eax
+	mov	0x4(%esp), %eax
 	mov	%ecx, %esp
 	sub	$0x10, %esp
 
-	mov	%ebx, 0x4(%esp)
 	mov	%edx, (%esp)
 	call	*%eax
 
