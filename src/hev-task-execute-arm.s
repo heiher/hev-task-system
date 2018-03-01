@@ -17,7 +17,7 @@ hev_task_execute:
 	mov	sp, r3
 	sub	sp, #0x8
 
-	blx	r2
+	blx	r1
 
 	ldr	lr, [sp]
 	ldr	sp, [sp, #0x4]
