@@ -17,8 +17,8 @@ hev_task_execute:
 	sw	$ra, -0x8($t0)
 	addiu	$sp, $t0, -0x20
 
-	move	$t9, $a2
-	jalr	$a2
+	move	$t9, $a1
+	jalr	$a1
 
 	lw	$ra, 0x18($sp)
 	lw	$sp, 0x1c($sp)
