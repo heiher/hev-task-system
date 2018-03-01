@@ -121,9 +121,13 @@ hev_task_system_wakeup_task (HevTask *task)
 }
 
 void
-hev_task_system_kill_current_task (jmp_buf kernel_context)
+hev_task_system_kill_current_task (void)
 {
-	longjmp (kernel_context, 2);
+	HevTaskSystemContext *ctx = hev_task_system_get_context ();
+
+	/* NOTE: remove current task in kernel context, because current
+	 * task stack may be freed. */
+	longjmp (ctx->kernel_context, 2);
 }
 
 static inline void
