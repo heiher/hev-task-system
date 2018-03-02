@@ -158,7 +158,7 @@ hev_task_wakeup (HevTask *task)
 void
 hev_task_yield (HevTaskYieldType type)
 {
-	hev_task_system_schedule (type, NULL);
+	hev_task_system_schedule (type);
 }
 
 unsigned int
