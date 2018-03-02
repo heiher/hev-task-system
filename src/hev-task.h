@@ -13,7 +13,7 @@
 #include <sys/epoll.h>
 
 #define HEV_TASK_PRIORITY_MIN	(0)
-#define HEV_TASK_PRIORITY_MAX	(15)
+#define HEV_TASK_PRIORITY_MAX	(1)
 
 #define HEV_TASK_PRIORITY_HIGH	HEV_TASK_PRIORITY_MIN
 #define HEV_TASK_PRIORITY_LOW	HEV_TASK_PRIORITY_MAX
@@ -117,7 +117,7 @@ HevTaskState hev_task_get_state (HevTask *self);
  * @self: a #HevTask
  * @priority: priority
  *
- * Set the priority of a task. The value range of priority are [0-15],
+ * Set the priority of a task. The value range of priority are [0-1],
  * with smaller values representing higher priorities.
  *
  * Since: 1.0
