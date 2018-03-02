@@ -98,7 +98,7 @@ save_task:
 
 new_task:
 	/* NOTE: in kernel context */
-	hev_task_execute (ctx->new_task, ctx->kernel_context, hev_task_executer);
+	hev_task_execute (ctx->new_task, hev_task_executer);
 	hev_task_system_insert_task (ctx);
 
 	if (ctx->current_task)
