@@ -34,7 +34,7 @@ struct _HevTaskSystemContext
 	jmp_buf kernel_context;
 };
 
-void hev_task_system_schedule (HevTaskYieldType type, HevTask *new_task);
+void hev_task_system_schedule (HevTaskYieldType type);
 void hev_task_system_wakeup_task (HevTask *task);
 void hev_task_system_run_new_task (HevTask *task);
 void hev_task_system_kill_current_task (void);

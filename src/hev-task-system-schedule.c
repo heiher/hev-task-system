@@ -41,11 +41,9 @@ static inline HevTask * hev_task_system_pick (HevTaskSystemContext *ctx);
  */
 
 void
-hev_task_system_schedule (HevTaskYieldType type, HevTask *_new_task)
+hev_task_system_schedule (HevTaskYieldType type)
 {
 	HevTaskSystemContext *ctx = hev_task_system_get_context ();
-
-	ctx->new_task = _new_task;
 
 	if (ctx->current_task)
 		goto save_task;
@@ -64,10 +62,6 @@ hev_task_system_schedule (HevTaskYieldType type, HevTask *_new_task)
 	}
 
 	/* NOTE: in kernel context */
-	if (ctx->new_task)
-		goto new_task;
-
-schedule:
 	/* All tasks exited, Bye! */
 	if (ctx->total_task_count == 0)
 		return;
@@ -95,14 +89,6 @@ save_task:
 
 	/* resume to kernel context */
 	longjmp (ctx->kernel_context, 1);
-
-new_task:
-	/* NOTE: in kernel context */
-	hev_task_execute (ctx->new_task, hev_task_executer);
-	hev_task_system_insert_task (ctx);
-
-	if (ctx->current_task)
-		goto schedule;
 }
 
 void
