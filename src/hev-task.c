@@ -244,7 +244,6 @@ hev_task_run (HevTask *self, HevTaskEntry entry, void *data)
 void
 hev_task_exit (void)
 {
-	HevTaskSystemContext *ctx = hev_task_system_get_context ();
-	hev_task_system_kill_current_task (ctx->kernel_context);
+	hev_task_system_kill_current_task ();
 }
 
