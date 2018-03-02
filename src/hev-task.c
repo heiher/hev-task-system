@@ -238,7 +238,7 @@ hev_task_run (HevTask *self, HevTaskEntry entry, void *data)
 	self->data = data;
 	self->priority = self->next_priority;
 
-	hev_task_system_schedule (HEV_TASK_YIELD, self);
+	hev_task_system_run_new_task (self);
 }
 
 void
