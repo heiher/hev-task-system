@@ -193,7 +193,7 @@ retry:
 	/* io poll */
 	count = epoll_wait (ctx->epoll_fd, events, 128, timeout);
 	for (i=0; i<count; i++) {
-		task = events[i].data.ptr;
+		HevTask *task = events[i].data.ptr;
 		hev_task_system_wakeup_task (task);
 	}
 
