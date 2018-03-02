@@ -22,7 +22,7 @@
 
 static inline void hev_task_system_insert_task (HevTaskSystemContext *ctx,
 			HevTask *task);
-static inline void hev_task_system_remove_task (HevTaskSystemContext *ctx);
+static inline void hev_task_system_remove_current_task (HevTaskSystemContext *ctx);
 static inline void hev_task_system_update_task (HevTaskSystemContext *ctx);
 static inline void hev_task_system_pick (HevTaskSystemContext *ctx);
 
@@ -54,7 +54,7 @@ hev_task_system_schedule (HevTaskYieldType type)
 		ctx->current_task = &ctx->task_nodes[HEV_TASK_PRIORITY_MIN];
 		switch (setjmp (ctx->kernel_context)) {
 		case 2:
-			hev_task_system_remove_task (ctx);
+			hev_task_system_remove_current_task (ctx);
 			break;
 		case 3:
 			hev_task_system_update_task (ctx);
@@ -144,7 +144,7 @@ hev_task_system_insert_task (HevTaskSystemContext *ctx, HevTask *task)
 }
 
 static inline void
-hev_task_system_remove_task (HevTaskSystemContext *ctx)
+hev_task_system_remove_current_task (HevTaskSystemContext *ctx)
 {
 	HevTask *task = ctx->current_task;
 
