@@ -20,7 +20,8 @@
 #include "hev-task-private.h"
 #include "hev-task-executer.h"
 
-static inline void hev_task_system_insert_task (HevTaskSystemContext *ctx);
+static inline void hev_task_system_insert_task (HevTaskSystemContext *ctx,
+			HevTask *task);
 static inline void hev_task_system_remove_task (HevTaskSystemContext *ctx);
 static inline void hev_task_system_update_task (HevTaskSystemContext *ctx);
 static inline HevTask * hev_task_system_pick (HevTaskSystemContext *ctx);
@@ -113,8 +114,7 @@ hev_task_system_run_new_task (HevTask *task)
 
 	hev_task_execute (task, hev_task_executer);
 
-	ctx->new_task = task;
-	hev_task_system_insert_task (ctx);
+	hev_task_system_insert_task (ctx, task);
 }
 
 void
@@ -128,9 +128,8 @@ hev_task_system_kill_current_task (void)
 }
 
 static inline void
-hev_task_system_insert_task (HevTaskSystemContext *ctx)
+hev_task_system_insert_task (HevTaskSystemContext *ctx, HevTask *task)
 {
-	HevTask *task = ctx->new_task;
 	int priority = task->priority;
 
 	task->prev = &ctx->task_nodes[priority];
@@ -140,7 +139,6 @@ hev_task_system_insert_task (HevTaskSystemContext *ctx)
 
 	task->state = HEV_TASK_RUNNING;
 
-	ctx->new_task = NULL;
 	ctx->total_task_count ++;
 	ctx->running_task_count ++;
 }
