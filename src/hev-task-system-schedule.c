@@ -24,7 +24,7 @@ static inline void hev_task_system_insert_task (HevTaskSystemContext *ctx,
 			HevTask *task);
 static inline void hev_task_system_remove_current_task (HevTaskSystemContext *ctx);
 static inline void hev_task_system_update_current_task (HevTaskSystemContext *ctx);
-static inline void hev_task_system_pick (HevTaskSystemContext *ctx);
+static inline void hev_task_system_pick_current_task (HevTaskSystemContext *ctx);
 
 /*
  * ring task list:
@@ -68,7 +68,7 @@ hev_task_system_schedule (HevTaskYieldType type)
 		return;
 
 	/* pick a task */
-	hev_task_system_pick (ctx);
+	hev_task_system_pick_current_task (ctx);
 
 	/* switch to task */
 	longjmp (ctx->current_task->context, 1);
@@ -182,7 +182,7 @@ hev_task_system_update_current_task (HevTaskSystemContext *ctx)
 }
 
 static inline void
-hev_task_system_pick (HevTaskSystemContext *ctx)
+hev_task_system_pick_current_task (HevTaskSystemContext *ctx)
 {
 	HevTask *task = ctx->current_task;
 	int i, count, timeout = 0;
