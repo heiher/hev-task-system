@@ -17,6 +17,7 @@
 #include "hev-task-system.h"
 
 #define HEV_TASK_RUN_SCHEDULER	HEV_TASK_YIELD_COUNT
+#define PRIORITY_COUNT (HEV_TASK_PRIORITY_MAX - HEV_TASK_PRIORITY_MIN + 1)
 
 typedef struct _HevTaskSystemContext HevTaskSystemContext;
 
@@ -24,10 +25,11 @@ struct _HevTaskSystemContext
 {
 	int epoll_fd;
 	unsigned int total_task_count;
+	unsigned int running_tasks_bitmap;
 
 	HevTask *current_task;
-	HevTask *running_tasks;
-	HevTask *running_tasks_tail;
+	HevTask *running_tasks[PRIORITY_COUNT];
+	HevTask *running_tasks_tail[PRIORITY_COUNT];
 
 	jmp_buf kernel_context;
 };

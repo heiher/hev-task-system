@@ -112,34 +112,49 @@ hev_task_system_kill_current_task (void)
 static inline void
 hev_task_system_append_task (HevTaskSystemContext *ctx, HevTask *task)
 {
+	HevTask **running_tasks;
+	HevTask **running_tasks_tail;
+
 	task->state = HEV_TASK_RUNNING;
+	task->priority = task->next_priority;
+
+	running_tasks = &ctx->running_tasks[task->priority];
+	running_tasks_tail = &ctx->running_tasks_tail[task->priority];
 
 	task->next = NULL;
-	if (ctx->running_tasks_tail) {
-		task->prev = ctx->running_tasks_tail;
-		ctx->running_tasks_tail->next = task;
+	if (*running_tasks_tail) {
+		task->prev = *running_tasks_tail;
+		(*running_tasks_tail)->next = task;
 	} else {
 		task->prev = NULL;
 	}
+	ctx->running_tasks_bitmap |= (1U << task->priority);
 
-	if (!ctx->running_tasks)
-		ctx->running_tasks = task;
+	if (!*running_tasks)
+		*running_tasks = task;
 
-	ctx->running_tasks_tail = task;
+	*running_tasks_tail = task;
 }
 
 static inline void
 hev_task_system_remove_current_task (HevTaskSystemContext *ctx, HevTaskState state)
 {
 	HevTask *task = ctx->current_task;
+	HevTask **running_tasks;
+	HevTask **running_tasks_tail;
 
 	task->state = state;
 
-	ctx->running_tasks = task->next;
-	if (ctx->running_tasks)
-		ctx->running_tasks->prev = NULL;
-	else
-		ctx->running_tasks_tail = NULL;
+	running_tasks = &ctx->running_tasks[task->priority];
+	running_tasks_tail = &ctx->running_tasks_tail[task->priority];
+
+	*running_tasks = task->next;
+	if (*running_tasks) {
+		(*running_tasks)->prev = NULL;
+	} else {
+		*running_tasks_tail = NULL;
+		ctx->running_tasks_bitmap ^= (1U << task->priority);
+	}
 
 	ctx->current_task = NULL;
 
@@ -153,20 +168,59 @@ static inline void
 hev_task_system_reappend_current_task (HevTaskSystemContext *ctx)
 {
 	HevTask *task = ctx->current_task;
+	HevTask **running_tasks;
+	HevTask **running_tasks_tail;
 
 	ctx->current_task = NULL;
 
-	if (!task->next)
-		return;
+	if (task->priority == task->next_priority) {
+		if (!task->next)
+			return;
 
-	ctx->running_tasks = task->next;
+		running_tasks = &ctx->running_tasks[task->priority];
+		running_tasks_tail = &ctx->running_tasks_tail[task->priority];
+
+		*running_tasks = task->next;
+
+		task->next = NULL;
+		task->prev = *running_tasks_tail;
+
+		(*running_tasks)->prev = NULL;
+		(*running_tasks_tail)->next = task;
+		*running_tasks_tail = task;
+		return;
+	}
+
+	/* remove */
+	running_tasks = &ctx->running_tasks[task->priority];
+	running_tasks_tail = &ctx->running_tasks_tail[task->priority];
+
+	*running_tasks = task->next;
+	if (*running_tasks) {
+		(*running_tasks)->prev = NULL;
+	} else {
+		*running_tasks_tail = NULL;
+		ctx->running_tasks_bitmap ^= (1U << task->priority);
+	}
+
+	/* append */
+	task->priority = task->next_priority;
+	running_tasks = &ctx->running_tasks[task->priority];
+	running_tasks_tail = &ctx->running_tasks_tail[task->priority];
 
 	task->next = NULL;
-	task->prev = ctx->running_tasks_tail;
+	if (*running_tasks_tail) {
+		task->prev = *running_tasks_tail;
+		(*running_tasks_tail)->next = task;
+	} else {
+		task->prev = NULL;
+	}
+	ctx->running_tasks_bitmap |= (1U << task->priority);
 
-	ctx->running_tasks->prev = NULL;
-	ctx->running_tasks_tail->next = task;
-	ctx->running_tasks_tail = task;
+	if (!*running_tasks)
+		*running_tasks = task;
+
+	*running_tasks_tail = task;
 }
 
 static inline void
@@ -185,11 +239,16 @@ retry:
 	}
 
 	/* no task ready, retry */
-	if (!ctx->running_tasks) {
+	if (!ctx->running_tasks_bitmap) {
 		timeout = -1;
 		goto retry;
 	}
 
-	ctx->current_task = ctx->running_tasks;
+	for (i=HEV_TASK_PRIORITY_MIN; i<=HEV_TASK_PRIORITY_MAX; i++) {
+		if (ctx->running_tasks[i]) {
+			ctx->current_task = ctx->running_tasks[i];
+			return;
+		}
+	}
 }
 
