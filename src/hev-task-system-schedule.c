@@ -20,6 +20,8 @@
 #include "hev-task-private.h"
 #include "hev-task-executer.h"
 
+static inline void hev_task_system_wakeup_task_with_context (HevTaskSystemContext *ctx,
+			HevTask *task);
 static inline void hev_task_system_append_task (HevTaskSystemContext *ctx,
 			HevTask *task);
 static inline void hev_task_system_remove_current_task (HevTaskSystemContext *ctx,
@@ -76,16 +78,7 @@ save_task:
 void
 hev_task_system_wakeup_task (HevTask *task)
 {
-	HevTaskSystemContext *ctx;
-
-	/* skip to wakeup task that already in running or stopped */
-	if (task->state == HEV_TASK_RUNNING || task->state == HEV_TASK_STOPPED)
-		return;
-
-	task->state = HEV_TASK_RUNNING;
-
-	ctx = hev_task_system_get_context ();
-	hev_task_system_append_task (ctx, task);
+	hev_task_system_wakeup_task_with_context (NULL, task);
 }
 
 void
@@ -107,6 +100,20 @@ hev_task_system_kill_current_task (void)
 	/* NOTE: remove current task in kernel context, because current
 	 * task stack may be freed. */
 	longjmp (ctx->kernel_context, 2);
+}
+
+static inline void
+hev_task_system_wakeup_task_with_context (HevTaskSystemContext *ctx, HevTask *task)
+{
+	/* skip to wakeup task that already in running or stopped */
+	if (task->state == HEV_TASK_RUNNING || task->state == HEV_TASK_STOPPED)
+		return;
+
+	task->state = HEV_TASK_RUNNING;
+
+	if (!ctx)
+		ctx = hev_task_system_get_context ();
+	hev_task_system_append_task (ctx, task);
 }
 
 static inline void
@@ -235,7 +242,7 @@ retry:
 	count = epoll_wait (ctx->epoll_fd, events, 128, timeout);
 	for (i=0; i<count; i++) {
 		task = events[i].data.ptr;
-		hev_task_system_wakeup_task (task);
+		hev_task_system_wakeup_task_with_context (ctx, task);
 	}
 
 	/* no task ready, retry */
