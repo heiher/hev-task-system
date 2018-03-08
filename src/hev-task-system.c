@@ -66,17 +66,21 @@ hev_task_system_init (void)
 	pthread_setspecific (key, default_context);
 #endif
 
+	default_context->timer_manager = hev_task_timer_manager_new ();
+	if (!default_context->timer_manager)
+		return -3;
+
 	default_context->epoll_fd = epoll_create (128);
 	if (-1 == default_context->epoll_fd)
-		return -3;
+		return -4;
 
 	flags = fcntl (default_context->epoll_fd, F_GETFD);
 	if (-1 == flags)
-		return -4;
+		return -5;
 
 	flags |= FD_CLOEXEC;
 	if (-1 == fcntl (default_context->epoll_fd, F_SETFD, flags))
-		return -5;
+		return -6;
 
 	return 0;
 }
@@ -92,6 +96,7 @@ hev_task_system_fini (void)
 #endif
 
 	close (default_context->epoll_fd);
+	hev_free (default_context->timer_manager);
 	hev_free (default_context);
 
 #ifdef ENABLE_PTHREAD
