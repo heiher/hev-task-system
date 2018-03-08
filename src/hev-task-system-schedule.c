@@ -243,9 +243,6 @@ retry:
 		HevTaskSchedEntity *sched_entity;
 
 		sched_entity = events[i].data.ptr;
-		if (!sched_entity->task)
-			continue;
-
 		hev_task_system_wakeup_task_with_context (ctx, sched_entity->task);
 	}
 
