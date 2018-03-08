@@ -233,7 +233,6 @@ hev_task_system_reappend_current_task (HevTaskSystemContext *ctx)
 static inline void
 hev_task_system_pick_current_task (HevTaskSystemContext *ctx)
 {
-	HevTask *task;
 	int i, count, timeout = 0;
 	struct epoll_event events[128];
 
@@ -241,8 +240,13 @@ retry:
 	/* io poll */
 	count = epoll_wait (ctx->epoll_fd, events, 128, timeout);
 	for (i=0; i<count; i++) {
-		task = events[i].data.ptr;
-		hev_task_system_wakeup_task_with_context (ctx, task);
+		HevTaskSchedEntity *sched_entity;
+
+		sched_entity = events[i].data.ptr;
+		if (!sched_entity->task)
+			continue;
+
+		hev_task_system_wakeup_task_with_context (ctx, sched_entity->task);
 	}
 
 	/* no task ready, retry */
