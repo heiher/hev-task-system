@@ -180,6 +180,9 @@ hev_task_usleep (unsigned int microseconds)
 
 	ctx = hev_task_system_get_context ();
 	timer = hev_task_timer_manager_alloc (ctx->timer_manager);
+	if (!timer)
+		return microseconds;
+
 	timer_fd = hev_task_timer_get_fd (timer);
 	hev_task_timer_set_task (timer, ctx->current_task);
 
