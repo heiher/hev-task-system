@@ -55,6 +55,7 @@ hev_task_new (int stack_size)
 	stack_addr = (uintptr_t) (self->stack + stack_size);
 	self->stack_top = (void *) ALIGN_DOWN (stack_addr, 16);
 	self->stack_size = stack_size;
+	self->sched_entity.task = self;
 
 	return self;
 }
@@ -119,7 +120,7 @@ hev_task_add_fd (HevTask *self, int fd, unsigned int events)
 	epoll_fd = hev_task_system_get_context ()->epoll_fd;
 
 	event.events = EPOLLET | events;
-	event.data.ptr = self;
+	event.data.ptr = &self->sched_entity;
 	return epoll_ctl (epoll_fd, EPOLL_CTL_ADD, fd, &event);
 }
 
@@ -132,7 +133,7 @@ hev_task_mod_fd (HevTask *self, int fd, unsigned int events)
 	epoll_fd = hev_task_system_get_context ()->epoll_fd;
 
 	event.events = EPOLLET | events;
-	event.data.ptr = self;
+	event.data.ptr = &self->sched_entity;
 	return epoll_ctl (epoll_fd, EPOLL_CTL_MOD, fd, &event);
 }
 

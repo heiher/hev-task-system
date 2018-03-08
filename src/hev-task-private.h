@@ -14,6 +14,13 @@
 
 #include "hev-task.h"
 
+typedef struct _HevTaskSchedEntity HevTaskSchedEntity;
+
+struct _HevTaskSchedEntity
+{
+	HevTask *task;
+};
+
 struct _HevTask
 {
 	void *stack_top;
@@ -22,6 +29,8 @@ struct _HevTask
 
 	HevTask *prev;
 	HevTask *next;
+
+	HevTaskSchedEntity sched_entity;
 
 	void *stack;
 
