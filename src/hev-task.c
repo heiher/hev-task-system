@@ -11,7 +11,6 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <errno.h>
-#include <fcntl.h>
 #include <unistd.h>
 #include <sys/epoll.h>
 #include <sys/timerfd.h>
@@ -38,7 +37,6 @@ hev_task_new (int stack_size)
 	if (!self)
 		return NULL;
 
-	self->timer_fd = -1;
 	self->ref_count = 1;
 	self->next_priority = HEV_TASK_PRIORITY_LOW;
 
@@ -76,8 +74,6 @@ hev_task_unref (HevTask *self)
 	if (self->ref_count)
 		return;
 
-	if (self->timer_fd != -1)
-		close (self->timer_fd);
 #ifdef ENABLE_STACK_OVERFLOW_DETECTION
 	assert (*(unsigned int *) self->stack == STACK_OVERFLOW_DETECTION_TAG);
 #endif
@@ -171,7 +167,9 @@ hev_task_sleep (unsigned int milliseconds)
 unsigned int
 hev_task_usleep (unsigned int microseconds)
 {
-	HevTask *self = hev_task_self ();
+	HevTaskSystemContext *ctx;
+	HevTaskTimer *timer;
+	int timer_fd;
 	struct itimerspec spec;
 	ssize_t size;
 	uint64_t time;
@@ -179,53 +177,43 @@ hev_task_usleep (unsigned int microseconds)
 	if (microseconds == 0)
 		return 0;
 
-	if (self->timer_fd == -1) {
-		int flags;
+	ctx = hev_task_system_get_context ();
+	timer = hev_task_timer_manager_alloc (ctx->timer_manager);
+	timer_fd = hev_task_timer_get_fd (timer);
 
-		self->timer_fd = timerfd_create (CLOCK_MONOTONIC, 0);
-		if (self->timer_fd == -1)
-			return microseconds;
-
-		if (fcntl (self->timer_fd, F_SETFL, O_NONBLOCK) == -1)
-			return microseconds;
-
-		flags = fcntl (self->timer_fd, F_GETFD);
-		if (flags == -1)
-			return microseconds;
-
-		flags |= FD_CLOEXEC;
-		if (fcntl (self->timer_fd, F_SETFD, flags) == -1)
-			return microseconds;
-
-		if (hev_task_add_fd (self, self->timer_fd, EPOLLIN) == -1)
-			return microseconds;
-	}
+	if (hev_task_add_fd (ctx->current_task, timer_fd, EPOLLIN) == -1)
+		goto quit_free_timer;
 
 	spec.it_interval.tv_sec = 0;
 	spec.it_interval.tv_nsec = 0;
 	spec.it_value.tv_sec = microseconds / (1000 * 1000);
 	spec.it_value.tv_nsec = (microseconds % (1000 * 1000)) * 1000;
-	if (timerfd_settime (self->timer_fd, 0, &spec, NULL) == -1)
-		return microseconds;
+	if (timerfd_settime (timer_fd, 0, &spec, NULL) == -1)
+		goto quit_del_fd;
 
-	size = read (self->timer_fd, &time, sizeof (time));
+	size = read (timer_fd, &time, sizeof (time));
 	if (size == -1) {
 		if (errno == EAGAIN) {
 			hev_task_yield (HEV_TASK_WAITIO);
 
 			/* get the number of microseconds left to sleep */
-			if (timerfd_gettime (self->timer_fd, &spec) == -1)
-				return microseconds;
-			if ((spec.it_value.tv_sec + spec.it_value.tv_nsec) == 0)
-				return 0;
-			return (spec.it_value.tv_sec * 1000 * 1000) +
+			if (timerfd_gettime (timer_fd, &spec) == -1)
+				goto quit_del_fd;
+			if ((spec.it_value.tv_sec + spec.it_value.tv_nsec) == 0) {
+				microseconds = 0;
+				goto quit_del_fd;
+			}
+			microseconds = (spec.it_value.tv_sec * 1000 * 1000) +
 				(spec.it_value.tv_nsec / 1000);
 		}
-
-		return microseconds;
 	}
 
-	return 0;
+quit_del_fd:
+	hev_task_del_fd (ctx->current_task, timer_fd);
+quit_free_timer:
+	hev_task_timer_manager_free (ctx->timer_manager, timer);
+
+	return microseconds;
 }
 
 void
