@@ -132,3 +132,9 @@ hev_task_timer_get_fd (HevTaskTimer *timer)
 	return timer->fd;
 }
 
+void
+hev_task_timer_set_task (HevTaskTimer *timer, HevTask *task)
+{
+	timer->sched_entity.task = task;
+}
+
