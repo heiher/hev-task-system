@@ -81,16 +81,22 @@ hev_task_timer_manager_alloc (HevTaskTimerManager *self)
 	if (fd == -1)
 		return NULL;
 
-	if (fcntl (fd, F_SETFL, O_NONBLOCK) == -1)
+	if (fcntl (fd, F_SETFL, O_NONBLOCK) == -1) {
+		close (fd);
 		return NULL;
+	}
 
 	flags = fcntl (fd, F_GETFD);
-	if (flags == -1)
+	if (flags == -1) {
+		close (fd);
 		return NULL;
+	}
 
 	flags |= FD_CLOEXEC;
-	if (fcntl (fd, F_SETFD, flags) == -1)
+	if (fcntl (fd, F_SETFD, flags) == -1) {
+		close (fd);
 		return NULL;
+	}
 retry:
 	timer = hev_malloc0 (sizeof (HevTaskTimer));
 	if (!timer) {
