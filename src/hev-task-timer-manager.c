@@ -21,6 +21,7 @@
 struct _HevTaskTimer
 {
 	HevTaskTimer *next;
+	HevTaskTimerManager *owner;
 
 	HevTaskSchedEntity sched_entity;
 
@@ -32,6 +33,8 @@ struct _HevTaskTimerManager
 	HevTaskTimer *cached_timers;
 
 	unsigned int cached_count;
+
+	HevTask dummy_task;
 };
 
 HevTaskTimerManager *
@@ -103,6 +106,8 @@ retry:
 		hev_task_yield (HEV_TASK_YIELD);
 		goto retry;
 	}
+	timer->owner = self;
+	timer->sched_entity.task = &self->dummy_task;
 
 	epoll_fd = hev_task_system_get_context ()->epoll_fd;
 	event.events = EPOLLET | EPOLLIN;
@@ -141,6 +146,9 @@ hev_task_timer_get_fd (HevTaskTimer *timer)
 void
 hev_task_timer_set_task (HevTaskTimer *timer, HevTask *task)
 {
+	if (!task)
+		task = &timer->owner->dummy_task;
+
 	timer->sched_entity.task = task;
 }
 
