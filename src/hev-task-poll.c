@@ -17,13 +17,13 @@ hev_task_poll (HevTaskPollFD fds[], unsigned int nfds, int timeout)
 	int i, ret;
 
 	ret = poll (fds, nfds, 0);
-	if (ret > 0)
+	if ((ret > 0) || (timeout == 0))
 		return ret;
 
 	for (i=0; i<nfds; i++)
 		hev_task_add_fd (task, fds[i].fd, fds[i].events);
 
-	if (timeout >= 0) {
+	if (timeout > 0) {
 retry_sleep:
 		timeout = hev_task_sleep (timeout);
 		ret = poll (fds, nfds, 0);
