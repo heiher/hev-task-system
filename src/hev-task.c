@@ -194,21 +194,23 @@ hev_task_usleep (unsigned int microseconds)
 		goto quit;
 
 	size = read (timer_fd, &time, sizeof (time));
-	if (size == -1) {
-		if (errno == EAGAIN) {
-			hev_task_yield (HEV_TASK_WAITIO);
-
-			/* get the number of microseconds left to sleep */
-			if (timerfd_gettime (timer_fd, &spec) == -1)
-				goto quit;
-			if ((spec.it_value.tv_sec + spec.it_value.tv_nsec) == 0) {
-				microseconds = 0;
-				goto quit;
-			}
-			microseconds = (spec.it_value.tv_sec * 1000 * 1000) +
-				(spec.it_value.tv_nsec / 1000);
-		}
+	if (size != -1) {
+		microseconds = 0;
+		goto quit;
 	}
+
+	if (errno == EAGAIN)
+		hev_task_yield (HEV_TASK_WAITIO);
+
+	/* get the number of microseconds left to sleep */
+	if (timerfd_gettime (timer_fd, &spec) == -1)
+		goto quit;
+	if ((spec.it_value.tv_sec + spec.it_value.tv_nsec) == 0) {
+		microseconds = 0;
+		goto quit;
+	}
+	microseconds = (spec.it_value.tv_sec * 1000 * 1000) +
+		(spec.it_value.tv_nsec / 1000);
 
 quit:
 	hev_task_timer_set_task (timer, NULL);
