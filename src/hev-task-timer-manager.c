@@ -12,7 +12,8 @@
 #include <sys/timerfd.h>
 
 #include "hev-task-timer-manager.h"
-#include "hev-task.h"
+#include "hev-task-private.h"
+#include "hev-task-system-private.h"
 #include "hev-memory-allocator.h"
 
 #define MAX_CACHED_TIMER_COUNT	CONFIG_TASK_TIMER_MAX_COUNT
@@ -20,6 +21,8 @@
 struct _HevTaskTimer
 {
 	HevTaskTimer *next;
+
+	HevTaskSchedEntity sched_entity;
 
 	int fd;
 };
@@ -62,7 +65,8 @@ HevTaskTimer *
 hev_task_timer_manager_alloc (HevTaskTimerManager *self)
 {
 	HevTaskTimer *timer;
-	int fd, flags;
+	int epoll_fd, fd, flags;
+	struct epoll_event event;
 
 	if (self->cached_timers) {
 		timer = self->cached_timers;
@@ -92,6 +96,15 @@ retry:
 	if (!timer) {
 		hev_task_yield (HEV_TASK_YIELD);
 		goto retry;
+	}
+
+	epoll_fd = hev_task_system_get_context ()->epoll_fd;
+	event.events = EPOLLET | EPOLLIN;
+	event.data.ptr = &timer->sched_entity;
+	if (epoll_ctl (epoll_fd, EPOLL_CTL_ADD, fd, &event) == -1) {
+		close (fd);
+		hev_free (timer);
+		return NULL;
 	}
 
 	timer->fd = fd;
