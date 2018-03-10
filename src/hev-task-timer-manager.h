@@ -8,7 +8,7 @@
  */
 
 #ifndef __HEV_TASK_TIMER_MANAGER_H__
-#define __HEV_TASK_TIMER_MAANGER_H__
+#define __HEV_TASK_TIMER_MANAGER_H__
 
 #include "hev-task.h"
 
@@ -24,5 +24,5 @@ void hev_task_timer_manager_free (HevTaskTimerManager *self, HevTaskTimer *timer
 int hev_task_timer_get_fd (HevTaskTimer *timer);
 void hev_task_timer_set_task (HevTaskTimer *timer, HevTask *task);
 
-#endif /* __HEV_TASK_TIMER_MAANGER_H__ */
+#endif /* __HEV_TASK_TIMER_MANAGER_H__ */
 
