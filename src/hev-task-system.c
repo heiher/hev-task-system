@@ -96,7 +96,7 @@ hev_task_system_fini (void)
 #endif
 
 	close (default_context->epoll_fd);
-	hev_free (default_context->timer_manager);
+	hev_task_timer_manager_destroy (default_context->timer_manager);
 	hev_free (default_context);
 
 #ifdef ENABLE_PTHREAD
