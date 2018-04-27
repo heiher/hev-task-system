@@ -231,13 +231,11 @@ hev_task_system_reappend_current_task (HevTaskSystemContext *ctx)
 }
 
 static inline void
-hev_task_system_pick_current_task (HevTaskSystemContext *ctx)
+hev_task_system_io_poll (HevTaskSystemContext *ctx, int timeout)
 {
-	int i, count, timeout = 0;
+	int i, count;
 	struct epoll_event events[128];
 
-retry:
-	/* io poll */
 	count = epoll_wait (ctx->epoll_fd, events, 128, timeout);
 	for (i=0; i<count; i++) {
 		HevTaskSchedEntity *sched_entity;
@@ -245,11 +243,19 @@ retry:
 		sched_entity = events[i].data.ptr;
 		hev_task_system_wakeup_task_with_context (ctx, sched_entity->task);
 	}
+}
 
-	/* no task ready, retry */
-	if (!ctx->running_tasks_bitmap) {
-		timeout = -1;
-		goto retry;
+static inline void
+hev_task_system_pick_current_task (HevTaskSystemContext *ctx)
+{
+	int i;
+
+	if (ctx->running_tasks_bitmap) {
+		hev_task_system_io_poll (ctx, 0);
+	} else {
+		do {
+			hev_task_system_io_poll (ctx, -1);
+		} while (!ctx->running_tasks_bitmap);
 	}
 
 	for (i=HEV_TASK_PRIORITY_MIN; i<=HEV_TASK_PRIORITY_MAX; i++) {
