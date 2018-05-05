@@ -10,7 +10,7 @@ in task system. Every task has a private, standalone task structure (#HevTask)
 and stack in heap of the process.
 
 In task, you can allocate memory from heap, read and write data from to stack,
-and to do I/O operations in synchronized mode.
+and do I/O operations in synchronized mode.
 
 ## How to Build
 
