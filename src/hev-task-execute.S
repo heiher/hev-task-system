@@ -31,6 +31,10 @@
 
 # include "hev-task-execute-aarch64.s"
 
+#elif defined(__sw_64__)
+
+# include "hev-task-execute-sw64.s"
+
 #else
 
 # error "Unsupported platform!"
