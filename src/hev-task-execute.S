@@ -35,6 +35,10 @@
 
 # include "hev-task-execute-sw64.s"
 
+#elif defined(__riscv) && defined(_LP64)
+
+# include "hev-task-execute-riscv64.s"
+
 #else
 
 # error "Unsupported platform!"
