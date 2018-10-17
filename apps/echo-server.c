@@ -105,8 +105,8 @@ task_listener_entry (void *data)
         return;
     }
 
-    ret =
-    setsockopt (fd, SOL_SOCKET, SO_REUSEADDR, &reuseaddr, sizeof (reuseaddr));
+    ret = setsockopt (fd, SOL_SOCKET, SO_REUSEADDR, &reuseaddr,
+                      sizeof (reuseaddr));
     if (ret == -1) {
         fprintf (stderr, "Set reuse address failed!\n");
         close (fd);
