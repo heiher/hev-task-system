@@ -15,44 +15,43 @@
 static void
 task_entry1 (void *data)
 {
-	int i;
+    int i;
 
-	for (i=0; i<2; i++) {
-		printf ("hello 1\n");
-		hev_task_yield (HEV_TASK_YIELD);
-	}
+    for (i = 0; i < 2; i++) {
+        printf ("hello 1\n");
+        hev_task_yield (HEV_TASK_YIELD);
+    }
 }
 
 static void
 task_entry2 (void *data)
 {
-	int i;
+    int i;
 
-	for (i=0; i<2; i++) {
-		printf ("hello 2\n");
-		hev_task_yield (HEV_TASK_YIELD);
-	}
+    for (i = 0; i < 2; i++) {
+        printf ("hello 2\n");
+        hev_task_yield (HEV_TASK_YIELD);
+    }
 }
 
 int
 main (int argc, char *argv[])
 {
-	HevTask *task;
+    HevTask *task;
 
-	hev_task_system_init ();
+    hev_task_system_init ();
 
-	task = hev_task_new (-1);
-	hev_task_set_priority (task, 1);
-	hev_task_run (task, task_entry1, NULL);
+    task = hev_task_new (-1);
+    hev_task_set_priority (task, 1);
+    hev_task_run (task, task_entry1, NULL);
 
-	task = hev_task_new (-1);
-	hev_task_set_priority (task, 0);
-	hev_task_run (task, task_entry2, NULL);
+    task = hev_task_new (-1);
+    hev_task_set_priority (task, 0);
+    hev_task_run (task, task_entry2, NULL);
 
-	hev_task_system_run ();
+    hev_task_system_run ();
 
-	hev_task_system_fini ();
+    hev_task_system_fini ();
 
-	return 0;
+    return 0;
 }
-

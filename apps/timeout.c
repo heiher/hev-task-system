@@ -15,27 +15,26 @@
 static void
 task_entry (void *data)
 {
-	const unsigned int interval = 1000;
+    const unsigned int interval = 1000;
 
-	printf ("waiting for timeout %ums ...\n", interval);
-	hev_task_sleep (interval);
-	printf ("timeout\n");
+    printf ("waiting for timeout %ums ...\n", interval);
+    hev_task_sleep (interval);
+    printf ("timeout\n");
 }
 
 int
 main (int argc, char *argv[])
 {
-	HevTask *task;
+    HevTask *task;
 
-	hev_task_system_init ();
+    hev_task_system_init ();
 
-	task = hev_task_new (-1);
-	hev_task_run (task, task_entry, NULL);
+    task = hev_task_new (-1);
+    hev_task_run (task, task_entry, NULL);
 
-	hev_task_system_run ();
+    hev_task_system_run ();
 
-	hev_task_system_fini ();
+    hev_task_system_fini ();
 
-	return 0;
+    return 0;
 }
-

@@ -25,94 +25,93 @@ static posix_poll_func posix_poll;
 int
 poll (struct pollfd fds[], nfds_t nfds, int timeout)
 {
-	HevTask *task = hev_task_self ();
-	int i, ret;
+    HevTask *task = hev_task_self ();
+    int i, ret;
 
-	if (!task)
-		return posix_poll (fds, nfds, timeout);
+    if (!task)
+        return posix_poll (fds, nfds, timeout);
 
-	ret = posix_poll (fds, nfds, 0);
-	if ((ret > 0) || (timeout == 0))
-		return ret;
+    ret = posix_poll (fds, nfds, 0);
+    if ((ret > 0) || (timeout == 0))
+        return ret;
 
-	for (i=0; i<nfds; i++)
-		hev_task_add_fd (task, fds[i].fd, fds[i].events);
+    for (i = 0; i < nfds; i++)
+        hev_task_add_fd (task, fds[i].fd, fds[i].events);
 
-	if (timeout > 0) {
-retry_sleep:
-		timeout = hev_task_sleep (timeout);
-		ret = posix_poll (fds, nfds, 0);
-		if (timeout > 0 && ret == 0)
-			goto retry_sleep;
+    if (timeout > 0) {
+    retry_sleep:
+        timeout = hev_task_sleep (timeout);
+        ret = posix_poll (fds, nfds, 0);
+        if (timeout > 0 && ret == 0)
+            goto retry_sleep;
 
-		goto quit;
-	}
+        goto quit;
+    }
 
 retry:
-	ret = posix_poll (fds, nfds, 0);
-	if (ret == 0) {
-		hev_task_yield (HEV_TASK_WAITIO);
-		goto retry;
-	}
+    ret = posix_poll (fds, nfds, 0);
+    if (ret == 0) {
+        hev_task_yield (HEV_TASK_WAITIO);
+        goto retry;
+    }
 
 quit:
-	for (i=0; i<nfds; i++)
-		hev_task_del_fd (task, fds[i].fd);
+    for (i = 0; i < nfds; i++)
+        hev_task_del_fd (task, fds[i].fd);
 
-	return ret;
+    return ret;
 }
 
 static void
 task_socket_entry (void *data)
 {
-	const char *url = data;
-	CURL *curl;
-	FILE *fp;
-	static int index = 0;
-	char path[32];
+    const char *url = data;
+    CURL *curl;
+    FILE *fp;
+    static int index = 0;
+    char path[32];
 
-	curl = curl_easy_init ();
-	if (!curl)
-		return;
+    curl = curl_easy_init ();
+    if (!curl)
+        return;
 
-	snprintf (path, 32, "%d.dat", index ++);
-	fp = fopen (path, "w");
-	if (!fp)
-		return;
+    snprintf (path, 32, "%d.dat", index++);
+    fp = fopen (path, "w");
+    if (!fp)
+        return;
 
-	curl_easy_setopt (curl, CURLOPT_URL, url);
-	curl_easy_setopt (curl, CURLOPT_ACCEPT_ENCODING, "");
-	curl_easy_setopt (curl, CURLOPT_WRITEDATA, fp);
-	curl_easy_perform (curl);
+    curl_easy_setopt (curl, CURLOPT_URL, url);
+    curl_easy_setopt (curl, CURLOPT_ACCEPT_ENCODING, "");
+    curl_easy_setopt (curl, CURLOPT_WRITEDATA, fp);
+    curl_easy_perform (curl);
 
-	fclose (fp);
-	curl_easy_cleanup (curl);
+    fclose (fp);
+    curl_easy_cleanup (curl);
 
-	printf ("%s DONE\n", url);
+    printf ("%s DONE\n", url);
 }
 
 int
 main (int argc, char **argv)
 {
-	int i;
+    int i;
 
-	posix_poll = dlsym (RTLD_NEXT, "poll");
-	if (!posix_poll || posix_poll == poll)
-		return -1;
+    posix_poll = dlsym (RTLD_NEXT, "poll");
+    if (!posix_poll || posix_poll == poll)
+        return -1;
 
-	hev_task_system_init ();
+    hev_task_system_init ();
 
-	for (i=1; i<argc; i++) {
-		HevTask *task;
+    for (i = 1; i < argc; i++) {
+        HevTask *task;
 
-		task = hev_task_new (-1);
-		hev_task_run (task, task_socket_entry, argv[i]);
-	}
+        task = hev_task_new (-1);
+        hev_task_run (task, task_socket_entry, argv[i]);
+    }
 
-	hev_task_system_run ();
+    hev_task_system_run ();
 
-	hev_task_system_fini ();
+    hev_task_system_fini ();
 
-	return 0;
+    return 0;
 }
-
