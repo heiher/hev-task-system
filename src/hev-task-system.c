@@ -13,7 +13,7 @@
 #include <sys/epoll.h>
 
 #ifdef ENABLE_PTHREAD
-# include <pthread.h>
+#include <pthread.h>
 #endif
 
 #include "hev-task-system.h"
@@ -32,99 +32,99 @@ static HevTaskSystemContext *default_context;
 int
 hev_task_system_init (void)
 {
-	int flags;
+    int flags;
 
 #ifdef ENABLE_MEMALLOC_SLICE
-	HevMemoryAllocator *allocator;
+    HevMemoryAllocator *allocator;
 #endif
 #ifdef ENABLE_PTHREAD
-	HevTaskSystemContext *default_context;
+    HevTaskSystemContext *default_context;
 #endif
 
 #ifdef ENABLE_MEMALLOC_SLICE
-	allocator = hev_memory_allocator_slice_new ();
-	if (allocator) {
-		allocator = hev_memory_allocator_set_default (allocator);
-		if (allocator)
-			hev_memory_allocator_unref (allocator);
-	}
+    allocator = hev_memory_allocator_slice_new ();
+    if (allocator) {
+        allocator = hev_memory_allocator_set_default (allocator);
+        if (allocator)
+            hev_memory_allocator_unref (allocator);
+    }
 #endif
 
 #ifdef ENABLE_PTHREAD
-	pthread_once (&key_once, pthread_key_creator);
-	default_context = pthread_getspecific (key);
+    pthread_once (&key_once, pthread_key_creator);
+    default_context = pthread_getspecific (key);
 #endif
 
-	if (default_context)
-		return -1;
+    if (default_context)
+        return -1;
 
-	default_context = hev_malloc0 (sizeof (HevTaskSystemContext));
-	if (!default_context)
-		return -2;
+    default_context = hev_malloc0 (sizeof (HevTaskSystemContext));
+    if (!default_context)
+        return -2;
 
 #ifdef ENABLE_PTHREAD
-	pthread_setspecific (key, default_context);
+    pthread_setspecific (key, default_context);
 #endif
 
-	default_context->timer_manager = hev_task_timer_manager_new ();
-	if (!default_context->timer_manager)
-		return -3;
+    default_context->timer_manager = hev_task_timer_manager_new ();
+    if (!default_context->timer_manager)
+        return -3;
 
-	default_context->epoll_fd = epoll_create (128);
-	if (-1 == default_context->epoll_fd)
-		return -4;
+    default_context->epoll_fd = epoll_create (128);
+    if (-1 == default_context->epoll_fd)
+        return -4;
 
-	flags = fcntl (default_context->epoll_fd, F_GETFD);
-	if (-1 == flags)
-		return -5;
+    flags = fcntl (default_context->epoll_fd, F_GETFD);
+    if (-1 == flags)
+        return -5;
 
-	flags |= FD_CLOEXEC;
-	if (-1 == fcntl (default_context->epoll_fd, F_SETFD, flags))
-		return -6;
+    flags |= FD_CLOEXEC;
+    if (-1 == fcntl (default_context->epoll_fd, F_SETFD, flags))
+        return -6;
 
-	return 0;
+    return 0;
 }
 
 void
 hev_task_system_fini (void)
 {
 #ifdef ENABLE_MEMALLOC_SLICE
-	HevMemoryAllocator *allocator;
+    HevMemoryAllocator *allocator;
 #endif
 #ifdef ENABLE_PTHREAD
-	HevTaskSystemContext *default_context = pthread_getspecific (key);
+    HevTaskSystemContext *default_context = pthread_getspecific (key);
 #endif
 
-	close (default_context->epoll_fd);
-	hev_task_timer_manager_destroy (default_context->timer_manager);
-	hev_free (default_context);
+    close (default_context->epoll_fd);
+    hev_task_timer_manager_destroy (default_context->timer_manager);
+    hev_free (default_context);
 
 #ifdef ENABLE_PTHREAD
-	pthread_setspecific (key, NULL);
+    pthread_setspecific (key, NULL);
 #else
-	default_context = NULL;
+    default_context = NULL;
 #endif
 
 #ifdef ENABLE_MEMALLOC_SLICE
-	allocator = hev_memory_allocator_set_default (NULL);
-	if (allocator)
-		hev_memory_allocator_unref (allocator);
+    allocator = hev_memory_allocator_set_default (NULL);
+    if (allocator)
+        hev_memory_allocator_unref (allocator);
 #endif
 }
 
 void
 hev_task_system_run (void)
 {
-	hev_task_system_schedule (HEV_TASK_RUN_SCHEDULER);
+    hev_task_system_schedule (HEV_TASK_RUN_SCHEDULER);
 }
 
 HevTaskSystemContext *
 hev_task_system_get_context (void)
 {
 #ifdef ENABLE_PTHREAD
-	return pthread_getspecific (key);
+    return pthread_getspecific (key);
 #else
-	return default_context;
+    return default_context;
 #endif
 }
 
@@ -132,7 +132,6 @@ hev_task_system_get_context (void)
 static void
 pthread_key_creator (void)
 {
-	pthread_key_create (&key, NULL);
+    pthread_key_create (&key, NULL);
 }
 #endif
-

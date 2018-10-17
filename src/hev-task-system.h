@@ -40,4 +40,3 @@ void hev_task_system_fini (void);
 void hev_task_system_run (void);
 
 #endif /* __HEV_TASK_SYSTEM_H__ */
-
