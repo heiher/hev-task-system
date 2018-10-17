@@ -78,7 +78,10 @@ save_task:
 void
 hev_task_system_wakeup_task (HevTask *task)
 {
-	hev_task_system_wakeup_task_with_context (NULL, task);
+	HevTaskSystemContext *ctx;
+
+	ctx = hev_task_system_get_context ();
+	hev_task_system_wakeup_task_with_context (ctx, task);
 }
 
 void
@@ -110,9 +113,6 @@ hev_task_system_wakeup_task_with_context (HevTaskSystemContext *ctx, HevTask *ta
 		return;
 
 	task->state = HEV_TASK_RUNNING;
-
-	if (!ctx)
-		ctx = hev_task_system_get_context ();
 	hev_task_system_append_task (ctx, task);
 }
 
