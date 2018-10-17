@@ -15,4 +15,3 @@
 extern void hev_task_executer (HevTask *task);
 
 #endif /* __HEV_TASK_EXECUTER_H__ */
-

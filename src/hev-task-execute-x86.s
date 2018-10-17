@@ -7,26 +7,25 @@
  ============================================================================
  */
 
-	.globl  hev_task_execute
-	.type   hev_task_execute, @function
+    .globl hev_task_execute
+    .type hev_task_execute, @function
 
 hev_task_execute:
-	mov	0x4(%esp), %edx
-	mov	(%edx), %ecx
-	mov	(%esp), %eax
-	add	$0x4, %esp
-	mov	%esp, -0x4(%ecx)
-	mov	%eax, -0x8(%ecx)
-	mov	0x4(%esp), %eax
-	mov	%ecx, %esp
-	sub	$0x10, %esp
+    mov  0x4(%esp), %edx
+    mov  (%edx), %ecx
+    mov  (%esp), %eax
+    add  $0x4, %esp
+    mov  %esp, -0x4(%ecx)
+    mov  %eax, -0x8(%ecx)
+    mov  0x4(%esp), %eax
+    mov  %ecx, %esp
+    sub  $0x10, %esp
 
-	mov	%edx, (%esp)
-	call	*%eax
+    mov  %edx, (%esp)
+    call  *%eax
 
-	mov	0x8(%esp), %eax
-	mov	0xc(%esp), %esp
-	jmp	*%eax
+    mov  0x8(%esp), %eax
+    mov  0xc(%esp), %esp
+    jmp  *%eax
 
-	.size   hev_task_execute, . - hev_task_execute
-
+    .size hev_task_execute, . - hev_task_execute

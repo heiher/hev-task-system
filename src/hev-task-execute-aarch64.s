@@ -7,21 +7,20 @@
  ============================================================================
  */
 
-	.globl  hev_task_execute
-	.type   hev_task_execute, %function
+    .globl hev_task_execute
+    .type hev_task_execute, %function
 
 hev_task_execute:
-	ldr	x3, [x0]
-	mov	x4, sp
-	stp	x4, x30, [x3, -0x10]
-	mov	sp, x3
-	sub	sp, sp, 0x10
+    ldr  x3, [x0]
+    mov  x4, sp
+    stp  x4, x30, [x3, -0x10]
+    mov  sp, x3
+    sub  sp, sp, 0x10
 
-	blr	x1
+    blr  x1
 
-	ldp	x4, x30, [sp]
-	mov	sp, x4
-	ret
+    ldp  x4, x30, [sp]
+    mov  sp, x4
+    ret
 
-	.size   hev_task_execute, . - hev_task_execute
-
+    .size hev_task_execute, . - hev_task_execute

@@ -12,11 +12,11 @@
 
 #include <sys/epoll.h>
 
-#define HEV_TASK_PRIORITY_MIN	(0)
-#define HEV_TASK_PRIORITY_MAX	(1)
+#define HEV_TASK_PRIORITY_MIN (0)
+#define HEV_TASK_PRIORITY_MAX (1)
 
-#define HEV_TASK_PRIORITY_HIGH	HEV_TASK_PRIORITY_MIN
-#define HEV_TASK_PRIORITY_LOW	HEV_TASK_PRIORITY_MAX
+#define HEV_TASK_PRIORITY_HIGH HEV_TASK_PRIORITY_MIN
+#define HEV_TASK_PRIORITY_LOW HEV_TASK_PRIORITY_MAX
 
 typedef struct _HevTask HevTask;
 typedef enum _HevTaskState HevTaskState;
@@ -33,9 +33,9 @@ typedef void (*HevTaskEntry) (void *data);
  */
 enum _HevTaskState
 {
-	HEV_TASK_STOPPED,
-	HEV_TASK_RUNNING,
-	HEV_TASK_WAITING,
+    HEV_TASK_STOPPED,
+    HEV_TASK_RUNNING,
+    HEV_TASK_WAITING,
 };
 
 /**
@@ -48,9 +48,9 @@ enum _HevTaskState
  */
 enum _HevTaskYieldType
 {
-	HEV_TASK_YIELD,
-	HEV_TASK_WAITIO,
-	HEV_TASK_YIELD_COUNT,
+    HEV_TASK_YIELD,
+    HEV_TASK_WAITIO,
+    HEV_TASK_YIELD_COUNT,
 };
 
 /**
@@ -64,7 +64,7 @@ enum _HevTaskYieldType
  *
  * Since: 1.0
  */
-HevTask * hev_task_new (int stack_size);
+HevTask *hev_task_new (int stack_size);
 
 /**
  * hev_task_ref:
@@ -76,7 +76,7 @@ HevTask * hev_task_new (int stack_size);
  *
  * Since: 1.0
  */
-HevTask * hev_task_ref (HevTask *self);
+HevTask *hev_task_ref (HevTask *self);
 
 /**
  * hev_task_unref:
@@ -98,7 +98,7 @@ void hev_task_unref (HevTask *self);
  *
  * Since: 1.0
  */
-HevTask * hev_task_self (void);
+HevTask *hev_task_self (void);
 
 /**
  * hev_task_get_state:
@@ -252,4 +252,3 @@ void hev_task_run (HevTask *self, HevTaskEntry entry, void *data);
 void hev_task_exit (void);
 
 #endif /* __HEV_TASK_H__ */
-

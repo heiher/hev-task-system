@@ -13,11 +13,10 @@
 void
 hev_task_executer (HevTask *task)
 {
-	if (setjmp (task->context) == 0)
-		return;
+    if (setjmp (task->context) == 0)
+        return;
 
-	task->entry (task->data);
+    task->entry (task->data);
 
-	hev_task_system_kill_current_task ();
+    hev_task_system_kill_current_task ();
 }
-

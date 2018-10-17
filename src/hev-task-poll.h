@@ -31,4 +31,3 @@ typedef struct pollfd HevTaskPollFD;
 int hev_task_poll (HevTaskPollFD fds[], unsigned int nfds, int timeout);
 
 #endif /* __HEV_TASK_POLL_H__ */
-

@@ -7,23 +7,22 @@
  ============================================================================
  */
 
-	.globl  hev_task_execute
-	.type   hev_task_execute, @function
+    .globl hev_task_execute
+    .type hev_task_execute, @function
 
 hev_task_execute:
-	movq	(%rdi), %rcx
-	movq	(%rsp), %rax
-	addq	$0x08, %rsp
-	movq	%rsp, -0x08(%rcx)
-	movq	%rax, -0x10(%rcx)
-	movq	%rcx, %rsp
-	subq	$0x10, %rsp
+    movq  (%rdi), %rcx
+    movq  (%rsp), %rax
+    addq  $0x08, %rsp
+    movq  %rsp, -0x08(%rcx)
+    movq  %rax, -0x10(%rcx)
+    movq  %rcx, %rsp
+    subq  $0x10, %rsp
 
-	callq	*%rsi
+    callq  *%rsi
 
-	movq	(%rsp), %rax
-	movq	0x8(%rsp), %rsp
-	jmpq	*%rax
+    movq  (%rsp), %rax
+    movq  0x8(%rsp), %rsp
+    jmpq  *%rax
 
-	.size   hev_task_execute, . - hev_task_execute
-
+    .size hev_task_execute, . - hev_task_execute
