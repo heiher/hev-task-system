@@ -16,7 +16,7 @@ and do I/O operations in synchronized mode.
 
 **Linux**:
 ```bash
-git clone git://github.com/heiher/hev-task-system
+git clone https://gitlab.com/hev/hev-task-system
 cd hev-task-system
 make
 ```
@@ -25,17 +25,17 @@ make
 ```bash
 mkdir hev-task-system
 cd hev-task-system
-git clone git://github.com/heiher/hev-task-system jni
+git clone https://gitlab.com/hev/hev-task-system jni
 ndk-build
 ```
 
 ## Demos
-1. [simple](https://github.com/heiher/hev-task-system/blob/master/apps/simple.c)
-1. [timeout](https://github.com/heiher/hev-task-system/blob/master/apps/timeout.c)
-1. [wakeup](https://github.com/heiher/hev-task-system/blob/master/apps/wakeup.c)
-1. [echo-server](https://github.com/heiher/hev-task-system/blob/master/apps/echo-server.c)
-1. [gtk](https://github.com/heiher/hev-task-system/blob/master/apps/gtk.c)
-1. [curl](https://github.com/heiher/hev-task-system/blob/master/apps/curl.c)
+1. [simple](https://gitlab.com/hev/hev-task-system/blob/master/apps/simple.c)
+1. [timeout](https://gitlab.com/hev/hev-task-system/blob/master/apps/timeout.c)
+1. [wakeup](https://gitlab.com/hev/hev-task-system/blob/master/apps/wakeup.c)
+1. [echo-server](https://gitlab.com/hev/hev-task-system/blob/master/apps/echo-server.c)
+1. [gtk](https://gitlab.com/hev/hev-task-system/blob/master/apps/gtk.c)
+1. [curl](https://gitlab.com/hev/hev-task-system/blob/master/apps/curl.c)
 
 ## Authors
 * **Heiher** - https://hev.cc
