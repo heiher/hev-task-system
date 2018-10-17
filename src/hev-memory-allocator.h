@@ -21,7 +21,7 @@
  *
  * Since: 1.0
  */
-#define HEV_MEMORY_ALLOCATOR_DEFAULT		(hev_memory_allocator_default ())
+#define HEV_MEMORY_ALLOCATOR_DEFAULT (hev_memory_allocator_default ())
 
 /**
  * HEV_MEMORY_ALLOCATOR_ALLOC:
@@ -34,7 +34,7 @@
  * Since: 1.0
  */
 #define HEV_MEMORY_ALLOCATOR_ALLOC(size) \
-	hev_memory_allocator_alloc (HEV_MEMORY_ALLOCATOR_DEFAULT, size)
+    hev_memory_allocator_alloc (HEV_MEMORY_ALLOCATOR_DEFAULT, size)
 /**
  * HEV_MEMORY_ALLOCATOR_FREE:
  * @ptr: memory address
@@ -44,7 +44,7 @@
  * Since: 1.0
  */
 #define HEV_MEMORY_ALLOCATOR_FREE(ptr) \
-	hev_memory_allocator_free (HEV_MEMORY_ALLOCATOR_DEFAULT, ptr)
+    hev_memory_allocator_free (HEV_MEMORY_ALLOCATOR_DEFAULT, ptr)
 
 typedef struct _HevMemoryAllocator HevMemoryAllocator;
 
@@ -57,7 +57,7 @@ typedef struct _HevMemoryAllocator HevMemoryAllocator;
  *
  * Since: 1.0
  */
-HevMemoryAllocator * hev_memory_allocator_default (void);
+HevMemoryAllocator *hev_memory_allocator_default (void);
 
 /**
  * hev_memory_allocator_set_default:
@@ -69,7 +69,8 @@ HevMemoryAllocator * hev_memory_allocator_default (void);
  *
  * Since: 1.0
  */
-HevMemoryAllocator * hev_memory_allocator_set_default (HevMemoryAllocator *allocator);
+HevMemoryAllocator *
+hev_memory_allocator_set_default (HevMemoryAllocator *allocator);
 
 /**
  * hev_memory_allocator_new:
@@ -80,7 +81,7 @@ HevMemoryAllocator * hev_memory_allocator_set_default (HevMemoryAllocator *alloc
  *
  * Since: 1.0
  */
-HevMemoryAllocator * hev_memory_allocator_new (void);
+HevMemoryAllocator *hev_memory_allocator_new (void);
 
 /**
  * hev_memory_allocator_ref:
@@ -92,7 +93,7 @@ HevMemoryAllocator * hev_memory_allocator_new (void);
  *
  * Since: 1.0
  */
-HevMemoryAllocator * hev_memory_allocator_ref (HevMemoryAllocator *self);
+HevMemoryAllocator *hev_memory_allocator_ref (HevMemoryAllocator *self);
 
 /**
  * hev_memory_allocator_unref:
@@ -116,7 +117,7 @@ void hev_memory_allocator_unref (HevMemoryAllocator *self);
  *
  * Since: 1.0
  */
-void * hev_memory_allocator_alloc (HevMemoryAllocator *self, size_t size);
+void *hev_memory_allocator_alloc (HevMemoryAllocator *self, size_t size);
 
 /**
  * hev_memory_allocator_free:
@@ -139,7 +140,7 @@ void hev_memory_allocator_free (HevMemoryAllocator *self, void *ptr);
  *
  * Since: 1.0
  */
-void * hev_malloc (size_t size);
+void *hev_malloc (size_t size);
 
 /**
  * hev_malloc0:
@@ -152,7 +153,7 @@ void * hev_malloc (size_t size);
  *
  * Since: 1.0
  */
-void * hev_malloc0 (size_t size);
+void *hev_malloc0 (size_t size);
 
 /**
  * hev_free:
@@ -165,4 +166,3 @@ void * hev_malloc0 (size_t size);
 void hev_free (void *ptr);
 
 #endif /* __HEV_MEMORY_ALLOCATOR_H__ */
-
