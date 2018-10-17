@@ -14,7 +14,6 @@
 
 typedef struct _HevMemoryAllocatorSlice HevMemoryAllocatorSlice;
 
-HevMemoryAllocator * hev_memory_allocator_slice_new (void);
+HevMemoryAllocator *hev_memory_allocator_slice_new (void);
 
 #endif /* __HEV_MEMORY_ALLOCATOR_SLICE_H__ */
-
