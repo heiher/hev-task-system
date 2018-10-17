@@ -209,7 +209,7 @@ hev_task_usleep (unsigned int microseconds)
         goto quit;
     }
     microseconds =
-    (spec.it_value.tv_sec * 1000 * 1000) + (spec.it_value.tv_nsec / 1000);
+        (spec.it_value.tv_sec * 1000 * 1000) + (spec.it_value.tv_nsec / 1000);
 
 quit:
     hev_task_timer_set_task (timer, NULL);
