@@ -37,7 +37,7 @@ hev_task_new (int stack_size)
         return NULL;
 
     self->ref_count = 1;
-    self->next_priority = HEV_TASK_PRIORITY_LOW;
+    self->next_priority = HEV_TASK_PRIORITY_DEFAULT;
 
     if (stack_size == -1)
         stack_size = HEV_TASK_STACK_SIZE;
