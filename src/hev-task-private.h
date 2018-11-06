@@ -10,9 +10,11 @@
 #ifndef __HEV_TASK_PRIVATE_H__
 #define __HEV_TASK_PRIVATE_H__
 
+#include <stdint.h>
 #include <setjmp.h>
 
 #include "hev-task.h"
+#include "hev-rbtree.h"
 
 typedef struct _HevTaskSchedEntity HevTaskSchedEntity;
 
@@ -27,8 +29,8 @@ struct _HevTask
     HevTaskEntry entry;
     void *data;
 
-    HevTask *prev;
-    HevTask *next;
+    HevRBTreeNode node;
+    uint64_t schedule_key;
 
     HevTaskSchedEntity sched_entity;
 
