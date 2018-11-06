@@ -65,11 +65,11 @@ main (int argc, char *argv[])
     hev_task_system_init ();
 
     task1 = hev_task_new (1024 * 1024);
-    hev_task_set_priority (task1, 1);
+    hev_task_set_priority (task1, 2);
     hev_task_run (task1, task_entry1, NULL);
 
     task2 = hev_task_new (-1);
-    hev_task_set_priority (task2, 0);
+    hev_task_set_priority (task2, 1);
     hev_task_run (task2, task_entry2, hev_task_ref (task1));
 
     hev_task_system_run ();

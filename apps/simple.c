@@ -42,11 +42,11 @@ main (int argc, char *argv[])
     hev_task_system_init ();
 
     task = hev_task_new (-1);
-    hev_task_set_priority (task, 1);
+    hev_task_set_priority (task, 2);
     hev_task_run (task, task_entry1, NULL);
 
     task = hev_task_new (-1);
-    hev_task_set_priority (task, 0);
+    hev_task_set_priority (task, 1);
     hev_task_run (task, task_entry2, NULL);
 
     hev_task_system_run ();
