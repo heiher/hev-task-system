@@ -20,6 +20,7 @@ LOCAL_MODULE    := libhev-task-system
 LOCAL_SRC_FILES := \
 	src/hev-memory-allocator.c \
 	src/hev-memory-allocator-slice.c \
+	src/hev-rbtree.c \
 	src/hev-task.c \
 	src/hev-task-poll.c \
 	src/hev-task-execute.S \
