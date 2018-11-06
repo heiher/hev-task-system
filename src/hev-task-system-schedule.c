@@ -23,13 +23,13 @@
 static inline void
 hev_task_system_wakeup_task_with_context (HevTaskSystemContext *ctx,
                                           HevTask *task);
-static inline void hev_task_system_append_task (HevTaskSystemContext *ctx,
+static inline void hev_task_system_insert_task (HevTaskSystemContext *ctx,
                                                 HevTask *task);
 static inline void
 hev_task_system_remove_current_task (HevTaskSystemContext *ctx,
                                      HevTaskState state);
 static inline void
-hev_task_system_reappend_current_task (HevTaskSystemContext *ctx);
+hev_task_system_reinsert_current_task (HevTaskSystemContext *ctx);
 static inline void
 hev_task_system_pick_current_task (HevTaskSystemContext *ctx);
 
@@ -44,7 +44,7 @@ hev_task_system_schedule (HevTaskYieldType type)
     if (type == HEV_TASK_RUN_SCHEDULER) {
         switch (setjmp (ctx->kernel_context)) {
         case 1:
-            hev_task_system_reappend_current_task (ctx);
+            hev_task_system_reinsert_current_task (ctx);
             break;
         case 2:
             hev_task_system_remove_current_task (ctx, HEV_TASK_STOPPED);
@@ -62,6 +62,9 @@ hev_task_system_schedule (HevTaskYieldType type)
 
     /* pick a task */
     hev_task_system_pick_current_task (ctx);
+
+    /* update schedule key */
+    ctx->current_task->schedule_key += ctx->current_task->priority;
 
     /* switch to task */
     longjmp (ctx->current_task->context, 1);
@@ -95,7 +98,7 @@ hev_task_system_run_new_task (HevTask *task)
 
     hev_task_execute (task, hev_task_executer);
 
-    hev_task_system_append_task (ctx, task);
+    hev_task_system_insert_task (ctx, task);
     ctx->total_task_count++;
 }
 
@@ -105,7 +108,7 @@ hev_task_system_kill_current_task (void)
     HevTaskSystemContext *ctx = hev_task_system_get_context ();
 
     /* NOTE: remove current task in kernel context, because current
-	 * task stack may be freed. */
+     * task stack may be freed. */
     longjmp (ctx->kernel_context, 2);
 }
 
@@ -118,34 +121,43 @@ hev_task_system_wakeup_task_with_context (HevTaskSystemContext *ctx,
         return;
 
     task->state = HEV_TASK_RUNNING;
-    hev_task_system_append_task (ctx, task);
+    hev_task_system_insert_task (ctx, task);
 }
 
 static inline void
-hev_task_system_append_task (HevTaskSystemContext *ctx, HevTask *task)
+_hev_task_system_insert_task (HevRBTree *tree, HevTask *task)
 {
-    HevTask **running_tasks;
-    HevTask **running_tasks_tail;
+    HevRBTreeNode **new = &tree->root, *parent = NULL;
 
+    while (*new) {
+        HevTask *this = container_of (*new, HevTask, node);
+
+        parent = *new;
+        if (task->schedule_key < this->schedule_key) {
+            new = &((*new)->left);
+        } else if (task->schedule_key > this->schedule_key) {
+            new = &((*new)->right);
+        } else {
+            if (task < this)
+                new = &((*new)->left);
+            else
+                new = &((*new)->right);
+        }
+    }
+
+    hev_rbtree_node_link (&task->node, parent, new);
+    hev_rbtree_insert_color (tree, &task->node);
+}
+
+static inline void
+hev_task_system_insert_task (HevTaskSystemContext *ctx, HevTask *task)
+{
     task->state = HEV_TASK_RUNNING;
     task->priority = task->next_priority;
 
-    running_tasks = &ctx->running_tasks[task->priority];
-    running_tasks_tail = &ctx->running_tasks_tail[task->priority];
+    _hev_task_system_insert_task (&ctx->running_tasks, task);
 
-    task->next = NULL;
-    if (*running_tasks_tail) {
-        task->prev = *running_tasks_tail;
-        (*running_tasks_tail)->next = task;
-    } else {
-        task->prev = NULL;
-    }
-    ctx->running_tasks_bitmap |= (1U << task->priority);
-
-    if (!*running_tasks)
-        *running_tasks = task;
-
-    *running_tasks_tail = task;
+    ctx->running_task_count++;
 }
 
 static inline void
@@ -153,23 +165,12 @@ hev_task_system_remove_current_task (HevTaskSystemContext *ctx,
                                      HevTaskState state)
 {
     HevTask *task = ctx->current_task;
-    HevTask **running_tasks;
-    HevTask **running_tasks_tail;
 
     task->state = state;
 
-    running_tasks = &ctx->running_tasks[task->priority];
-    running_tasks_tail = &ctx->running_tasks_tail[task->priority];
+    hev_rbtree_erase (&ctx->running_tasks, &task->node);
 
-    *running_tasks = task->next;
-    if (*running_tasks) {
-        (*running_tasks)->prev = NULL;
-    } else {
-        *running_tasks_tail = NULL;
-        ctx->running_tasks_bitmap ^= (1U << task->priority);
-    }
-
-    ctx->current_task = NULL;
+    ctx->running_task_count--;
 
     if (HEV_TASK_STOPPED == state) {
         ctx->total_task_count--;
@@ -178,62 +179,14 @@ hev_task_system_remove_current_task (HevTaskSystemContext *ctx,
 }
 
 static inline void
-hev_task_system_reappend_current_task (HevTaskSystemContext *ctx)
+hev_task_system_reinsert_current_task (HevTaskSystemContext *ctx)
 {
     HevTask *task = ctx->current_task;
-    HevTask **running_tasks;
-    HevTask **running_tasks_tail;
 
-    ctx->current_task = NULL;
-
-    if (task->priority == task->next_priority) {
-        if (!task->next)
-            return;
-
-        running_tasks = &ctx->running_tasks[task->priority];
-        running_tasks_tail = &ctx->running_tasks_tail[task->priority];
-
-        *running_tasks = task->next;
-
-        task->next = NULL;
-        task->prev = *running_tasks_tail;
-
-        (*running_tasks)->prev = NULL;
-        (*running_tasks_tail)->next = task;
-        *running_tasks_tail = task;
-        return;
-    }
-
-    /* remove */
-    running_tasks = &ctx->running_tasks[task->priority];
-    running_tasks_tail = &ctx->running_tasks_tail[task->priority];
-
-    *running_tasks = task->next;
-    if (*running_tasks) {
-        (*running_tasks)->prev = NULL;
-    } else {
-        *running_tasks_tail = NULL;
-        ctx->running_tasks_bitmap ^= (1U << task->priority);
-    }
-
-    /* append */
     task->priority = task->next_priority;
-    running_tasks = &ctx->running_tasks[task->priority];
-    running_tasks_tail = &ctx->running_tasks_tail[task->priority];
 
-    task->next = NULL;
-    if (*running_tasks_tail) {
-        task->prev = *running_tasks_tail;
-        (*running_tasks_tail)->next = task;
-    } else {
-        task->prev = NULL;
-    }
-    ctx->running_tasks_bitmap |= (1U << task->priority);
-
-    if (!*running_tasks)
-        *running_tasks = task;
-
-    *running_tasks_tail = task;
+    hev_rbtree_erase (&ctx->running_tasks, &task->node);
+    _hev_task_system_insert_task (&ctx->running_tasks, task);
 }
 
 static inline void
@@ -254,20 +207,16 @@ hev_task_system_io_poll (HevTaskSystemContext *ctx, int timeout)
 static inline void
 hev_task_system_pick_current_task (HevTaskSystemContext *ctx)
 {
-    int i;
+    HevRBTreeNode *node;
 
-    if (ctx->running_tasks_bitmap) {
+    if (ctx->running_task_count) {
         hev_task_system_io_poll (ctx, 0);
     } else {
         do {
             hev_task_system_io_poll (ctx, -1);
-        } while (!ctx->running_tasks_bitmap);
+        } while (!ctx->running_task_count);
     }
 
-    for (i = HEV_TASK_PRIORITY_MIN; i <= HEV_TASK_PRIORITY_MAX; i++) {
-        if (ctx->running_tasks[i]) {
-            ctx->current_task = ctx->running_tasks[i];
-            return;
-        }
-    }
+    node = hev_rbtree_first (&ctx->running_tasks);
+    ctx->current_task = container_of (node, HevTask, node);
 }
