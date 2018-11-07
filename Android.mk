@@ -19,7 +19,9 @@ include $(CLEAR_VARS)
 LOCAL_MODULE    := libhev-task-system
 LOCAL_SRC_FILES := \
 	src/hev-memory-allocator.c \
+	src/hev-memory-allocator-api.c \
 	src/hev-memory-allocator-slice.c \
+	src/hev-memory-allocator-simple.c \
 	src/hev-rbtree.c \
 	src/hev-rbtree-cached.c \
 	src/hev-task.c \
