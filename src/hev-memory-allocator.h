@@ -16,12 +16,15 @@ typedef struct _HevMemoryAllocator HevMemoryAllocator;
 
 typedef void *(*HevMemoryAllocatorAlloc) (HevMemoryAllocator *self,
                                           size_t size);
+typedef void *(*HevMemoryAllocatorRealloc) (HevMemoryAllocator *self, void *ptr,
+                                            size_t size);
 typedef void (*HevMemoryAllocatorFree) (HevMemoryAllocator *self, void *ptr);
 typedef void (*HevMemoryAllocatorDestroy) (HevMemoryAllocator *self);
 
 struct _HevMemoryAllocator
 {
     HevMemoryAllocatorAlloc alloc;
+    HevMemoryAllocatorRealloc realloc;
     HevMemoryAllocatorFree free;
     HevMemoryAllocatorDestroy destroy;
 
@@ -87,6 +90,21 @@ void hev_memory_allocator_unref (HevMemoryAllocator *self);
  * Since: 1.0
  */
 void *hev_memory_allocator_alloc (HevMemoryAllocator *self, size_t size);
+
+/**
+ * hev_memory_allocator_realloc:
+ * @self: a #HevMemoryAllocator
+ * @ptr: memory address
+ * @size: bytes
+ *
+ * Changes the size of the memory block pointed to by @ptr to @size bytes.
+ *
+ * Returns: memory address
+ *
+ * Since: 3.2
+ */
+void *hev_memory_allocator_realloc (HevMemoryAllocator *self, void *ptr,
+                                    size_t size);
 
 /**
  * hev_memory_allocator_free:

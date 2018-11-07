@@ -98,6 +98,12 @@ hev_memory_allocator_alloc (HevMemoryAllocator *self, size_t size)
     return self->alloc (self, size);
 }
 
+void *
+hev_memory_allocator_realloc (HevMemoryAllocator *self, void *ptr, size_t size)
+{
+    return self->realloc (self, ptr, size);
+}
+
 void
 hev_memory_allocator_free (HevMemoryAllocator *self, void *ptr)
 {
