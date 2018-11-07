@@ -13,6 +13,8 @@
 
 static void *_hev_memory_allocator_alloc (HevMemoryAllocator *self,
                                           size_t size);
+static void *_hev_memory_allocator_realloc (HevMemoryAllocator *self, void *ptr,
+                                            size_t size);
 static void _hev_memory_allocator_free (HevMemoryAllocator *self, void *ptr);
 
 HevMemoryAllocator *
@@ -26,6 +28,7 @@ hev_memory_allocator_simple_new (void)
 
     self->ref_count = 1;
     self->alloc = _hev_memory_allocator_alloc;
+    self->realloc = _hev_memory_allocator_realloc;
     self->free = _hev_memory_allocator_free;
     self->destroy = NULL;
 
@@ -36,6 +39,12 @@ static void *
 _hev_memory_allocator_alloc (HevMemoryAllocator *self, size_t size)
 {
     return malloc (size);
+}
+
+static void *
+_hev_memory_allocator_realloc (HevMemoryAllocator *self, void *ptr, size_t size)
+{
+    return realloc (ptr, size);
 }
 
 static void
