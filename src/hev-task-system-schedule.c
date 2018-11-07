@@ -120,7 +120,6 @@ hev_task_system_wakeup_task_with_context (HevTaskSystemContext *ctx,
     if (task->state == HEV_TASK_RUNNING || task->state == HEV_TASK_STOPPED)
         return;
 
-    task->state = HEV_TASK_RUNNING;
     hev_task_system_insert_task (ctx, task);
 }
 
