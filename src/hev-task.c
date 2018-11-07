@@ -18,7 +18,7 @@
 #include "hev-task.h"
 #include "hev-task-private.h"
 #include "hev-task-system-private.h"
-#include "hev-memory-allocator.h"
+#include "hev-memory-allocator-api.h"
 
 #define STACK_OVERFLOW_DETECTION_TAG (0xdeadbeefu)
 
