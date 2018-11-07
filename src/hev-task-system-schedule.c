@@ -57,8 +57,10 @@ hev_task_system_schedule (HevTaskYieldType type)
 
     /* NOTE: in kernel context */
     /* All tasks exited, Bye! */
-    if (ctx->total_task_count == 0)
+    if (ctx->total_task_count == 0) {
+        ctx->current_task = NULL;
         return;
+    }
 
     /* pick a task */
     hev_task_system_pick_current_task (ctx);
