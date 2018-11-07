@@ -8,10 +8,10 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "hev-memory-allocator-slice.h"
-#include "hev-memory-allocator-interface.h"
 
 #define CACHED_SLICE_ALIGN CONFIG_MEMALLOC_SLICE_ALIGN
 #define MAX_CACHED_SLICE_SIZE CONFIG_MEMALLOC_SLICE_MAX_SIZE
