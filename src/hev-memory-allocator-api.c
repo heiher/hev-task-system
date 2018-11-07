@@ -33,6 +33,15 @@ hev_malloc0 (size_t size)
     return data;
 }
 
+void *
+hev_realloc (void *ptr, size_t size)
+{
+    HevMemoryAllocator *allocator;
+
+    allocator = hev_memory_allocator_default ();
+    return hev_memory_allocator_realloc (allocator, ptr, size);
+}
+
 void
 hev_free (void *ptr)
 {

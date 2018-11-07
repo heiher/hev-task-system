@@ -38,6 +38,19 @@ void *hev_malloc (size_t size);
 void *hev_malloc0 (size_t size);
 
 /**
+ * hev_realloc:
+ * @ptr: memory address
+ * @size: bytes
+ *
+ * Changes the size of the memory block pointed to by @ptr to @size bytes.
+ *
+ * Returns: memory address
+ *
+ * Since: 3.2
+ */
+void *hev_realloc (void *ptr, size_t size);
+
+/**
  * hev_free:
  * @ptr: memory address
  *
