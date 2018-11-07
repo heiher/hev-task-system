@@ -18,6 +18,7 @@
 
 #include "hev-task-system.h"
 #include "hev-task-system-private.h"
+#include "hev-memory-allocator-api.h"
 #include "hev-memory-allocator-slice.h"
 
 #ifdef ENABLE_PTHREAD
