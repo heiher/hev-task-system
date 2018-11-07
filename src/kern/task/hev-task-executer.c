@@ -8,7 +8,7 @@
  */
 
 #include "hev-task-executer.h"
-#include "hev-task-system-private.h"
+#include "kern/core/hev-task-system-private.h"
 
 void
 hev_task_executer (HevTask *task)

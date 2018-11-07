@@ -9,35 +9,35 @@
 
 #if defined(__i386__)
 
-# include "hev-task-execute-x86.s"
+# include "arch/x86/hev-task-execute-x86.s"
 
 #elif defined(__x86_64__)
 
-# include "hev-task-execute-x86_64.s"
+# include "arch/x86/hev-task-execute-x86_64.s"
 
 #elif defined(__mips__)
 
 # if (_MIPS_SIM == _ABI64)
-#  include "hev-task-execute-mips64.s"
+#  include "arch/mips/hev-task-execute-mips64.s"
 # else
-#  include "hev-task-execute-mips32.s"
+#  include "arch/mips/hev-task-execute-mips32.s"
 # endif
 
 #elif defined(__arm__)
 
-# include "hev-task-execute-arm.s"
+# include "arch/arm/hev-task-execute-arm.s"
 
 #elif defined(__aarch64__)
 
-# include "hev-task-execute-aarch64.s"
+# include "arch/arm/hev-task-execute-aarch64.s"
 
 #elif defined(__sw_64__)
 
-# include "hev-task-execute-sw64.s"
+# include "arch/sw64/hev-task-execute-sw64.s"
 
 #elif defined(__riscv) && defined(_LP64)
 
-# include "hev-task-execute-riscv64.s"
+# include "arch/riscv/hev-task-execute-riscv64.s"
 
 #else
 

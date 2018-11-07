@@ -17,8 +17,8 @@
 
 #include "hev-task-system.h"
 #include "hev-task-system-private.h"
-#include "hev-task-private.h"
-#include "hev-task-executer.h"
+#include "kern/task/hev-task-private.h"
+#include "kern/task/hev-task-executer.h"
 
 static inline void
 hev_task_system_wakeup_task_with_context (HevTaskSystemContext *ctx,

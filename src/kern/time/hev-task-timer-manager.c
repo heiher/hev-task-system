@@ -12,9 +12,9 @@
 #include <sys/timerfd.h>
 
 #include "hev-task-timer-manager.h"
-#include "hev-task-private.h"
-#include "hev-task-system-private.h"
-#include "hev-memory-allocator-api.h"
+#include "kern/task/hev-task-private.h"
+#include "kern/core/hev-task-system-private.h"
+#include "mm/api/hev-memory-allocator-api.h"
 
 #define MAX_CACHED_TIMER_COUNT CONFIG_TASK_TIMER_MAX_COUNT
 

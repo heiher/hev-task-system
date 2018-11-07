@@ -8,7 +8,7 @@
  */
 
 #include "hev-task-poll.h"
-#include "hev-task.h"
+#include "kern/task/hev-task.h"
 
 int
 hev_task_poll (HevTaskPollFD fds[], unsigned int nfds, int timeout)

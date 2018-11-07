@@ -18,8 +18,8 @@
 
 #include "hev-task-system.h"
 #include "hev-task-system-private.h"
-#include "hev-memory-allocator-api.h"
-#include "hev-memory-allocator-slice.h"
+#include "mm/api/hev-memory-allocator-api.h"
+#include "mm/slice/hev-memory-allocator-slice.h"
 
 #ifdef ENABLE_PTHREAD
 static pthread_key_t key;

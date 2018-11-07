@@ -9,7 +9,7 @@
 
 #include <string.h>
 
-#include "hev-memory-allocator.h"
+#include "mm/base/hev-memory-allocator.h"
 
 void *
 hev_malloc (size_t size)

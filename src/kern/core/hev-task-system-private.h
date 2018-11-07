@@ -12,11 +12,11 @@
 
 #include <setjmp.h>
 
-#include "hev-task.h"
-#include "hev-task-private.h"
 #include "hev-task-system.h"
-#include "hev-task-timer-manager.h"
-#include "hev-rbtree-cached.h"
+#include "kern/task/hev-task.h"
+#include "kern/task/hev-task-private.h"
+#include "kern/time/hev-task-timer-manager.h"
+#include "lib/rbtree/hev-rbtree-cached.h"
 
 #define HEV_TASK_RUN_SCHEDULER HEV_TASK_YIELD_COUNT
 #define PRIORITY_COUNT (HEV_TASK_PRIORITY_MAX - HEV_TASK_PRIORITY_MIN + 1)

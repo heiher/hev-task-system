@@ -15,7 +15,7 @@
 #endif
 
 #include "hev-memory-allocator.h"
-#include "hev-memory-allocator-simple.h"
+#include "mm/simple/hev-memory-allocator-simple.h"
 
 #ifdef ENABLE_PTHREAD
 static pthread_key_t key;

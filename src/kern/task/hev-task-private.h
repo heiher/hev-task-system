@@ -14,7 +14,7 @@
 #include <setjmp.h>
 
 #include "hev-task.h"
-#include "hev-rbtree.h"
+#include "lib/rbtree/hev-rbtree.h"
 
 typedef struct _HevTaskSchedEntity HevTaskSchedEntity;
 
