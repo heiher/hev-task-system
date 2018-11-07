@@ -228,6 +228,7 @@ hev_task_run (HevTask *self, HevTaskEntry entry, void *data)
     self->entry = entry;
     self->data = data;
     self->priority = self->next_priority;
+    self->schedule_key = self->next_priority;
 
     hev_task_system_run_new_task (self);
 }
