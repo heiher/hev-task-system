@@ -50,6 +50,8 @@ struct _HevMemoryAllocatorSlice
 
 static void *_hev_memory_allocator_alloc (HevMemoryAllocator *self,
                                           size_t size);
+static void *_hev_memory_allocator_realloc (HevMemoryAllocator *self, void *ptr,
+                                            size_t size);
 static void _hev_memory_allocator_free (HevMemoryAllocator *self, void *ptr);
 static void _hev_memory_allocator_destroy (HevMemoryAllocator *self);
 static void _hev_memory_allocator_lru_insert (HevMemoryAllocatorSlice *self,
@@ -69,6 +71,7 @@ hev_memory_allocator_slice_new (void)
 
     allocator->ref_count = 1;
     allocator->alloc = _hev_memory_allocator_alloc;
+    allocator->realloc = _hev_memory_allocator_realloc;
     allocator->free = _hev_memory_allocator_free;
     allocator->destroy = _hev_memory_allocator_destroy;
 
@@ -128,6 +131,38 @@ _hev_memory_allocator_alloc (HevMemoryAllocator *allocator, size_t size)
             return NULL;
 
         slice->owner = owner;
+    }
+
+    return slice + 1;
+}
+
+static void *
+_hev_memory_allocator_realloc (HevMemoryAllocator *allocator, void *ptr,
+                               size_t size)
+{
+    HevMemoryAllocatorSlice *self = (HevMemoryAllocatorSlice *)allocator;
+    HevMemorySlice *slice;
+    size_t index;
+
+    if (0 == size) {
+        _hev_memory_allocator_free (allocator, ptr);
+        return NULL;
+    }
+
+    slice = (HevMemorySlice *)ptr - 1;
+    size = ALIGN_UP (size, CACHED_SLICE_ALIGN);
+    index = size / CACHED_SLICE_ALIGN;
+
+    slice = realloc (slice, sizeof (HevMemorySlice) + size);
+    if (!slice)
+        return NULL;
+
+    switch (index) {
+    case 1 ... MAX_CACHED_SLICE_INDEX:
+        slice->owner = &self->cached_mslices[index - 1];
+        break;
+    default:
+        slice->owner = NULL;
     }
 
     return slice + 1;
