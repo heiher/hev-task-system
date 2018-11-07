@@ -20,21 +20,22 @@ SHARED_TARGET=$(BINDIR)/libhev-task-system.so
 $(SHARED_TARGET) : CCFLAGS+=-fPIC
 $(SHARED_TARGET) : LDFLAGS+=-shared -pthread
 
+-include build.mk
 -include configs.mk
-CCFLAGS+=$(CONFIG_CFLAGS)
+CCFLAGS+=-I$(SRCDIR) $(CONFIG_CFLAGS)
 
-CCOBJS = $(wildcard $(SRCDIR)/*.c)
-ASOBJS = $(wildcard $(SRCDIR)/*.S)
-LDOBJS = $(patsubst $(SRCDIR)%.c,$(BUILDDIR)%.o,$(CCOBJS))
-LDOBJS += $(patsubst $(SRCDIR)%.S,$(BUILDDIR)%.o,$(ASOBJS))
-DEPEND = $(LDOBJS:.o=.dep)
+CCSRCS=$(filter %.c,$(SRCFILES))
+ASSRCS=$(filter %.S,$(SRCFILES))
+LDOBJS=$(patsubst $(SRCDIR)/%.c,$(BUILDDIR)/%.o,$(CCSRCS)) \
+	   $(patsubst $(SRCDIR)/%.S,$(BUILDDIR)/%.o,$(ASSRCS))
+DEPEND=$(LDOBJS:.o=.dep)
 
 BUILDMSG="\e[1;31mBUILD\e[0m $<"
 LINKMSG="\e[1;34mLINK\e[0m  \e[1;32m$@\e[0m"
 CLEANMSG="\e[1;34mCLEAN\e[0m $(PROJECT)"
 
-V :=
-ECHO_PREFIX := @
+V:=
+ECHO_PREFIX:=@
 ifeq ($(V),1)
 	undefine ECHO_PREFIX
 endif
@@ -44,7 +45,7 @@ static : $(STATIC_TARGET)
 shared : $(SHARED_TARGET)
 
 clean : 
-	$(ECHO_PREFIX) $(RM) $(BINDIR)/* $(BUILDDIR)/*
+	$(ECHO_PREFIX) $(RM) -rf $(BINDIR)/* $(BUILDDIR)/*
 	@echo -e $(CLEANMSG)
 
 $(STATIC_TARGET) : $(LDOBJS)
@@ -56,16 +57,20 @@ $(SHARED_TARGET) : $(LDOBJS)
 	@echo -e $(LINKMSG)
 
 $(BUILDDIR)/%.dep : $(SRCDIR)/%.c
+	$(ECHO_PREFIX) mkdir -p $(dir $@)
 	$(ECHO_PREFIX) $(PP) $(CCFLAGS) -MM -MT $(@:.dep=.o) -o $@ $<
 
 $(BUILDDIR)/%.dep : $(SRCDIR)/%.S
+	$(ECHO_PREFIX) mkdir -p $(dir $@)
 	$(ECHO_PREFIX) $(PP) $(CCFLAGS) -MM -MT $(@:.dep=.o) -o $@ $<
 
 $(BUILDDIR)/%.o : $(SRCDIR)/%.c
+	$(ECHO_PREFIX) mkdir -p $(dir $@)
 	$(ECHO_PREFIX) $(CC) $(CCFLAGS) -c -o $@ $<
 	@echo -e $(BUILDMSG)
 
 $(BUILDDIR)/%.o : $(SRCDIR)/%.S
+	$(ECHO_PREFIX) mkdir -p $(dir $@)
 	$(ECHO_PREFIX) $(CC) $(CCFLAGS) -c -o $@ $<
 	@echo -e $(BUILDMSG)
 
