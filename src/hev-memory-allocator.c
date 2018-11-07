@@ -7,6 +7,7 @@
  ============================================================================
  */
 
+#include <stdlib.h>
 #include <string.h>
 
 #ifdef ENABLE_PTHREAD
@@ -14,7 +15,7 @@
 #endif
 
 #include "hev-memory-allocator.h"
-#include "hev-memory-allocator-interface.h"
+#include "hev-memory-allocator-simple.h"
 
 #ifdef ENABLE_PTHREAD
 static pthread_key_t key;
@@ -24,10 +25,6 @@ static void pthread_key_creator (void);
 #else
 static HevMemoryAllocator *default_allocator;
 #endif
-
-static void *_hev_memory_allocator_alloc (HevMemoryAllocator *self,
-                                          size_t size);
-static void _hev_memory_allocator_free (HevMemoryAllocator *self, void *ptr);
 
 HevMemoryAllocator *
 hev_memory_allocator_default (void)
@@ -39,12 +36,12 @@ hev_memory_allocator_default (void)
 
     default_allocator = pthread_getspecific (key);
     if (!default_allocator) {
-        default_allocator = hev_memory_allocator_new ();
+        default_allocator = hev_memory_allocator_simple_new ();
         pthread_setspecific (key, default_allocator);
     }
 #else
     if (!default_allocator)
-        default_allocator = hev_memory_allocator_new ();
+        default_allocator = hev_memory_allocator_simple_new ();
 #endif
 
     return default_allocator;
@@ -66,23 +63,6 @@ hev_memory_allocator_set_default (HevMemoryAllocator *allocator)
 #endif
 
     return old_allocator;
-}
-
-HevMemoryAllocator *
-hev_memory_allocator_new (void)
-{
-    HevMemoryAllocator *self = NULL;
-
-    self = malloc (sizeof (HevMemoryAllocator));
-    if (!self)
-        return NULL;
-
-    self->ref_count = 1;
-    self->alloc = _hev_memory_allocator_alloc;
-    self->free = _hev_memory_allocator_free;
-    self->destroy = NULL;
-
-    return self;
 }
 
 HevMemoryAllocator *
@@ -112,47 +92,14 @@ pthread_key_creator (void)
 }
 #endif
 
-static void *
-_hev_memory_allocator_alloc (HevMemoryAllocator *self, size_t size)
-{
-    return malloc (size);
-}
-
 void *
 hev_memory_allocator_alloc (HevMemoryAllocator *self, size_t size)
 {
     return self->alloc (self, size);
 }
 
-static void
-_hev_memory_allocator_free (HevMemoryAllocator *self, void *ptr)
-{
-    free (ptr);
-}
-
 void
 hev_memory_allocator_free (HevMemoryAllocator *self, void *ptr)
 {
     return self->free (self, ptr);
-}
-
-void *
-hev_malloc (size_t size)
-{
-    return HEV_MEMORY_ALLOCATOR_ALLOC (size);
-}
-
-void *
-hev_malloc0 (size_t size)
-{
-    void *data = HEV_MEMORY_ALLOCATOR_ALLOC (size);
-    if (data)
-        memset (data, 0, size);
-    return data;
-}
-
-void
-hev_free (void *ptr)
-{
-    HEV_MEMORY_ALLOCATOR_FREE (ptr);
 }
