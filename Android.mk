@@ -1,4 +1,4 @@
-# Copyright (C) 2017 The Android Open Source Project
+# Copyright (C) 2018 The Android Open Source Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,27 +14,16 @@
 #
 
 LOCAL_PATH := $(call my-dir)
+SRCDIR := $(LOCAL_PATH)/src
 
 include $(CLEAR_VARS)
-LOCAL_MODULE    := libhev-task-system
-LOCAL_SRC_FILES := \
-	src/hev-memory-allocator.c \
-	src/hev-memory-allocator-api.c \
-	src/hev-memory-allocator-slice.c \
-	src/hev-memory-allocator-simple.c \
-	src/hev-rbtree.c \
-	src/hev-rbtree-cached.c \
-	src/hev-task.c \
-	src/hev-task-poll.c \
-	src/hev-task-execute.S \
-	src/hev-task-executer.c \
-	src/hev-task-system.c \
-	src/hev-task-system-schedule.c \
-	src/hev-task-timer-manager.c
+include $(LOCAL_PATH)/build.mk
 include $(LOCAL_PATH)/configs.mk
+LOCAL_MODULE    := libhev-task-system
+LOCAL_SRC_FILES := $(patsubst $(SRCDIR)/%,src/%,$(SRCFILES))
+LOCAL_C_INCLUDES := $(SRCDIR)
 LOCAL_CFLAGS += $(CONFIG_CFLAGS)
 ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
 LOCAL_CFLAGS += -mfpu=neon
 endif
 include $(BUILD_STATIC_LIBRARY)
-
