@@ -1,1 +1,1 @@
-../src/hev-memory-allocator-api.h
+../src/mm/api/hev-memory-allocator-api.h
