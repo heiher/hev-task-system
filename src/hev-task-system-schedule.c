@@ -212,12 +212,14 @@ hev_task_system_pick_current_task (HevTaskSystemContext *ctx)
 {
     HevRBTreeNode *node;
 
-    if (ctx->running_task_count) {
-        hev_task_system_io_poll (ctx, 0);
-    } else {
-        do {
-            hev_task_system_io_poll (ctx, -1);
-        } while (!ctx->running_task_count);
+    if (ctx->running_task_count < ctx->total_task_count) {
+        if (ctx->running_task_count) {
+            hev_task_system_io_poll (ctx, 0);
+        } else {
+            do {
+                hev_task_system_io_poll (ctx, -1);
+            } while (!ctx->running_task_count);
+        }
     }
 
     node = hev_rbtree_cached_first (&ctx->running_tasks);
