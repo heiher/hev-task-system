@@ -125,9 +125,10 @@ hev_task_system_wakeup_task_with_context (HevTaskSystemContext *ctx,
 }
 
 static inline void
-_hev_task_system_insert_task (HevRBTree *tree, HevTask *task)
+_hev_task_system_insert_task (HevRBTreeCached *tree, HevTask *task)
 {
-    HevRBTreeNode **new = &tree->root, *parent = NULL;
+    HevRBTreeNode **new = &tree->base.root, *parent = NULL;
+    int leftmost = 1;
 
     while (*new) {
         HevTask *this = container_of (*new, HevTask, node);
@@ -137,16 +138,19 @@ _hev_task_system_insert_task (HevRBTree *tree, HevTask *task)
             new = &((*new)->left);
         } else if (task->schedule_key > this->schedule_key) {
             new = &((*new)->right);
+            leftmost = 0;
         } else {
-            if (task < this)
+            if (task < this) {
                 new = &((*new)->left);
-            else
+            } else {
                 new = &((*new)->right);
+                leftmost = 0;
+            }
         }
     }
 
     hev_rbtree_node_link (&task->node, parent, new);
-    hev_rbtree_insert_color (tree, &task->node);
+    hev_rbtree_cached_insert_color (tree, &task->node, leftmost);
 }
 
 static inline void
@@ -168,7 +172,7 @@ hev_task_system_remove_current_task (HevTaskSystemContext *ctx,
 
     task->state = state;
 
-    hev_rbtree_erase (&ctx->running_tasks, &task->node);
+    hev_rbtree_cached_erase (&ctx->running_tasks, &task->node);
 
     ctx->running_task_count--;
 
@@ -185,7 +189,7 @@ hev_task_system_reinsert_current_task (HevTaskSystemContext *ctx)
 
     task->priority = task->next_priority;
 
-    hev_rbtree_erase (&ctx->running_tasks, &task->node);
+    hev_rbtree_cached_erase (&ctx->running_tasks, &task->node);
     _hev_task_system_insert_task (&ctx->running_tasks, task);
 }
 
@@ -217,6 +221,6 @@ hev_task_system_pick_current_task (HevTaskSystemContext *ctx)
         } while (!ctx->running_task_count);
     }
 
-    node = hev_rbtree_first (&ctx->running_tasks);
+    node = hev_rbtree_cached_first (&ctx->running_tasks);
     ctx->current_task = container_of (node, HevTask, node);
 }

@@ -16,7 +16,7 @@
 #include "hev-task-private.h"
 #include "hev-task-system.h"
 #include "hev-task-timer-manager.h"
-#include "hev-rbtree.h"
+#include "hev-rbtree-cached.h"
 
 #define HEV_TASK_RUN_SCHEDULER HEV_TASK_YIELD_COUNT
 #define PRIORITY_COUNT (HEV_TASK_PRIORITY_MAX - HEV_TASK_PRIORITY_MIN + 1)
@@ -32,7 +32,7 @@ struct _HevTaskSystemContext
     HevTaskTimerManager *timer_manager;
 
     HevTask *current_task;
-    HevRBTree running_tasks;
+    HevRBTreeCached running_tasks;
 
     jmp_buf kernel_context;
 };
