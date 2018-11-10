@@ -10,6 +10,7 @@
 #ifndef __HEV_TASK_SYSTEM_PRIVATE_H__
 #define __HEV_TASK_SYSTEM_PRIVATE_H__
 
+#include <time.h>
 #include <setjmp.h>
 
 #include "hev-task-system.h"
@@ -33,6 +34,8 @@ struct _HevTaskSystemContext
 
     HevTask *current_task;
     HevRBTreeCached running_tasks;
+
+    struct timespec sched_time;
 
     jmp_buf kernel_context;
 };

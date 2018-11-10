@@ -21,6 +21,9 @@
 #include "kern/task/hev-task-executer.h"
 
 static inline void
+hev_task_system_update_sched_time (HevTaskSystemContext *ctx);
+static inline void hev_task_system_update_sched_key (HevTaskSystemContext *ctx);
+static inline void
 hev_task_system_wakeup_task_with_context (HevTaskSystemContext *ctx,
                                           HevTask *task);
 static inline void hev_task_system_insert_task (HevTaskSystemContext *ctx,
@@ -44,12 +47,14 @@ hev_task_system_schedule (HevTaskYieldType type)
     if (type == HEV_TASK_RUN_SCHEDULER) {
         switch (setjmp (ctx->kernel_context)) {
         case 1:
+            hev_task_system_update_sched_key (ctx);
             hev_task_system_reinsert_current_task (ctx);
             break;
         case 2:
             hev_task_system_remove_current_task (ctx, HEV_TASK_STOPPED);
             break;
         case 3:
+            hev_task_system_update_sched_key (ctx);
             hev_task_system_remove_current_task (ctx, HEV_TASK_WAITING);
             break;
         }
@@ -65,8 +70,8 @@ hev_task_system_schedule (HevTaskYieldType type)
     /* pick a task */
     hev_task_system_pick_current_task (ctx);
 
-    /* update schedule key */
-    ctx->current_task->schedule_key += ctx->current_task->priority;
+    /* update schedule time */
+    hev_task_system_update_sched_time (ctx);
 
     /* switch to task */
     longjmp (ctx->current_task->context, 1);
@@ -100,6 +105,10 @@ hev_task_system_run_new_task (HevTask *task)
 
     hev_task_execute (task, hev_task_executer);
 
+    /* Copy current task's schedule key */
+    if (ctx->current_task)
+        task->schedule_key += ctx->current_task->schedule_key;
+
     hev_task_system_insert_task (ctx, task);
     ctx->total_task_count++;
 }
@@ -112,6 +121,41 @@ hev_task_system_kill_current_task (void)
     /* NOTE: remove current task in kernel context, because current
      * task stack may be freed. */
     longjmp (ctx->kernel_context, 2);
+}
+
+static inline void
+hev_task_system_get_clock_time (struct timespec *ts)
+{
+    if (-1 == clock_gettime (CLOCK_MONOTONIC, ts))
+        abort ();
+}
+
+static inline void
+hev_task_system_update_sched_time (HevTaskSystemContext *ctx)
+{
+    hev_task_system_get_clock_time (&ctx->sched_time);
+}
+
+static inline void
+hev_task_system_update_sched_key (HevTaskSystemContext *ctx)
+{
+    HevTask *curr_task = ctx->current_task;
+    struct timespec curr_time;
+    uint64_t runtime;
+    time_t sec;
+    long nsec;
+
+    hev_task_system_get_clock_time (&curr_time);
+
+    sec = curr_time.tv_sec - ctx->sched_time.tv_sec;
+    nsec = curr_time.tv_nsec - ctx->sched_time.tv_nsec;
+    if (nsec < 0) {
+        sec--;
+        nsec += 1000000000L;
+    }
+
+    runtime = (uint64_t)sec * 1000000000UL + nsec;
+    curr_task->schedule_key += runtime * curr_task->priority;
 }
 
 static inline void
