@@ -10,6 +10,10 @@
 #ifndef __HEV_TASK_SYSTEM_H__
 #define __HEV_TASK_SYSTEM_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * hev_task_system_init:
  *
@@ -38,5 +42,9 @@ void hev_task_system_fini (void);
  * Since: 1.0
  */
 void hev_task_system_run (void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __HEV_TASK_SYSTEM_H__ */
