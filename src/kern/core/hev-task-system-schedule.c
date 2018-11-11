@@ -126,7 +126,7 @@ hev_task_system_kill_current_task (void)
 static inline void
 hev_task_system_get_clock_time (struct timespec *ts)
 {
-    if (-1 == clock_gettime (CLOCK_MONOTONIC, ts))
+    if (-1 == clock_gettime (CONFIG_SCHED_CLOCK, ts))
         abort ();
 }
 
