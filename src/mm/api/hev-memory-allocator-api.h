@@ -12,6 +12,10 @@
 
 #include <stddef.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * hev_malloc:
  * @size: bytes
@@ -59,5 +63,9 @@ void *hev_realloc (void *ptr, size_t size);
  * Since: 1.0
  */
 void hev_free (void *ptr);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __HEV_MEMORY_ALLOCATOR_API_H__ */
