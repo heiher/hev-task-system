@@ -12,6 +12,10 @@
 
 #include <poll.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct pollfd HevTaskPollFD;
 
 /**
@@ -29,5 +33,9 @@ typedef struct pollfd HevTaskPollFD;
  * Since: 1.2
  */
 int hev_task_poll (HevTaskPollFD fds[], unsigned int nfds, int timeout);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __HEV_TASK_POLL_H__ */
