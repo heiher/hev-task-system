@@ -10,6 +10,10 @@
 #ifndef __HEV_TASK_IO_SOCKET_H__
 #define __HEV_TASK_IO_SOCKET_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * hev_task_io_socket_connect:
  * @fd: a file descriptor
@@ -183,5 +187,9 @@ ssize_t hev_task_io_socket_recvmsg (int fd, struct msghdr *msg, int flags,
 ssize_t hev_task_io_socket_sendmsg (int fd, const struct msghdr *msg, int flags,
                                     HevTaskIOYielder yielder,
                                     void *yielder_data);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __HEV_TASK_IO_SOCKET_H__ */
