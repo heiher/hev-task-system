@@ -12,6 +12,10 @@
 
 #include <sys/epoll.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define HEV_TASK_PRIORITY_MIN (0)
 #define HEV_TASK_PRIORITY_MAX (15)
 
@@ -22,8 +26,6 @@
 #define HEV_TASK_PRIORITY_REALTIME (0)
 
 typedef struct _HevTask HevTask;
-typedef enum _HevTaskState HevTaskState;
-typedef enum _HevTaskYieldType HevTaskYieldType;
 typedef void (*HevTaskEntry) (void *data);
 
 /**
@@ -34,12 +36,12 @@ typedef void (*HevTaskEntry) (void *data);
  *
  * Since: 1.0
  */
-enum _HevTaskState
+typedef enum
 {
     HEV_TASK_STOPPED,
     HEV_TASK_RUNNING,
     HEV_TASK_WAITING,
-};
+} HevTaskState;
 
 /**
  * HevTaskYieldType:
@@ -49,12 +51,12 @@ enum _HevTaskState
  *
  * Since: 1.0
  */
-enum _HevTaskYieldType
+typedef enum
 {
     HEV_TASK_YIELD,
     HEV_TASK_WAITIO,
     HEV_TASK_YIELD_COUNT,
-};
+} HevTaskYieldType;
 
 /**
  * hev_task_new:
@@ -253,5 +255,9 @@ void hev_task_run (HevTask *self, HevTaskEntry entry, void *data);
  * Since: 1.4
  */
 void hev_task_exit (void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __HEV_TASK_H__ */
