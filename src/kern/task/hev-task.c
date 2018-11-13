@@ -42,7 +42,7 @@ hev_task_new (int stack_size)
     if (stack_size == -1)
         stack_size = HEV_TASK_STACK_SIZE;
 
-    self->stack = hev_malloc0 (stack_size);
+    self->stack = hev_malloc (stack_size);
     if (!self->stack) {
         hev_free (self);
         return NULL;
