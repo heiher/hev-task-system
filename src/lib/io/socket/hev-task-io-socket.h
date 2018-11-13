@@ -10,6 +10,8 @@
 #ifndef __HEV_TASK_IO_SOCKET_H__
 #define __HEV_TASK_IO_SOCKET_H__
 
+#include <sys/socket.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
