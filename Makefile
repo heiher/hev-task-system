@@ -74,4 +74,6 @@ $(BUILDDIR)/%.o : $(SRCDIR)/%.S
 	$(ECHO_PREFIX) $(CC) $(CCFLAGS) -c -o $@ $<
 	@echo -e $(BUILDMSG)
 
+ifneq ($(MAKECMDGOALS),clean)
 -include $(DEPEND)
+endif
