@@ -35,6 +35,27 @@ retry:
 }
 
 ssize_t
+hev_task_io_readv (int fd, const struct iovec *iov, int iovcnt,
+                   HevTaskIOYielder yielder, void *yielder_data)
+{
+    ssize_t s;
+
+retry:
+    s = readv (fd, iov, iovcnt);
+    if (s == -1 && errno == EAGAIN) {
+        if (yielder) {
+            if (yielder (HEV_TASK_WAITIO, yielder_data))
+                return -2;
+        } else {
+            hev_task_yield (HEV_TASK_WAITIO);
+        }
+        goto retry;
+    }
+
+    return s;
+}
+
+ssize_t
 hev_task_io_write (int fd, const void *buf, size_t count,
                    HevTaskIOYielder yielder, void *yielder_data)
 {
@@ -42,6 +63,27 @@ hev_task_io_write (int fd, const void *buf, size_t count,
 
 retry:
     s = write (fd, buf, count);
+    if (s == -1 && errno == EAGAIN) {
+        if (yielder) {
+            if (yielder (HEV_TASK_WAITIO, yielder_data))
+                return -2;
+        } else {
+            hev_task_yield (HEV_TASK_WAITIO);
+        }
+        goto retry;
+    }
+
+    return s;
+}
+
+ssize_t
+hev_task_io_writev (int fd, const struct iovec *iov, int iovcnt,
+                    HevTaskIOYielder yielder, void *yielder_data)
+{
+    ssize_t s;
+
+retry:
+    s = writev (fd, iov, iovcnt);
     if (s == -1 && errno == EAGAIN) {
         if (yielder) {
             if (yielder (HEV_TASK_WAITIO, yielder_data))

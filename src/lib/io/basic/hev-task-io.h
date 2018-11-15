@@ -10,6 +10,8 @@
 #ifndef __HEV_TASK_IO_H__
 #define __HEV_TASK_IO_H__
 
+#include <sys/uio.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -35,6 +37,27 @@ ssize_t hev_task_io_read (int fd, void *buf, size_t count,
                           HevTaskIOYielder yielder, void *yielder_data);
 
 /**
+ * hev_task_io_readv:
+ * @fd: a file descriptor
+ * @iov: io vector
+ * @iovcnt: io vector count
+ * @yielder: a #HevTaskIOYielder
+ * @yielder_data: user data
+ *
+ * The readv function shall be equivalent to read, except as described below.
+ * The readv function shall place the input data into the iovcnt buffers
+ * specified by the members of the iov array: iov[0], iov[1], ...,
+ * iov[iov-cnt-1]. The iovcnt argument is valid if greater than 0 and less than
+ * or equal to {IOV_MAX}.
+ *
+ * Returns: the number of bytes actually read
+ *
+ * Since: 3.3.3
+ */
+ssize_t hev_task_io_readv (int fd, const struct iovec *iov, int iovcnt,
+                           HevTaskIOYielder yielder, void *yielder_data);
+
+/**
  * hev_task_io_write:
  * @fd: a file descriptor
  * @buf: buffer
@@ -51,6 +74,27 @@ ssize_t hev_task_io_read (int fd, void *buf, size_t count,
  */
 ssize_t hev_task_io_write (int fd, const void *buf, size_t count,
                            HevTaskIOYielder yielder, void *yielder_data);
+
+/**
+ * hev_task_io_writev:
+ * @fd: a file descriptor
+ * @iov: io vector
+ * @iovcnt: io vector count
+ * @yielder: a #HevTaskIOYielder
+ * @yielder_data: user data
+ *
+ * The writev function shall be equaivalent to write, except as decribed below.
+ * The writev function shall gather output data from the iovcnt buffers
+ * specified by the members of the iov array: iov[0], iov[1], ...,
+ * iov[iovcnt-1]. The iovcnt argument is valid if greater than 0 and less than
+ * or equal to {IOV_MAX}, as defined in <limits.h>.
+ *
+ * Returns: the number of bytes actually write
+ *
+ * Since: 3.3.3
+ */
+ssize_t hev_task_io_writev (int fd, const struct iovec *iov, int iovcnt,
+                            HevTaskIOYielder yielder, void *yielder_data);
 
 /**
  * hev_task_io_splice:
