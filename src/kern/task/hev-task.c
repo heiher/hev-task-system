@@ -238,3 +238,9 @@ hev_task_exit (void)
 {
     hev_task_system_kill_current_task ();
 }
+
+void *
+hev_task_get_data (HevTask *self)
+{
+    return self->data;
+}

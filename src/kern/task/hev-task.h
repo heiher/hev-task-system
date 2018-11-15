@@ -256,6 +256,18 @@ void hev_task_run (HevTask *self, HevTaskEntry entry, void *data);
  */
 void hev_task_exit (void);
 
+/**
+ * hev_task_get_data:
+ * @self: a #HevTask
+ *
+ * Get the user data of a task that set by run.
+ *
+ * Returns: current data of task.
+ *
+ * Since: 3.3.4
+ */
+void *hev_task_get_data (HevTask *self);
+
 #ifdef __cplusplus
 }
 #endif
