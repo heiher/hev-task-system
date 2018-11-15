@@ -107,7 +107,7 @@ hev_task_system_run_new_task (HevTask *task)
 
     /* Copy current task's schedule key */
     if (ctx->current_task)
-        task->schedule_key += ctx->current_task->schedule_key;
+        task->sched_key += ctx->current_task->sched_key;
 
     hev_task_system_insert_task (ctx, task);
     ctx->total_task_count++;
@@ -155,7 +155,7 @@ hev_task_system_update_sched_key (HevTaskSystemContext *ctx)
     }
 
     runtime = (uint64_t)sec * 1000000000UL + nsec;
-    curr_task->schedule_key += runtime * curr_task->priority;
+    curr_task->sched_key += runtime * curr_task->priority;
 }
 
 static inline void
@@ -179,9 +179,9 @@ _hev_task_system_insert_task (HevRBTreeCached *tree, HevTask *task)
         HevTask *this = container_of (*new, HevTask, node);
 
         parent = *new;
-        if (task->schedule_key < this->schedule_key) {
+        if (task->sched_key < this->sched_key) {
             new = &((*new)->left);
-        } else if (task->schedule_key > this->schedule_key) {
+        } else if (task->sched_key > this->sched_key) {
             new = &((*new)->right);
             leftmost = 0;
         } else {
