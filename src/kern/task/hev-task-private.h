@@ -29,9 +29,8 @@ struct _HevTask
     HevTaskEntry entry;
     void *data;
 
+    uint64_t sched_key;
     HevRBTreeNode node;
-    uint64_t schedule_key;
-
     HevTaskSchedEntity sched_entity;
 
     void *stack;
