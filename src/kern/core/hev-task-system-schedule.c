@@ -176,7 +176,7 @@ _hev_task_system_insert_task (HevRBTreeCached *tree, HevTask *task)
     int leftmost = 1;
 
     while (*new) {
-        HevTask *this = container_of (*new, HevTask, node);
+        HevTask *this = container_of (*new, HevTask, sched_node);
 
         parent = *new;
         if (task->sched_key < this->sched_key) {
@@ -194,8 +194,8 @@ _hev_task_system_insert_task (HevRBTreeCached *tree, HevTask *task)
         }
     }
 
-    hev_rbtree_node_link (&task->node, parent, new);
-    hev_rbtree_cached_insert_color (tree, &task->node, leftmost);
+    hev_rbtree_node_link (&task->sched_node, parent, new);
+    hev_rbtree_cached_insert_color (tree, &task->sched_node, leftmost);
 }
 
 static inline void
@@ -217,7 +217,7 @@ hev_task_system_remove_current_task (HevTaskSystemContext *ctx,
 
     task->state = state;
 
-    hev_rbtree_cached_erase (&ctx->running_tasks, &task->node);
+    hev_rbtree_cached_erase (&ctx->running_tasks, &task->sched_node);
 
     ctx->running_task_count--;
 
@@ -234,7 +234,7 @@ hev_task_system_reinsert_current_task (HevTaskSystemContext *ctx)
 
     task->priority = task->next_priority;
 
-    hev_rbtree_cached_erase (&ctx->running_tasks, &task->node);
+    hev_rbtree_cached_erase (&ctx->running_tasks, &task->sched_node);
     _hev_task_system_insert_task (&ctx->running_tasks, task);
 }
 
@@ -256,7 +256,7 @@ hev_task_system_io_poll (HevTaskSystemContext *ctx, int timeout)
 static inline void
 hev_task_system_pick_current_task (HevTaskSystemContext *ctx)
 {
-    HevRBTreeNode *node;
+    HevRBTreeNode *sched_node;
 
     if (ctx->running_task_count < ctx->total_task_count) {
         if (ctx->running_task_count) {
@@ -268,6 +268,6 @@ hev_task_system_pick_current_task (HevTaskSystemContext *ctx)
         }
     }
 
-    node = hev_rbtree_cached_first (&ctx->running_tasks);
-    ctx->current_task = container_of (node, HevTask, node);
+    sched_node = hev_rbtree_cached_first (&ctx->running_tasks);
+    ctx->current_task = container_of (sched_node, HevTask, sched_node);
 }
