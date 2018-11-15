@@ -30,7 +30,7 @@ struct _HevTask
     void *data;
 
     uint64_t sched_key;
-    HevRBTreeNode node;
+    HevRBTreeNode sched_node;
     HevTaskSchedEntity sched_entity;
 
     void *stack;
