@@ -2,7 +2,7 @@
  ============================================================================
  Name        : echo-server.c
  Author      : Heiher <r@hev.cc>
- Copyright   : Copyright (c) 2017 everyone.
+ Copyright   : Copyright (c) 2017 - 2018 everyone.
  Description :
  ============================================================================
  */
@@ -18,74 +18,26 @@
 
 #include <hev-task.h>
 #include <hev-task-system.h>
-
-static int
-task_socket_accept (int fd, struct sockaddr *restrict addr,
-                    socklen_t *restrict addr_len)
-{
-    int new_fd;
-retry:
-    new_fd = accept (fd, addr, addr_len);
-    if (new_fd == -1 && errno == EAGAIN) {
-        hev_task_yield (HEV_TASK_WAITIO);
-        goto retry;
-    }
-
-    return new_fd;
-}
-
-static ssize_t
-task_socket_recv (int fd, void *buf, size_t len, int flags)
-{
-    ssize_t size;
-
-retry:
-    size = recv (fd, buf, len, flags);
-    if (size == -1 && errno == EAGAIN) {
-        hev_task_yield (HEV_TASK_WAITIO);
-        goto retry;
-    }
-
-    return size;
-}
-
-static ssize_t
-task_socket_send (int fd, const void *buf, size_t len, int flags)
-{
-    ssize_t size;
-
-retry:
-    size = send (fd, buf, len, flags);
-    if (size == -1 && errno == EAGAIN) {
-        hev_task_yield (HEV_TASK_WAITIO);
-        goto retry;
-    }
-
-    return size;
-}
+#include <hev-task-io.h>
+#include <hev-task-io-socket.h>
 
 static void
 task_client_entry (void *data)
 {
     int fd = (intptr_t)data;
     char buf[2048];
-    ssize_t size, s, c = 0;
+    ssize_t size;
 
-    size = task_socket_recv (fd, buf, 2048, 0);
+    size = hev_task_io_socket_recv (fd, buf, 2048, 0, NULL, NULL);
     if (size == -1) {
         printf ("Receive failed!\n");
         goto quit;
     }
 
-retry:
-    s = task_socket_send (fd, buf + c, size - c, 0);
-    if (s == -1) {
+    size = hev_task_io_socket_send (fd, buf, size, MSG_WAITALL, NULL, NULL);
+    if (size == -1) {
         printf ("Send failed!\n");
         goto quit;
-    } else {
-        c += s;
-        if (c < size)
-            goto retry;
     }
 
 quit:
@@ -141,14 +93,14 @@ task_listener_entry (void *data)
     while (1) {
         int client_fd;
         struct sockaddr *in_addr = (struct sockaddr *)&addr;
-        socklen_t addr_len;
+        socklen_t addr_len = sizeof (addr);
 
-    retry:
-        addr_len = sizeof (addr);
-        client_fd = task_socket_accept (fd, in_addr, &addr_len);
-        if (-1 == client_fd) {
+        for (;;) {
+            client_fd =
+                hev_task_io_socket_accept (fd, in_addr, &addr_len, NULL, NULL);
+            if (-1 != client_fd)
+                break;
             printf ("Accept failed!\n");
-            goto retry;
         }
 
         printf ("New client %d enter from %s:%u\n", client_fd,
