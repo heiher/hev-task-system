@@ -34,6 +34,20 @@ typedef int (*HevTaskIOYielder) (HevTaskYieldType type, void *data);
 int hev_task_io_open (const char *pathname, int flags, ...);
 
 /**
+ * hev_task_io_creat:
+ * @pathname: file path name
+ * @mode: mode
+ *
+ * A call to creat is equivalent to calling open with flags equal to O_CREAT |
+ * O_WRONLY | O_TRUNC.
+ *
+ * Returns: the new file descriptor, or -1 if an error occurred.
+ *
+ * Since: 3.3.5
+ */
+int hev_task_io_creat (const char *pathname, mode_t mode);
+
+/**
  * hev_task_io_read:
  * @fd: a file descriptor
  * @buf: buffer

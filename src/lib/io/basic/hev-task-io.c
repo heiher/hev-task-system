@@ -36,6 +36,12 @@ hev_task_io_open (const char *pathname, int flags, ...)
     return open (pathname, flags);
 }
 
+int
+hev_task_io_creat (const char *pathname, mode_t mode)
+{
+    return hev_task_io_open (pathname, O_CREAT | O_WRONLY | O_TRUNC, mode);
+}
+
 ssize_t
 hev_task_io_read (int fd, void *buf, size_t count, HevTaskIOYielder yielder,
                   void *yielder_data)
