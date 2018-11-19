@@ -48,6 +48,21 @@ int hev_task_io_open (const char *pathname, int flags, ...);
 int hev_task_io_creat (const char *pathname, mode_t mode);
 
 /**
+ * hev_task_io_openat:
+ * @dirfd: file descriptor
+ * @pathname: file path name
+ * @flags: flags
+ *
+ * The openat function operates in exactly the same way as open, except for the
+ * differences described openat(2).
+ *
+ * Returns: the new file descriptor, or -1 if an error occurred.
+ *
+ * Since: 3.3.5
+ */
+int hev_task_io_openat (int dirfd, const char *pathname, int flags, ...);
+
+/**
  * hev_task_io_read:
  * @fd: a file descriptor
  * @buf: buffer

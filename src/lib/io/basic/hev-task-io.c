@@ -42,6 +42,25 @@ hev_task_io_creat (const char *pathname, mode_t mode)
     return hev_task_io_open (pathname, O_CREAT | O_WRONLY | O_TRUNC, mode);
 }
 
+int
+hev_task_io_openat (int dirfd, const char *pathname, int flags, ...)
+{
+    flags |= O_NONBLOCK;
+
+    if (O_CREAT & flags) {
+        int fd;
+        va_list ap;
+
+        va_start (ap, flags);
+        fd = openat (dirfd, pathname, flags, va_arg (ap, mode_t));
+        va_end (ap);
+
+        return fd;
+    }
+
+    return openat (dirfd, pathname, flags);
+}
+
 ssize_t
 hev_task_io_read (int fd, void *buf, size_t count, HevTaskIOYielder yielder,
                   void *yielder_data)
