@@ -19,6 +19,21 @@ extern "C" {
 typedef int (*HevTaskIOYielder) (HevTaskYieldType type, void *data);
 
 /**
+ * hev_task_io_open:
+ * @pathname: file path name
+ * @flags: flags
+ *
+ * The open function opens the file specified by @pathname. If the specified
+ * file does not exist, it may optionally (if O_CREAT is specified in @flags) be
+ * created by open.
+ *
+ * Returns: the new file descriptor, or -1 if an error occurred.
+ *
+ * Since: 3.3.5
+ */
+int hev_task_io_open (const char *pathname, int flags, ...);
+
+/**
  * hev_task_io_read:
  * @fd: a file descriptor
  * @buf: buffer

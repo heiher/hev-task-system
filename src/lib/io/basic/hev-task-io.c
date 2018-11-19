@@ -9,9 +9,32 @@
 
 #include <errno.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <stdarg.h>
 
 #include "kern/task/hev-task.h"
 #include "hev-task-io.h"
+
+int
+hev_task_io_open (const char *pathname, int flags, ...)
+{
+    flags |= O_NONBLOCK;
+
+    if (O_CREAT & flags) {
+        int fd;
+        va_list ap;
+
+        va_start (ap, flags);
+        fd = open (pathname, flags, va_arg (ap, mode_t));
+        va_end (ap);
+
+        return fd;
+    }
+
+    return open (pathname, flags);
+}
 
 ssize_t
 hev_task_io_read (int fd, void *buf, size_t count, HevTaskIOYielder yielder,
