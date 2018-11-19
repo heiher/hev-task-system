@@ -33,6 +33,24 @@ extern "C" {
 int hev_task_io_socket_socket (int domain, int type, int protocol);
 
 /**
+ * hev_task_io_socket_socketpair:
+ * @domain: the communications domain
+ * @type: the type of socket
+ * @protocol: a particular protocol to be used with the socket
+ * @socket_vector: the file descriptors of the created socket pair
+ *
+ * The socketpair function shall create an unbound pair of connected sockets in
+ * a specified @domain, of a specified @type, under the protocol optionally
+ * specified by the @protocol augument.
+ *
+ * Returns: the status of create.
+ *
+ * Since: 3.3.5
+ */
+int hev_task_io_socket_socketpair (int domain, int type, int protocol,
+                                   int socket_vector[2]);
+
+/**
  * hev_task_io_socket_connect:
  * @fd: a file descriptor
  * @addr: socket address

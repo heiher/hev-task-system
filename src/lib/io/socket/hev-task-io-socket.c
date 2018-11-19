@@ -34,6 +34,30 @@ hev_task_io_socket_socket (int domain, int type, int protocol)
 }
 
 int
+hev_task_io_socket_socketpair (int domain, int type, int protocol,
+                               int socket_vector[2])
+{
+    int nonblock = 1;
+
+    if (0 > socketpair (domain, type, protocol, socket_vector))
+        return -1;
+
+    if (0 > ioctl (socket_vector[0], FIONBIO, (char *)&nonblock)) {
+        close (socket_vector[0]);
+        close (socket_vector[1]);
+        return -2;
+    }
+
+    if (0 > ioctl (socket_vector[1], FIONBIO, (char *)&nonblock)) {
+        close (socket_vector[0]);
+        close (socket_vector[1]);
+        return -3;
+    }
+
+    return 0;
+}
+
+int
 hev_task_io_socket_connect (int fd, const struct sockaddr *addr,
                             socklen_t addr_len, HevTaskIOYielder yielder,
                             void *yielder_data)
