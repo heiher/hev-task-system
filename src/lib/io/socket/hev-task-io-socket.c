@@ -8,11 +8,30 @@
  */
 
 #include <errno.h>
+#include <unistd.h>
 #include <sys/socket.h>
+#include <sys/ioctl.h>
 
 #include "kern/task/hev-task.h"
 #include "lib/io/basic/hev-task-io.h"
 #include "hev-task-io-socket.h"
+
+int
+hev_task_io_socket_socket (int domain, int type, int protocol)
+{
+    int fd, nonblock = 1;
+
+    fd = socket (domain, type, protocol);
+    if (0 > fd)
+        return fd;
+
+    if (0 > ioctl (fd, FIONBIO, (char *)&nonblock)) {
+        close (fd);
+        return -2;
+    }
+
+    return fd;
+}
 
 int
 hev_task_io_socket_connect (int fd, const struct sockaddr *addr,

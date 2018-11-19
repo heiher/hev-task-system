@@ -17,6 +17,22 @@ extern "C" {
 #endif
 
 /**
+ * hev_task_io_socket_socket:
+ * @domain: the communications domain
+ * @type: the type of socket
+ * @protocol: a particular protocol to be used with the socket
+ *
+ * The socket function shall create an unbound socket in a communications
+ * domain, and return a file descriptor that can be used in later function calls
+ * that operate on sockets.
+ *
+ * Returns: the socket file descriptor.
+ *
+ * Since: 3.3.5
+ */
+int hev_task_io_socket_socket (int domain, int type, int protocol);
+
+/**
  * hev_task_io_socket_connect:
  * @fd: a file descriptor
  * @addr: socket address
