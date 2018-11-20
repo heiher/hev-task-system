@@ -86,7 +86,8 @@ int
 hev_task_io_socket_accept (int fd, struct sockaddr *addr, socklen_t *addr_len,
                            HevTaskIOYielder yielder, void *yielder_data)
 {
-    int new_fd;
+    int new_fd, nonblock = 1;
+
 retry:
     new_fd = accept (fd, addr, addr_len);
     if (new_fd == -1 && errno == EAGAIN) {
@@ -97,6 +98,11 @@ retry:
             hev_task_yield (HEV_TASK_WAITIO);
         }
         goto retry;
+    }
+
+    if (0 > ioctl (new_fd, FIONBIO, (char *)&nonblock)) {
+        close (new_fd);
+        return -3;
     }
 
     return new_fd;
