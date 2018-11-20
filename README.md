@@ -19,6 +19,9 @@ and do I/O operations in synchronized mode.
 git clone https://gitlab.com/hev/hev-task-system
 cd hev-task-system
 make
+
+# demos
+make apps
 ```
 
 **Android**:
