@@ -10,12 +10,16 @@ AR=$(CROSS_PREFIX)ar
 CCFLAGS=-O3 -Werror -Wall
 LDFLAGS=
 
+APP_CCFLAGS=$(CCFLAGS) -I include
+APP_LDFLAGS=$(LDFLAGS) -L $(BINDIR) -l $(PROJECT) -pthread
+
 SRCDIR=src
 BINDIR=bin
+APPDIR=apps
 BUILDDIR=build
 
-STATIC_TARGET=$(BINDIR)/libhev-task-system.a
-SHARED_TARGET=$(BINDIR)/libhev-task-system.so
+STATIC_TARGET=$(BINDIR)/lib$(PROJECT).a
+SHARED_TARGET=$(BINDIR)/lib$(PROJECT).so
 
 $(SHARED_TARGET) : CCFLAGS+=-fPIC
 $(SHARED_TARGET) : LDFLAGS+=-shared -pthread
@@ -40,7 +44,7 @@ ifeq ($(V),1)
 	undefine ECHO_PREFIX
 endif
 
-.PHONY: static shared clean
+.PHONY: static shared clean apps
 
 static : $(STATIC_TARGET)
 
@@ -79,3 +83,37 @@ $(BUILDDIR)/%.o : $(SRCDIR)/%.S
 ifneq ($(MAKECMDGOALS),clean)
 -include $(DEPEND)
 endif
+
+apps : static \
+	$(BINDIR)/simple \
+	$(BINDIR)/wakeup \
+	$(BINDIR)/timeout \
+	$(BINDIR)/echo-server \
+	$(BINDIR)/curl \
+	$(BINDIR)/gtk
+
+$(BINDIR)/simple : $(APPDIR)/simple.c
+	$(ECHO_PREFIX) $(CC) -o $@ $^ $(APP_CCFLAGS) $(APP_LDFLAGS)
+	@echo -e $(LINKMSG)
+
+$(BINDIR)/wakeup : $(APPDIR)/wakeup.c
+	$(ECHO_PREFIX) $(CC) -o $@ $^ $(APP_CCFLAGS) $(APP_LDFLAGS)
+	@echo -e $(LINKMSG)
+
+$(BINDIR)/timeout : $(APPDIR)/timeout.c
+	$(ECHO_PREFIX) $(CC) -o $@ $^ $(APP_CCFLAGS) $(APP_LDFLAGS)
+	@echo -e $(LINKMSG)
+
+$(BINDIR)/echo-server : $(APPDIR)/echo-server.c
+	$(ECHO_PREFIX) $(CC) -o $@ $^ $(APP_CCFLAGS) $(APP_LDFLAGS)
+	@echo -e $(LINKMSG)
+
+$(BINDIR)/curl : $(APPDIR)/curl.c
+	$(ECHO_PREFIX) $(CC) -o $@ $^ $(APP_CCFLAGS) $(APP_LDFLAGS) \
+		`pkg-config --cflags --libs libcurl` -ldl
+	@echo -e $(LINKMSG)
+
+$(BINDIR)/gtk : $(APPDIR)/gtk.c
+	$(ECHO_PREFIX) $(CC) -o $@ $^ $(APP_CCFLAGS) $(APP_LDFLAGS) \
+		`pkg-config --cflags --libs gtk+-3.0`
+	@echo -e $(LINKMSG)
