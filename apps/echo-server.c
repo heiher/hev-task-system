@@ -48,10 +48,10 @@ static void
 task_listener_entry (void *data)
 {
     HevTask *task = hev_task_self ();
-    int fd, ret, nonblock = 1, reuseaddr = 1;
+    int fd, ret, reuseaddr = 1;
     struct sockaddr_in addr;
 
-    fd = socket (AF_INET, SOCK_STREAM, 0);
+    fd = hev_task_io_socket_socket (AF_INET, SOCK_STREAM, 0);
     if (fd == -1) {
         fprintf (stderr, "Create socket failed!\n");
         return;
@@ -61,12 +61,6 @@ task_listener_entry (void *data)
                       sizeof (reuseaddr));
     if (ret == -1) {
         fprintf (stderr, "Set reuse address failed!\n");
-        close (fd);
-        return;
-    }
-    ret = ioctl (fd, FIONBIO, (char *)&nonblock);
-    if (ret == -1) {
-        fprintf (stderr, "Set non-blocking failed!\n");
         close (fd);
         return;
     }
@@ -105,12 +99,6 @@ task_listener_entry (void *data)
 
         printf ("New client %d enter from %s:%u\n", client_fd,
                 inet_ntoa (addr.sin_addr), ntohs (addr.sin_port));
-
-        ret = ioctl (client_fd, FIONBIO, (char *)&nonblock);
-        if (ret == -1) {
-            fprintf (stderr, "Set non-blocking failed!\n");
-            close (client_fd);
-        }
 
         task = hev_task_new (-1);
         hev_task_set_priority (task, 1);
