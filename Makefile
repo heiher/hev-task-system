@@ -40,6 +40,8 @@ ifeq ($(V),1)
 	undefine ECHO_PREFIX
 endif
 
+.PHONY: static shared clean
+
 static : $(STATIC_TARGET)
 
 shared : $(SHARED_TARGET)
