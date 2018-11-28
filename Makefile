@@ -84,7 +84,7 @@ ifneq ($(MAKECMDGOALS),clean)
 -include $(DEPEND)
 endif
 
-apps : static \
+apps : \
 	$(BINDIR)/simple \
 	$(BINDIR)/wakeup \
 	$(BINDIR)/timeout \
@@ -92,28 +92,28 @@ apps : static \
 	$(BINDIR)/curl \
 	$(BINDIR)/gtk
 
-$(BINDIR)/simple : $(APPDIR)/simple.c
+$(BINDIR)/simple : $(APPDIR)/simple.c $(STATIC_TARGET)
 	$(ECHO_PREFIX) $(CC) -o $@ $^ $(APP_CCFLAGS) $(APP_LDFLAGS)
 	@echo -e $(LINKMSG)
 
-$(BINDIR)/wakeup : $(APPDIR)/wakeup.c
+$(BINDIR)/wakeup : $(APPDIR)/wakeup.c $(STATIC_TARGET)
 	$(ECHO_PREFIX) $(CC) -o $@ $^ $(APP_CCFLAGS) $(APP_LDFLAGS)
 	@echo -e $(LINKMSG)
 
-$(BINDIR)/timeout : $(APPDIR)/timeout.c
+$(BINDIR)/timeout : $(APPDIR)/timeout.c $(STATIC_TARGET)
 	$(ECHO_PREFIX) $(CC) -o $@ $^ $(APP_CCFLAGS) $(APP_LDFLAGS)
 	@echo -e $(LINKMSG)
 
-$(BINDIR)/echo-server : $(APPDIR)/echo-server.c
+$(BINDIR)/echo-server : $(APPDIR)/echo-server.c $(STATIC_TARGET)
 	$(ECHO_PREFIX) $(CC) -o $@ $^ $(APP_CCFLAGS) $(APP_LDFLAGS)
 	@echo -e $(LINKMSG)
 
-$(BINDIR)/curl : $(APPDIR)/curl.c
+$(BINDIR)/curl : $(APPDIR)/curl.c $(STATIC_TARGET)
 	$(ECHO_PREFIX) $(CC) -o $@ $^ $(APP_CCFLAGS) $(APP_LDFLAGS) \
 		`pkg-config --cflags --libs libcurl` -ldl
 	@echo -e $(LINKMSG)
 
-$(BINDIR)/gtk : $(APPDIR)/gtk.c
+$(BINDIR)/gtk : $(APPDIR)/gtk.c $(STATIC_TARGET)
 	$(ECHO_PREFIX) $(CC) -o $@ $^ $(APP_CCFLAGS) $(APP_LDFLAGS) \
 		`pkg-config --cflags --libs gtk+-3.0`
 	@echo -e $(LINKMSG)
