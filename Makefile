@@ -16,6 +16,7 @@ APP_LDFLAGS=$(LDFLAGS) -L $(BINDIR) -l $(PROJECT) -pthread
 SRCDIR=src
 BINDIR=bin
 APPDIR=apps
+TESTDIR=tests
 BUILDDIR=build
 
 STATIC_TARGET=$(BINDIR)/lib$(PROJECT).a
@@ -37,6 +38,7 @@ DEPEND=$(LDOBJS:.o=.dep)
 BUILDMSG="\e[1;31mBUILD\e[0m $<"
 LINKMSG="\e[1;34mLINK\e[0m  \e[1;32m$@\e[0m"
 CLEANMSG="\e[1;34mCLEAN\e[0m $(PROJECT)"
+TESTMSG="\e[1;34mTEST\e[0m  \e[1;32m$$test\e[0m"
 
 V:=
 ECHO_PREFIX:=@
@@ -44,7 +46,7 @@ ifeq ($(V),1)
 	undefine ECHO_PREFIX
 endif
 
-.PHONY: static shared clean apps
+.PHONY: static shared clean tests apps
 
 static : $(STATIC_TARGET)
 
@@ -83,6 +85,14 @@ $(BUILDDIR)/%.o : $(SRCDIR)/%.S
 ifneq ($(MAKECMDGOALS),clean)
 -include $(DEPEND)
 endif
+
+
+tests : $(patsubst $(TESTDIR)/%.c,$(BINDIR)/test-%,$(wildcard $(TESTDIR)/*.c))
+	$(ECHO_PREFIX) for test in $^; do echo -e $(TESTMSG); $$test; done
+
+$(BINDIR)/test-% : $(TESTDIR)/%.c $(STATIC_TARGET)
+	$(ECHO_PREFIX) $(CC) -o $@ $^ $(APP_CCFLAGS) $(APP_LDFLAGS)
+	@echo -e $(LINKMSG)
 
 apps : \
 	$(BINDIR)/simple \
