@@ -10,10 +10,8 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <errno.h>
 #include <unistd.h>
 #include <sys/epoll.h>
-#include <sys/timerfd.h>
 
 #include "hev-task.h"
 #include "hev-task-private.h"
@@ -168,54 +166,12 @@ unsigned int
 hev_task_usleep (unsigned int microseconds)
 {
     HevTaskSystemContext *ctx;
-    HevTaskTimer *timer;
-    int timer_fd;
-    struct itimerspec spec;
-    ssize_t size;
-    uint64_t time;
 
     if (microseconds == 0)
         return 0;
 
     ctx = hev_task_system_get_context ();
-    timer = hev_task_timer_manager_alloc (ctx->timer_manager);
-    if (!timer)
-        return microseconds;
-
-    timer_fd = hev_task_timer_get_fd (timer);
-    hev_task_timer_set_task (timer, ctx->current_task);
-
-    spec.it_interval.tv_sec = 0;
-    spec.it_interval.tv_nsec = 0;
-    spec.it_value.tv_sec = microseconds / (1000 * 1000);
-    spec.it_value.tv_nsec = (microseconds % (1000 * 1000)) * 1000;
-    if (timerfd_settime (timer_fd, 0, &spec, NULL) == -1)
-        goto quit;
-
-    size = read (timer_fd, &time, sizeof (time));
-    if (size != -1) {
-        microseconds = 0;
-        goto quit;
-    }
-
-    if (errno == EAGAIN)
-        hev_task_yield (HEV_TASK_WAITIO);
-
-    /* get the number of microseconds left to sleep */
-    if (timerfd_gettime (timer_fd, &spec) == -1)
-        goto quit;
-    if ((spec.it_value.tv_sec + spec.it_value.tv_nsec) == 0) {
-        microseconds = 0;
-        goto quit;
-    }
-    microseconds =
-        (spec.it_value.tv_sec * 1000 * 1000) + (spec.it_value.tv_nsec / 1000);
-
-quit:
-    hev_task_timer_set_task (timer, NULL);
-    hev_task_timer_manager_free (ctx->timer_manager, timer);
-
-    return microseconds;
+    return hev_task_timer_wait (ctx->timer, microseconds, ctx->current_task);
 }
 
 void
