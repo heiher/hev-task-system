@@ -16,7 +16,7 @@
 #include "hev-task-system.h"
 #include "kern/task/hev-task.h"
 #include "kern/task/hev-task-private.h"
-#include "kern/time/hev-task-timer-manager.h"
+#include "kern/time/hev-task-timer.h"
 #include "lib/rbtree/hev-rbtree-cached.h"
 
 #define HEV_TASK_RUN_SCHEDULER HEV_TASK_YIELD_COUNT
@@ -30,7 +30,7 @@ struct _HevTaskSystemContext
     unsigned int total_task_count;
     unsigned int running_task_count;
 
-    HevTaskTimerManager *timer_manager;
+    HevTaskTimer *timer;
 
     HevTask *current_task;
     HevRBTreeCached running_tasks;
