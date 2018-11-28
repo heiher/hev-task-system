@@ -22,6 +22,9 @@ make
 
 # demos
 make apps
+
+# tests
+make tests
 ```
 
 **Android**:
