@@ -53,14 +53,16 @@ static : $(STATIC_TARGET)
 shared : $(SHARED_TARGET)
 
 clean : 
-	$(ECHO_PREFIX) $(RM) -rf $(BINDIR)/* $(BUILDDIR)/*
+	$(ECHO_PREFIX) $(RM) -rf $(BINDIR) $(BUILDDIR)
 	@echo -e $(CLEANMSG)
 
 $(STATIC_TARGET) : $(LDOBJS)
+	$(ECHO_PREFIX) mkdir -p $(dir $@)
 	$(ECHO_PREFIX) $(AR) csq $@ $^
 	@echo -e $(LINKMSG)
 
 $(SHARED_TARGET) : $(LDOBJS)
+	$(ECHO_PREFIX) mkdir -p $(dir $@)
 	$(ECHO_PREFIX) $(CC) -o $@ $^ $(LDFLAGS)
 	@echo -e $(LINKMSG)
 
