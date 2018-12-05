@@ -16,6 +16,7 @@
 
 #include "kern/task/hev-task.h"
 #include "hev-task-io.h"
+#include "hev-task-io-shared.h"
 
 int
 hev_task_io_open (const char *pathname, int flags, ...)
@@ -27,7 +28,7 @@ hev_task_io_open (const char *pathname, int flags, ...)
         va_list ap;
 
         va_start (ap, flags);
-        fd = open (pathname, flags, va_arg (ap, mode_t));
+        fd = open (pathname, flags, va_arg (ap, int));
         va_end (ap);
 
         return fd;
@@ -52,7 +53,7 @@ hev_task_io_openat (int dirfd, const char *pathname, int flags, ...)
         va_list ap;
 
         va_start (ap, flags);
-        fd = openat (dirfd, pathname, flags, va_arg (ap, mode_t));
+        fd = openat (dirfd, pathname, flags, va_arg (ap, int));
         va_end (ap);
 
         return fd;
@@ -70,6 +71,7 @@ hev_task_io_read (int fd, void *buf, size_t count, HevTaskIOYielder yielder,
 retry:
     s = read (fd, buf, count);
     if (s == -1 && errno == EAGAIN) {
+        hev_task_io_res_fd (fd, HEV_TASK_IO_REACTOR_EV_RO);
         if (yielder) {
             if (yielder (HEV_TASK_WAITIO, yielder_data))
                 return -2;
@@ -91,6 +93,7 @@ hev_task_io_readv (int fd, const struct iovec *iov, int iovcnt,
 retry:
     s = readv (fd, iov, iovcnt);
     if (s == -1 && errno == EAGAIN) {
+        hev_task_io_res_fd (fd, HEV_TASK_IO_REACTOR_EV_RO);
         if (yielder) {
             if (yielder (HEV_TASK_WAITIO, yielder_data))
                 return -2;
@@ -112,6 +115,7 @@ hev_task_io_write (int fd, const void *buf, size_t count,
 retry:
     s = write (fd, buf, count);
     if (s == -1 && errno == EAGAIN) {
+        hev_task_io_res_fd (fd, HEV_TASK_IO_REACTOR_EV_WO);
         if (yielder) {
             if (yielder (HEV_TASK_WAITIO, yielder_data))
                 return -2;
@@ -133,6 +137,7 @@ hev_task_io_writev (int fd, const struct iovec *iov, int iovcnt,
 retry:
     s = writev (fd, iov, iovcnt);
     if (s == -1 && errno == EAGAIN) {
+        hev_task_io_res_fd (fd, HEV_TASK_IO_REACTOR_EV_WO);
         if (yielder) {
             if (yielder (HEV_TASK_WAITIO, yielder_data))
                 return -2;
@@ -238,7 +243,32 @@ hev_task_io_splice (int fd_a_i, int fd_a_o, int fd_b_i, int fd_b_o,
         /* single direction no data, goto yield.
 		 * double direction no data, goto waitio.
 		 */
-        type = (no_data < 2) ? HEV_TASK_YIELD : HEV_TASK_WAITIO;
+        if (no_data < 2) {
+            type = HEV_TASK_YIELD;
+        } else {
+            type = HEV_TASK_WAITIO;
+            if (fd_a_i == fd_a_o) {
+                if (fd_b_i == fd_b_o) {
+                    hev_task_io_res_fd2 (fd_a_i, HEV_TASK_IO_REACTOR_EV_RW,
+                                         fd_b_i, HEV_TASK_IO_REACTOR_EV_RW);
+                } else {
+                    hev_task_io_res_fd3 (fd_a_i, HEV_TASK_IO_REACTOR_EV_RW,
+                                         fd_b_i, HEV_TASK_IO_REACTOR_EV_RO,
+                                         fd_b_o, HEV_TASK_IO_REACTOR_EV_WO);
+                }
+            } else {
+                if (fd_b_i == fd_b_o) {
+                    hev_task_io_res_fd3 (fd_a_i, HEV_TASK_IO_REACTOR_EV_RO,
+                                         fd_a_o, HEV_TASK_IO_REACTOR_EV_WO,
+                                         fd_b_o, HEV_TASK_IO_REACTOR_EV_RW);
+                } else {
+                    hev_task_io_res_fd4 (fd_a_i, HEV_TASK_IO_REACTOR_EV_RO,
+                                         fd_a_o, HEV_TASK_IO_REACTOR_EV_WO,
+                                         fd_b_i, HEV_TASK_IO_REACTOR_EV_RO,
+                                         fd_b_o, HEV_TASK_IO_REACTOR_EV_WO);
+                }
+            }
+        }
         if (yielder) {
             if (yielder (type, yielder_data))
                 break;
