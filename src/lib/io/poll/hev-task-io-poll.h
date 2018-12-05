@@ -1,14 +1,14 @@
 /*
  ============================================================================
- Name        : hev-task-poll.h
+ Name        : hev-task-io-poll.h
  Author      : Heiher <r@hev.cc>
- Copyright   : Copyright (c) 2017 everyone.
- Description :
+ Copyright   : Copyright (c) 2017 - 2018 everyone.
+ Description : I/O Poll
  ============================================================================
  */
 
-#ifndef __HEV_TASK_POLL_H__
-#define __HEV_TASK_POLL_H__
+#ifndef __HEV_TASK_IO_POLL_H__
+#define __HEV_TASK_IO_POLL_H__
 
 #include <poll.h>
 
@@ -16,10 +16,10 @@
 extern "C" {
 #endif
 
-typedef struct pollfd HevTaskPollFD;
+typedef struct pollfd HevTaskIOPollFD;
 
 /**
- * hev_task_poll:
+ * hev_task_io_poll:
  * @fds: file descriptors to poll
  * @nfds: the number of file descriptors in @fds
  * @timeout: amount of time to wait, in milliseconds, or -1 to wait forever
@@ -32,10 +32,10 @@ typedef struct pollfd HevTaskPollFD;
  *
  * Since: 1.2
  */
-int hev_task_poll (HevTaskPollFD fds[], unsigned int nfds, int timeout);
+int hev_task_io_poll (HevTaskIOPollFD fds[], unsigned int nfds, int timeout);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* __HEV_TASK_POLL_H__ */
+#endif /* __HEV_TASK_IO_POLL_H__ */
