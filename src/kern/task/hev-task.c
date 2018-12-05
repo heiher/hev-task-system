@@ -157,6 +157,15 @@ hev_task_del_fd (HevTask *self, int fd)
     return hev_task_io_reactor_setup (reactor, &event, 1);
 }
 
+int
+hev_task_res_fd (HevTask *self, int fd, unsigned int events)
+{
+    if (!hev_task_io_reactor_get_oneshot ())
+        return 0;
+
+    return hev_task_mod_fd (self, fd, events);
+}
+
 void
 hev_task_wakeup (HevTask *task)
 {
