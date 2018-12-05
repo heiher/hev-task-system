@@ -13,12 +13,12 @@
 #endif
 
 #include <stdlib.h>
-#include <sys/epoll.h>
 
 #include "hev-task-system.h"
 #include "hev-task-system-private.h"
 #include "kern/task/hev-task-private.h"
 #include "kern/task/hev-task-executer.h"
+#include "kern/io/hev-task-io-reactor.h"
 
 static inline void
 hev_task_system_update_sched_time (HevTaskSystemContext *ctx);
@@ -242,13 +242,13 @@ static inline void
 hev_task_system_io_poll (HevTaskSystemContext *ctx, int timeout)
 {
     int i, count;
-    struct epoll_event events[128];
+    HevTaskIOReactorWaitEvent events[128];
 
-    count = epoll_wait (ctx->epoll_fd, events, 128, timeout);
+    count = hev_task_io_reactor_wait (ctx->reactor, events, 128, timeout);
     for (i = 0; i < count; i++) {
         HevTaskSchedEntity *sched_entity;
 
-        sched_entity = events[i].data.ptr;
+        sched_entity = hev_task_io_reactor_wait_event_get_data (&events[i]);
         hev_task_system_wakeup_task_with_context (ctx, sched_entity->task);
     }
 }
