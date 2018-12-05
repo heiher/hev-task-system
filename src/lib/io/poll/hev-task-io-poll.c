@@ -14,6 +14,7 @@
 int
 hev_task_io_poll (HevTaskIOPollFD fds[], unsigned int nfds, int timeout)
 {
+    HevTask *task;
     unsigned int i;
     int ret;
 
@@ -21,13 +22,10 @@ hev_task_io_poll (HevTaskIOPollFD fds[], unsigned int nfds, int timeout)
     if ((ret > 0) || (timeout == 0))
         return ret;
 
+    task = hev_task_self ();
     for (i = 0; i < nfds; i++) {
-        HevTaskIOReactorEvents event = 0;
-        if (fds[i].events & POLLIN)
-            event |= HEV_TASK_IO_REACTOR_EV_RO;
-        if (fds[i].events & POLLOUT)
-            event |= HEV_TASK_IO_REACTOR_EV_WO;
-        hev_task_io_res_fd (fds[i].fd, event);
+        if (hev_task_mod_fd (task, fds[i].fd, fds[i].events) == -1)
+            hev_task_add_fd (task, fds[i].fd, fds[i].events);
     }
 
     if (timeout > 0) {
