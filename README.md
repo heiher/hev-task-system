@@ -1,8 +1,8 @@
 # HevTaskSystem
 
-HevTaskSystem is a simple, lightweight multi-task system (coroutines) for Linux.
+HevTaskSystem is a simple, lightweight multi-task system (coroutines) for Unix.
 
-The task system is executed by a Linux process/thread. In task system, you can
+The task system is executed by a Unix process/thread. In task system, you can
 creates many tasks and attachs to task system. When a task yield or blocked by
 I/O, the scheduler will pick a suitable task from running list and switch to.
 The memory space, file descriptors and other resources are shared for all tasks
@@ -14,7 +14,7 @@ and do I/O operations in synchronized mode.
 
 ## How to Build
 
-**Linux**:
+**Unix**:
 ```bash
 git clone https://gitlab.com/hev/hev-task-system
 cd hev-task-system
