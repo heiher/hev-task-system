@@ -34,8 +34,10 @@ poll (struct pollfd fds[], nfds_t nfds, int timeout)
     if ((ret > 0) || (timeout == 0))
         return ret;
 
-    for (i = 0; i < nfds; i++)
-        hev_task_add_fd (task, fds[i].fd, fds[i].events);
+    for (i = 0; i < nfds; i++) {
+        if (hev_task_mod_fd (task, fds[i].fd, fds[i].events) == -1)
+            hev_task_add_fd (task, fds[i].fd, fds[i].events);
+    }
 
     if (timeout > 0) {
     retry_sleep:
