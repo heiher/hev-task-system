@@ -55,9 +55,6 @@ retry:
     }
 
 quit:
-    for (i = 0; i < nfds; i++)
-        hev_task_del_fd (task, fds[i].fd);
-
     return ret;
 }
 
