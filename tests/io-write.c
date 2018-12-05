@@ -7,35 +7,31 @@
  ============================================================================
  */
 
-#include <stdlib.h>
 #include <assert.h>
 #include <unistd.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 
 #include <hev-task.h>
 #include <hev-task-system.h>
 #include <hev-task-io.h>
+#include <hev-task-io-pipe.h>
 
 static void
 task_entry (void *data)
 {
     HevTask *task = hev_task_self ();
-    int fd;
+    int fds[2];
     char buf[4];
     ssize_t size;
 
-    fd = hev_task_io_open ("/dev/random", O_WRONLY);
-    assert (fd >= 0);
+    assert (hev_task_io_pipe_pipe (fds) == 0);
 
-    assert (hev_task_add_fd (task, fd, POLLOUT) == 0);
+    assert (hev_task_add_fd (task, fds[1], POLLOUT) == 0);
 
-    size = hev_task_io_write (fd, buf, 4, NULL, NULL);
-    assert (size == 4);
+    size = hev_task_io_write (fds[1], buf, 4, NULL, NULL);
+    assert (size >= 0);
 
-    close (fd);
+    close (fds[0]);
+    close (fds[1]);
 }
 
 int
