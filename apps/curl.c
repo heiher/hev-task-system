@@ -13,7 +13,6 @@
 #include <dlfcn.h>
 
 #include <hev-task.h>
-#include <hev-task-poll.h>
 #include <hev-task-system.h>
 
 #include <curl/curl.h>
