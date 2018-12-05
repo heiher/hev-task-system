@@ -82,7 +82,7 @@ task_listener_entry (void *data)
         return;
     }
 
-    hev_task_add_fd (task, fd, EPOLLIN);
+    hev_task_add_fd (task, fd, POLLIN);
 
     while (1) {
         int client_fd;
@@ -102,7 +102,7 @@ task_listener_entry (void *data)
 
         task = hev_task_new (-1);
         hev_task_set_priority (task, 1);
-        hev_task_add_fd (task, client_fd, EPOLLIN | EPOLLOUT);
+        hev_task_add_fd (task, client_fd, POLLIN | POLLOUT);
         hev_task_run (task, task_client_entry, (void *)(intptr_t)client_fd);
     }
 
