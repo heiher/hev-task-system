@@ -14,6 +14,7 @@
 
 #include "kern/task/hev-task.h"
 #include "lib/io/basic/hev-task-io.h"
+#include "lib/io/basic/hev-task-io-shared.h"
 #include "hev-task-io-socket.h"
 
 int
@@ -67,6 +68,7 @@ retry:
     ret = connect (fd, addr, addr_len);
     if (ret == -1) {
         if (errno == EINPROGRESS || errno == EALREADY) {
+            hev_task_io_res_fd (fd, HEV_TASK_IO_REACTOR_EV_WO);
             if (yielder) {
                 if (yielder (HEV_TASK_WAITIO, yielder_data))
                     return -2;
@@ -91,6 +93,7 @@ hev_task_io_socket_accept (int fd, struct sockaddr *addr, socklen_t *addr_len,
 retry:
     new_fd = accept (fd, addr, addr_len);
     if (new_fd == -1 && errno == EAGAIN) {
+        hev_task_io_res_fd (fd, HEV_TASK_IO_REACTOR_EV_RO);
         if (yielder) {
             if (yielder (HEV_TASK_WAITIO, yielder_data))
                 return -2;
@@ -118,6 +121,7 @@ hev_task_io_socket_recv (int fd, void *buf, size_t len, int flags,
 retry:
     s = recv (fd, buf + size, len - size, flags & ~MSG_WAITALL);
     if (s == -1 && errno == EAGAIN) {
+        hev_task_io_res_fd (fd, HEV_TASK_IO_REACTOR_EV_RO);
         if (yielder) {
             if (yielder (HEV_TASK_WAITIO, yielder_data))
                 return -2;
@@ -150,6 +154,7 @@ hev_task_io_socket_send (int fd, const void *buf, size_t len, int flags,
 retry:
     s = send (fd, buf + size, len - size, flags & ~MSG_WAITALL);
     if (s == -1 && errno == EAGAIN) {
+        hev_task_io_res_fd (fd, HEV_TASK_IO_REACTOR_EV_WO);
         if (yielder) {
             if (yielder (HEV_TASK_WAITIO, yielder_data))
                 return -2;
@@ -182,6 +187,7 @@ hev_task_io_socket_recvfrom (int fd, void *buf, size_t len, int flags,
 retry:
     s = recvfrom (fd, buf, len, flags, addr, addr_len);
     if (s == -1 && errno == EAGAIN) {
+        hev_task_io_res_fd (fd, HEV_TASK_IO_REACTOR_EV_RO);
         if (yielder) {
             if (yielder (HEV_TASK_WAITIO, yielder_data))
                 return -2;
@@ -204,6 +210,7 @@ hev_task_io_socket_sendto (int fd, const void *buf, size_t len, int flags,
 retry:
     s = sendto (fd, buf, len, flags, addr, addr_len);
     if (s == -1 && errno == EAGAIN) {
+        hev_task_io_res_fd (fd, HEV_TASK_IO_REACTOR_EV_WO);
         if (yielder) {
             if (yielder (HEV_TASK_WAITIO, yielder_data))
                 return -2;
@@ -241,6 +248,7 @@ hev_task_io_socket_recvmsg (int fd, struct msghdr *msg, int flags,
 retry:
     s = recvmsg (fd, &mh, flags & ~MSG_WAITALL);
     if (s == -1 && errno == EAGAIN) {
+        hev_task_io_res_fd (fd, HEV_TASK_IO_REACTOR_EV_RO);
         if (yielder) {
             if (yielder (HEV_TASK_WAITIO, yielder_data))
                 return -2;
@@ -302,6 +310,7 @@ hev_task_io_socket_sendmsg (int fd, const struct msghdr *msg, int flags,
 retry:
     s = sendmsg (fd, &mh, flags & ~MSG_WAITALL);
     if (s == -1 && errno == EAGAIN) {
+        hev_task_io_res_fd (fd, HEV_TASK_IO_REACTOR_EV_WO);
         if (yielder) {
             if (yielder (HEV_TASK_WAITIO, yielder_data))
                 return -2;
