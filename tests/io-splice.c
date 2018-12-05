@@ -28,8 +28,8 @@ task_splice_entry (void *data)
 {
     HevTask *task = hev_task_self ();
 
-    assert (hev_task_add_fd (task, fds1[1], EPOLLIN | EPOLLOUT) == 0);
-    assert (hev_task_add_fd (task, fds2[0], EPOLLIN | EPOLLOUT) == 0);
+    assert (hev_task_add_fd (task, fds1[1], POLLIN | POLLOUT) == 0);
+    assert (hev_task_add_fd (task, fds2[0], POLLIN | POLLOUT) == 0);
 
     hev_task_io_splice (fds1[1], fds1[1], fds2[0], fds2[0], 2048, NULL, NULL);
 
@@ -50,8 +50,8 @@ task_entry (void *data)
     result = hev_task_io_socket_socketpair (PF_LOCAL, SOCK_STREAM, 0, fds2);
     assert (result == 0);
 
-    assert (hev_task_add_fd (task, fds1[0], EPOLLOUT) == 0);
-    assert (hev_task_add_fd (task, fds2[1], EPOLLIN) == 0);
+    assert (hev_task_add_fd (task, fds1[0], POLLOUT) == 0);
+    assert (hev_task_add_fd (task, fds2[1], POLLIN) == 0);
 
     task = hev_task_new (-1);
     assert (task);

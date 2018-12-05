@@ -37,8 +37,8 @@ task_entry (void *data)
 
     val = hev_task_poll (pfds, 2, -1);
     assert (val == 2);
-    assert (pfds[0].revents & EPOLLIN);
-    assert (pfds[1].revents & EPOLLOUT);
+    assert (pfds[0].revents & POLLIN);
+    assert (pfds[1].revents & POLLOUT);
 
     close (fds[0]);
     close (fds[1]);

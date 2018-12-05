@@ -48,13 +48,13 @@ task_server_entry (void *data)
     }
     assert (listen (fd, 5) == 0);
 
-    assert (hev_task_add_fd (task, fd, EPOLLIN) == 0);
+    assert (hev_task_add_fd (task, fd, POLLIN) == 0);
 
     /* accept */
     cfd = hev_task_io_socket_accept (fd, NULL, NULL, NULL, NULL);
     assert (cfd >= 0);
 
-    assert (hev_task_add_fd (task, cfd, EPOLLOUT) == 0);
+    assert (hev_task_add_fd (task, cfd, POLLOUT) == 0);
 
     /* send */
     size = hev_task_io_socket_send (cfd, msg, strlen (msg), MSG_WAITALL, NULL,
@@ -95,7 +95,7 @@ task_client_entry (void *data)
     assert (fd >= 0);
     assert ((fcntl (fd, F_GETFL) & O_NONBLOCK) == O_NONBLOCK);
 
-    assert (hev_task_add_fd (task, fd, EPOLLIN) == 0);
+    assert (hev_task_add_fd (task, fd, POLLIN) == 0);
 
     memset (&addr, 0, sizeof (addr));
     addr.sin_family = AF_INET;

@@ -30,7 +30,7 @@ task_entry (void *data)
     fd = hev_task_io_open ("/dev/random", O_WRONLY);
     assert (fd >= 0);
 
-    assert (hev_task_add_fd (task, fd, EPOLLOUT) == 0);
+    assert (hev_task_add_fd (task, fd, POLLOUT) == 0);
 
     size = hev_task_io_write (fd, buf, 4, NULL, NULL);
     assert (size == 4);

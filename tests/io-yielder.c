@@ -40,7 +40,7 @@ task_entry (void *data)
     assert (fds[0] >= 0);
     assert (fds[1] >= 0);
 
-    assert (hev_task_add_fd (task, fds[0], EPOLLIN) == 0);
+    assert (hev_task_add_fd (task, fds[0], POLLIN) == 0);
 
     size = hev_task_io_read (fds[0], buf, 16, task_io_yielder, NULL);
     assert (size == -2);

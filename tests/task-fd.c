@@ -24,8 +24,8 @@ task1_entry (void *data)
     HevTask *task = hev_task_self ();
     int val;
 
-    assert (hev_task_add_fd (task, fds[0], EPOLLOUT) == 0);
-    assert (hev_task_mod_fd (task, fds[0], EPOLLIN) == 0);
+    assert (hev_task_add_fd (task, fds[0], POLLOUT) == 0);
+    assert (hev_task_mod_fd (task, fds[0], POLLIN) == 0);
     assert (hev_task_io_read (fds[0], &val, sizeof (val), NULL, NULL) ==
             sizeof (val));
     assert (hev_task_del_fd (task, fds[0]) == 0);
@@ -37,7 +37,7 @@ task2_entry (void *data)
     HevTask *task = hev_task_self ();
     int val;
 
-    assert (hev_task_add_fd (task, fds[1], EPOLLOUT) == 0);
+    assert (hev_task_add_fd (task, fds[1], POLLOUT) == 0);
     assert (hev_task_io_write (fds[1], &val, sizeof (val), NULL, NULL) ==
             sizeof (val));
     assert (hev_task_del_fd (task, fds[1]) == 0);

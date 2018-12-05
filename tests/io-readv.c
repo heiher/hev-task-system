@@ -31,7 +31,7 @@ task_entry (void *data)
     fd = hev_task_io_open ("/dev/random", O_RDONLY);
     assert (fd >= 0);
 
-    assert (hev_task_add_fd (task, fd, EPOLLIN) == 0);
+    assert (hev_task_add_fd (task, fd, POLLIN) == 0);
 
     iov[0].iov_base = buf1;
     iov[0].iov_len = 2;
