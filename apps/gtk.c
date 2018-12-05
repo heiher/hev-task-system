@@ -10,8 +10,8 @@
 #include <stdio.h>
 
 #include <hev-task.h>
-#include <hev-task-poll.h>
 #include <hev-task-system.h>
+#include <hev-task-io-poll.h>
 
 #include <glib.h>
 #include <gtk/gtk.h>
@@ -34,7 +34,7 @@ task_entry1 (void *data)
 
     /* Use hev_task_poll to poll fds in GLib event loop */
     g_main_context_set_poll_func (g_main_context_default (),
-                                  (GPollFunc)hev_task_poll);
+                                  (GPollFunc)hev_task_io_poll);
 
     window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
     g_signal_connect (window, "delete-event",
