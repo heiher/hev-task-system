@@ -10,7 +10,7 @@
 #ifndef __HEV_TASK_H__
 #define __HEV_TASK_H__
 
-#include <sys/epoll.h>
+#include <poll.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -145,10 +145,10 @@ int hev_task_get_priority (HevTask *self);
  * hev_task_add_fd:
  * @self: a #HevTask
  * @fd: a file descriptor
- * @events: a epoll events. (e.g. EPOLLIN, EPOLLOUT)
+ * @events: a poll events. (e.g. POLLIN, POLLOUT)
  *
- * Add a file descriptor to I/O poll queue of task system. The task system
- * will wake up the task when I/O events ready.
+ * Add a file descriptor to I/O reactor of task system. The task system will
+ * wake up the task when I/O events ready.
  *
  * Returns: When successful, returns zero. When an error occurs, returns -1.
  *
@@ -160,10 +160,10 @@ int hev_task_add_fd (HevTask *self, int fd, unsigned int events);
  * hev_task_mod_fd:
  * @self: a #HevTask
  * @fd: a file descriptor
- * @events: a epoll events.
+ * @events: a poll events.
  *
- * Modify events of a file descriptor that added into I/O poll queue of
- * task system.
+ * Modify events of a file descriptor that added into I/O reactor of task
+ * system.
  *
  * Returns: When successful, returns zero. When an error occurs, returns -1.
  *
@@ -176,7 +176,7 @@ int hev_task_mod_fd (HevTask *self, int fd, unsigned int events);
  * @self: a #HevTask
  * @fd: a file descriptor
  *
- * Remove a file descriptor from I/O poll queue of task system.
+ * Remove a file descriptor from I/O reactor of task system.
  *
  * Returns: When successful, returns zero. When an error occurs, returns -1.
  *

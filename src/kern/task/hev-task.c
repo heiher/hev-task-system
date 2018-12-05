@@ -10,8 +10,6 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <unistd.h>
-#include <sys/epoll.h>
 
 #include "hev-task.h"
 #include "hev-task-private.h"
@@ -108,40 +106,55 @@ hev_task_get_priority (HevTask *self)
     return self->next_priority;
 }
 
+static inline unsigned int
+hev_task_fd_events_to_reactor (unsigned int events)
+{
+    HevTaskIOReactorEvents reactor_events = 0;
+
+    if (events & POLLIN)
+        reactor_events |= HEV_TASK_IO_REACTOR_EV_RO;
+    if (events & POLLOUT)
+        reactor_events |= HEV_TASK_IO_REACTOR_EV_WO;
+
+    return reactor_events;
+}
+
 int
 hev_task_add_fd (HevTask *self, int fd, unsigned int events)
 {
-    int epoll_fd;
-    struct epoll_event event;
+    HevTaskIOReactor *reactor;
+    HevTaskIOReactorSetupEvent event;
 
-    epoll_fd = hev_task_system_get_context ()->epoll_fd;
-
-    event.events = EPOLLET | events;
-    event.data.ptr = &self->sched_entity;
-    return epoll_ctl (epoll_fd, EPOLL_CTL_ADD, fd, &event);
+    reactor = hev_task_system_get_context ()->reactor;
+    hev_task_io_reactor_setup_event_set (&event, fd, HEV_TASK_IO_REACTOR_OP_ADD,
+                                         hev_task_fd_events_to_reactor (events),
+                                         &self->sched_entity);
+    return hev_task_io_reactor_setup (reactor, &event, 1);
 }
 
 int
 hev_task_mod_fd (HevTask *self, int fd, unsigned int events)
 {
-    int epoll_fd;
-    struct epoll_event event;
+    HevTaskIOReactor *reactor;
+    HevTaskIOReactorSetupEvent event;
 
-    epoll_fd = hev_task_system_get_context ()->epoll_fd;
-
-    event.events = EPOLLET | events;
-    event.data.ptr = &self->sched_entity;
-    return epoll_ctl (epoll_fd, EPOLL_CTL_MOD, fd, &event);
+    reactor = hev_task_system_get_context ()->reactor;
+    hev_task_io_reactor_setup_event_set (&event, fd, HEV_TASK_IO_REACTOR_OP_MOD,
+                                         hev_task_fd_events_to_reactor (events),
+                                         &self->sched_entity);
+    return hev_task_io_reactor_setup (reactor, &event, 1);
 }
 
 int
 hev_task_del_fd (HevTask *self, int fd)
 {
-    int epoll_fd;
+    HevTaskIOReactor *reactor;
+    HevTaskIOReactorSetupEvent event;
 
-    epoll_fd = hev_task_system_get_context ()->epoll_fd;
-
-    return epoll_ctl (epoll_fd, EPOLL_CTL_DEL, fd, NULL);
+    reactor = hev_task_system_get_context ()->reactor;
+    hev_task_io_reactor_setup_event_set (&event, fd, HEV_TASK_IO_REACTOR_OP_DEL,
+                                         0, NULL);
+    return hev_task_io_reactor_setup (reactor, &event, 1);
 }
 
 void
