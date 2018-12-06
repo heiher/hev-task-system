@@ -13,7 +13,7 @@
 void
 hev_task_executer (HevTask *task)
 {
-    if (setjmp (task->context) == 0)
+    if (_setjmp (task->context) == 0)
         return;
 
     task->entry (task->data);
