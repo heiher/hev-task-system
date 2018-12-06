@@ -2,15 +2,14 @@
  ============================================================================
  Name        : hev-task-execute-x86.s
  Author      : Heiher <r@hev.cc>
- Copyright   : Copyright (c) 2017 everyone.
+ Copyright   : Copyright (c) 2017 - 2018 everyone.
  Description :
  ============================================================================
  */
 
-    .globl hev_task_execute
-    .type hev_task_execute, @function
+#include "asm.h"
 
-hev_task_execute:
+NESTED(hev_task_execute)
     mov  0x4(%esp), %edx
     mov  (%edx), %ecx
     mov  (%esp), %eax
@@ -27,5 +26,4 @@ hev_task_execute:
     mov  0x8(%esp), %eax
     mov  0xc(%esp), %esp
     jmp  *%eax
-
-    .size hev_task_execute, . - hev_task_execute
+END(hev_task_execute)
