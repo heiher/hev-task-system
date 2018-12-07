@@ -115,6 +115,8 @@ hev_task_fd_events_to_reactor (unsigned int events)
         reactor_events |= HEV_TASK_IO_REACTOR_EV_RO;
     if (events & POLLOUT)
         reactor_events |= HEV_TASK_IO_REACTOR_EV_WO;
+    if (events & POLLERR)
+        reactor_events |= HEV_TASK_IO_REACTOR_EV_ER;
 
     return reactor_events;
 }
