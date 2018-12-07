@@ -35,10 +35,10 @@ LDOBJS=$(patsubst $(SRCDIR)/%.c,$(BUILDDIR)/%.o,$(CCSRCS)) \
 	   $(patsubst $(SRCDIR)/%.S,$(BUILDDIR)/%.o,$(ASSRCS))
 DEPEND=$(LDOBJS:.o=.dep)
 
-BUILDMSG="\e[1;31mBUILD\e[0m $<"
-LINKMSG="\e[1;34mLINK\e[0m  \e[1;32m$@\e[0m"
-CLEANMSG="\e[1;34mCLEAN\e[0m $(PROJECT)"
-TESTMSG="\e[1;34mTEST\e[0m  \e[1;32m$$test\e[0m"
+BUILDMSG="\e[1;31mBUILD\e[0m %s\n"
+LINKMSG="\e[1;34mLINK\e[0m  \e[1;32m%s\e[0m\n"
+CLEANMSG="\e[1;34mCLEAN\e[0m %s\n"
+TESTMSG="\e[1;34mTEST\e[0m  \e[1;32m%s\e[0m\n"
 
 V:=
 ECHO_PREFIX:=@
@@ -54,17 +54,17 @@ shared : $(SHARED_TARGET)
 
 clean : 
 	$(ECHO_PREFIX) $(RM) -rf $(BINDIR) $(BUILDDIR)
-	@echo -e $(CLEANMSG)
+	@printf $(CLEANMSG) $(PROJECT)
 
 $(STATIC_TARGET) : $(LDOBJS)
 	$(ECHO_PREFIX) mkdir -p $(dir $@)
 	$(ECHO_PREFIX) $(AR) csq $@ $^
-	@echo -e $(LINKMSG)
+	@printf $(LINKMSG) $@
 
 $(SHARED_TARGET) : $(LDOBJS)
 	$(ECHO_PREFIX) mkdir -p $(dir $@)
 	$(ECHO_PREFIX) $(CC) -o $@ $^ $(LDFLAGS)
-	@echo -e $(LINKMSG)
+	@printf $(LINKMSG) $@
 
 $(BUILDDIR)/%.dep : $(SRCDIR)/%.c
 	$(ECHO_PREFIX) mkdir -p $(dir $@)
@@ -77,12 +77,12 @@ $(BUILDDIR)/%.dep : $(SRCDIR)/%.S
 $(BUILDDIR)/%.o : $(SRCDIR)/%.c
 	$(ECHO_PREFIX) mkdir -p $(dir $@)
 	$(ECHO_PREFIX) $(CC) $(CCFLAGS) -c -o $@ $<
-	@echo -e $(BUILDMSG)
+	@printf $(BUILDMSG) $<
 
 $(BUILDDIR)/%.o : $(SRCDIR)/%.S
 	$(ECHO_PREFIX) mkdir -p $(dir $@)
 	$(ECHO_PREFIX) $(CC) $(CCFLAGS) -c -o $@ $<
-	@echo -e $(BUILDMSG)
+	@printf $(BUILDMSG) $<
 
 ifneq ($(MAKECMDGOALS),clean)
 -include $(DEPEND)
@@ -90,11 +90,11 @@ endif
 
 
 tests : $(patsubst $(TESTDIR)/%.c,$(BINDIR)/test-%,$(wildcard $(TESTDIR)/*.c))
-	$(ECHO_PREFIX) for test in $^; do echo -e $(TESTMSG); $$test; done
+	$(ECHO_PREFIX) for test in $^; do printf $(TESTMSG) $$test; $$test; done
 
 $(BINDIR)/test-% : $(TESTDIR)/%.c $(STATIC_TARGET)
 	$(ECHO_PREFIX) $(CC) -o $@ $^ $(APP_CCFLAGS) $(APP_LDFLAGS)
-	@echo -e $(LINKMSG)
+	@printf $(LINKMSG) $@
 
 apps : \
 	$(BINDIR)/simple \
@@ -106,26 +106,26 @@ apps : \
 
 $(BINDIR)/simple : $(APPDIR)/simple.c $(STATIC_TARGET)
 	$(ECHO_PREFIX) $(CC) -o $@ $^ $(APP_CCFLAGS) $(APP_LDFLAGS)
-	@echo -e $(LINKMSG)
+	@printf $(LINKMSG) $@
 
 $(BINDIR)/wakeup : $(APPDIR)/wakeup.c $(STATIC_TARGET)
 	$(ECHO_PREFIX) $(CC) -o $@ $^ $(APP_CCFLAGS) $(APP_LDFLAGS)
-	@echo -e $(LINKMSG)
+	@printf $(LINKMSG) $@
 
 $(BINDIR)/timeout : $(APPDIR)/timeout.c $(STATIC_TARGET)
 	$(ECHO_PREFIX) $(CC) -o $@ $^ $(APP_CCFLAGS) $(APP_LDFLAGS)
-	@echo -e $(LINKMSG)
+	@printf $(LINKMSG) $@
 
 $(BINDIR)/echo-server : $(APPDIR)/echo-server.c $(STATIC_TARGET)
 	$(ECHO_PREFIX) $(CC) -o $@ $^ $(APP_CCFLAGS) $(APP_LDFLAGS)
-	@echo -e $(LINKMSG)
+	@printf $(LINKMSG) $@
 
 $(BINDIR)/curl : $(APPDIR)/curl.c $(STATIC_TARGET)
 	$(ECHO_PREFIX) $(CC) -o $@ $^ $(APP_CCFLAGS) $(APP_LDFLAGS) \
 		`pkg-config --cflags --libs libcurl` -ldl
-	@echo -e $(LINKMSG)
+	@printf $(LINKMSG) $@
 
 $(BINDIR)/gtk : $(APPDIR)/gtk.c $(STATIC_TARGET)
 	$(ECHO_PREFIX) $(CC) -o $@ $^ $(APP_CCFLAGS) $(APP_LDFLAGS) \
 		`pkg-config --cflags --libs gtk+-3.0`
-	@echo -e $(LINKMSG)
+	@printf $(LINKMSG) $@
