@@ -10,6 +10,7 @@
 #if !defined(__linux__)
 
 #include <unistd.h>
+#include <string.h>
 #include <fcntl.h>
 
 #include "kern/io/hev-task-io-reactor.h"
@@ -21,7 +22,7 @@ hev_task_io_reactor_new (void)
     HevTaskIOReactor *self;
     int flags;
 
-    self = hev_malloc0 (sizeof (HevTaskIOReactor));
+    self = hev_malloc0 (sizeof (HevTaskIOReactorKQueue));
     if (!self)
         return NULL;
 
@@ -47,31 +48,66 @@ hev_task_io_reactor_new (void)
 }
 
 void
-hev_task_io_reactor_destroy (HevTaskIOReactor *self)
+hev_task_io_reactor_destroy (HevTaskIOReactor *reactor)
 {
-    close (self->fd);
+    HevTaskIOReactorKQueue *self = (HevTaskIOReactorKQueue *)reactor;
+
+    if (self->count > SEVENT_COUNT)
+        hev_free (self->events);
+    close (reactor->fd);
     hev_free (self);
 }
 
 int
-hev_task_io_reactor_setup (HevTaskIOReactor *self,
+hev_task_io_reactor_setup (HevTaskIOReactor *reactor,
                            HevTaskIOReactorSetupEvent *events, int count)
 {
-    return kevent (self->fd, events, count, NULL, 0, NULL);
+    HevTaskIOReactorKQueue *self = (HevTaskIOReactorKQueue *)reactor;
+    int res = 0;
+    size_t size;
+
+    if (self->count) {
+        res = kevent (reactor->fd, self->events, self->count, NULL, 0, NULL);
+        if (self->count > SEVENT_COUNT)
+            hev_free (self->events);
+    }
+
+    size = sizeof (HevTaskIOReactorSetupEvent) * count;
+    if (count > SEVENT_COUNT) {
+        self->events = hev_malloc (size);
+        if (!self->events)
+            return -1;
+    } else {
+        self->events = self->sevents;
+    }
+
+    memcpy (self->events, events, size);
+    self->count = count;
+
+    return res;
 }
 
 int
-hev_task_io_reactor_wait (HevTaskIOReactor *self,
+hev_task_io_reactor_wait (HevTaskIOReactor *reactor,
                           HevTaskIOReactorWaitEvent *events, int count,
                           int timeout)
 {
-    if (timeout >= 0) {
-        struct timespec ts = { 0 };
+    HevTaskIOReactorKQueue *self = (HevTaskIOReactorKQueue *)reactor;
+    struct timespec tsz = { 0 };
+    struct timespec *tsp = NULL;
+    int res;
 
-        return kevent (self->fd, NULL, 0, events, count, &ts);
+    if (timeout >= 0)
+        tsp = &tsz;
+
+    res = kevent (reactor->fd, self->events, self->count, events, count, tsp);
+    if (self->count) {
+        if (self->count > SEVENT_COUNT)
+            hev_free (self->events);
+        self->count = 0;
     }
 
-    return kevent (self->fd, NULL, 0, events, count, NULL);
+    return res;
 }
 
 #endif /* !defined(__linux__) */

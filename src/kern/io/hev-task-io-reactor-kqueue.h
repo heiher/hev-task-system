@@ -14,8 +14,20 @@
 #include <sys/event.h>
 #include <sys/time.h>
 
+#define SEVENT_COUNT (8)
+
+typedef struct _HevTaskIOReactorKQueue HevTaskIOReactorKQueue;
 typedef struct kevent HevTaskIOReactorSetupEvent;
 typedef struct kevent HevTaskIOReactorWaitEvent;
+
+struct _HevTaskIOReactorKQueue
+{
+    HevTaskIOReactor base;
+
+    HevTaskIOReactorSetupEvent sevents[SEVENT_COUNT];
+    HevTaskIOReactorSetupEvent *events;
+    int count;
+};
 
 enum _HevTaskIOReactorEvents
 {
