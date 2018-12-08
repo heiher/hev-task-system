@@ -29,6 +29,7 @@ task_server_entry (void *data)
     HevTask *task = hev_task_self ();
     int fd, cfd;
     struct sockaddr_in addr;
+    char buf[16];
     struct msghdr mh;
     struct iovec iov[1];
     ssize_t size;
@@ -74,6 +75,9 @@ task_server_entry (void *data)
     mh.msg_iovlen = 1;
     size = hev_task_io_socket_sendmsg (cfd, &mh, MSG_WAITALL, NULL, NULL);
     assert (size == strlen (msg));
+
+    /* recv */
+    hev_task_io_socket_recv (cfd, buf, strlen (msg), 0, NULL, NULL);
 
     close (cfd);
     close (fd);
@@ -123,6 +127,9 @@ task_client_entry (void *data)
     mh.msg_iovlen = 1;
     size = hev_task_io_socket_recvmsg (fd, &mh, MSG_WAITALL, NULL, NULL);
     assert (size == strlen (msg));
+
+    /* send */
+    hev_task_io_socket_send (fd, msg, strlen (msg), 0, NULL, NULL);
 
     close (fd);
 }
