@@ -14,6 +14,10 @@
 #include <sys/event.h>
 #include <sys/time.h>
 
+#ifndef EVFILT_EXCEPT
+#define EVFILT_EXCEPT (0)
+#endif
+
 #define SEVENT_COUNT (8)
 
 typedef struct _HevTaskIOReactorKQueue HevTaskIOReactorKQueue;
