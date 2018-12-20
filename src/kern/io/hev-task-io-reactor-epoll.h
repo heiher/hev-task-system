@@ -10,7 +10,10 @@
 #ifndef __HEV_TASK_IO_REACTOR_EPOLL_H__
 #define __HEV_TASK_IO_REACTOR_EPOLL_H__
 
+#include <poll.h>
 #include <sys/epoll.h>
+
+#define HEV_TASK_IO_REACTOR_EVENT_GEN_MAX (1)
 
 typedef struct _HevTaskIOReactorSetupEvent HevTaskIOReactorSetupEvent;
 typedef struct epoll_event HevTaskIOReactorWaitEvent;
@@ -20,7 +23,6 @@ enum _HevTaskIOReactorEvents
     HEV_TASK_IO_REACTOR_EV_RO = EPOLLIN,
     HEV_TASK_IO_REACTOR_EV_WO = EPOLLOUT,
     HEV_TASK_IO_REACTOR_EV_ER = EPOLLERR,
-    HEV_TASK_IO_REACTOR_EV_RW = EPOLLIN | EPOLLOUT,
 };
 
 enum _HevTaskIOReactorOperation
@@ -53,6 +55,25 @@ hev_task_io_reactor_setup_event_set (HevTaskIOReactorSetupEvent *event, int fd,
     event->fd = fd;
     event->event.events = events;
     event->event.data.ptr = data;
+}
+
+static inline int
+hev_task_io_reactor_setup_event_gen (HevTaskIOReactorSetupEvent *events, int fd,
+                                     HevTaskIOReactorOperation op,
+                                     unsigned int poll_events, void *data)
+{
+    HevTaskIOReactorEvents reactor_events = 0;
+
+    if (poll_events & POLLIN)
+        reactor_events |= HEV_TASK_IO_REACTOR_EV_RO;
+    if (poll_events & POLLOUT)
+        reactor_events |= HEV_TASK_IO_REACTOR_EV_WO;
+    if (poll_events & POLLERR)
+        reactor_events |= HEV_TASK_IO_REACTOR_EV_ER;
+
+    hev_task_io_reactor_setup_event_set (events, fd, op, reactor_events, data);
+
+    return 1;
 }
 
 static inline unsigned int
