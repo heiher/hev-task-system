@@ -106,45 +106,30 @@ hev_task_get_priority (HevTask *self)
     return self->next_priority;
 }
 
-static inline unsigned int
-hev_task_fd_events_to_reactor (unsigned int events)
-{
-    HevTaskIOReactorEvents reactor_events = 0;
-
-    if (events & POLLIN)
-        reactor_events |= HEV_TASK_IO_REACTOR_EV_RO;
-    if (events & POLLOUT)
-        reactor_events |= HEV_TASK_IO_REACTOR_EV_WO;
-    if (events & POLLERR)
-        reactor_events |= HEV_TASK_IO_REACTOR_EV_ER;
-
-    return reactor_events;
-}
-
 int
 hev_task_add_fd (HevTask *self, int fd, unsigned int events)
 {
     HevTaskIOReactor *reactor;
-    HevTaskIOReactorSetupEvent event;
+    HevTaskIOReactorSetupEvent revents[HEV_TASK_IO_REACTOR_EVENT_GEN_MAX];
+    int count;
 
     reactor = hev_task_system_get_context ()->reactor;
-    hev_task_io_reactor_setup_event_set (&event, fd, HEV_TASK_IO_REACTOR_OP_ADD,
-                                         hev_task_fd_events_to_reactor (events),
-                                         &self->sched_entity);
-    return hev_task_io_reactor_setup (reactor, &event, 1);
+    count = hev_task_io_reactor_setup_event_gen (
+        revents, fd, HEV_TASK_IO_REACTOR_OP_ADD, events, &self->sched_entity);
+    return hev_task_io_reactor_setup (reactor, revents, count);
 }
 
 int
 hev_task_mod_fd (HevTask *self, int fd, unsigned int events)
 {
     HevTaskIOReactor *reactor;
-    HevTaskIOReactorSetupEvent event;
+    HevTaskIOReactorSetupEvent revents[HEV_TASK_IO_REACTOR_EVENT_GEN_MAX];
+    int count;
 
     reactor = hev_task_system_get_context ()->reactor;
-    hev_task_io_reactor_setup_event_set (&event, fd, HEV_TASK_IO_REACTOR_OP_MOD,
-                                         hev_task_fd_events_to_reactor (events),
-                                         &self->sched_entity);
-    return hev_task_io_reactor_setup (reactor, &event, 1);
+    count = hev_task_io_reactor_setup_event_gen (
+        revents, fd, HEV_TASK_IO_REACTOR_OP_MOD, events, &self->sched_entity);
+    return hev_task_io_reactor_setup (reactor, revents, count);
 }
 
 int
