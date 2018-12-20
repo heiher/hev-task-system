@@ -10,6 +10,7 @@
 #ifndef __HEV_TASK_IO_REACTOR_KQUEUE_H__
 #define __HEV_TASK_IO_REACTOR_KQUEUE_H__
 
+#include <poll.h>
 #include <sys/types.h>
 #include <sys/event.h>
 #include <sys/time.h>
@@ -19,6 +20,8 @@
 #endif
 
 #define SEVENT_COUNT (8)
+
+#define HEV_TASK_IO_REACTOR_EVENT_GEN_MAX (3)
 
 typedef struct _HevTaskIOReactorKQueue HevTaskIOReactorKQueue;
 typedef struct kevent HevTaskIOReactorSetupEvent;
@@ -38,7 +41,6 @@ enum _HevTaskIOReactorEvents
     HEV_TASK_IO_REACTOR_EV_RO = EVFILT_READ,
     HEV_TASK_IO_REACTOR_EV_WO = EVFILT_WRITE,
     HEV_TASK_IO_REACTOR_EV_ER = EVFILT_EXCEPT,
-    HEV_TASK_IO_REACTOR_EV_RW = EVFILT_READ | EVFILT_WRITE,
 };
 
 enum _HevTaskIOReactorOperation
@@ -60,6 +62,26 @@ hev_task_io_reactor_setup_event_set (HevTaskIOReactorSetupEvent *event, int fd,
                                      unsigned int events, void *data)
 {
     EV_SET (event, fd, events, op | EV_ONESHOT, 0, 0, data);
+}
+
+static inline int
+hev_task_io_reactor_setup_event_gen (HevTaskIOReactorSetupEvent *events, int fd,
+                                     HevTaskIOReactorOperation op,
+                                     unsigned int poll_events, void *data)
+{
+    int count = 0;
+
+    if (poll_events & POLLIN)
+        hev_task_io_reactor_setup_event_set (&events[count++], fd, op,
+                                             HEV_TASK_IO_REACTOR_EV_RO, data);
+    if (poll_events & POLLOUT)
+        hev_task_io_reactor_setup_event_set (&events[count++], fd, op,
+                                             HEV_TASK_IO_REACTOR_EV_WO, data);
+    if (poll_events & POLLERR)
+        hev_task_io_reactor_setup_event_set (&events[count++], fd, op,
+                                             HEV_TASK_IO_REACTOR_EV_ER, data);
+
+    return count;
 }
 
 static inline unsigned int
