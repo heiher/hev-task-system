@@ -201,10 +201,6 @@ hev_task_io_splice (int fd_a_i, int fd_a_o, int fd_b_i, int fd_b_o,
     for (;;) {
         int no_data = 0;
         HevTaskYieldType type;
-        HevTaskIOReactorEvents fd_a_i_e = HEV_TASK_IO_REACTOR_EV_RO;
-        HevTaskIOReactorEvents fd_a_o_e = 0;
-        HevTaskIOReactorEvents fd_b_i_e = HEV_TASK_IO_REACTOR_EV_RO;
-        HevTaskIOReactorEvents fd_b_o_e = 0;
 
         if (splice_f) {
             int ret;
@@ -215,8 +211,6 @@ hev_task_io_splice (int fd_a_i, int fd_a_o, int fd_b_i, int fd_b_o,
                 /* forward no data and backward closed, quit */
                 if (!splice_b)
                     break;
-                if (w_left_f)
-                    fd_b_o_e = HEV_TASK_IO_REACTOR_EV_WO;
                 no_data++;
             } else if (ret == -1) { /* error */
                 /* forward error and backward closed, quit */
@@ -236,8 +230,6 @@ hev_task_io_splice (int fd_a_i, int fd_a_o, int fd_b_i, int fd_b_o,
                 /* backward no data and forward closed, quit */
                 if (!splice_f)
                     break;
-                if (w_left_b)
-                    fd_a_o_e = HEV_TASK_IO_REACTOR_EV_WO;
                 no_data++;
             } else if (ret == -1) { /* error */
                 /* backward error and forward closed, quit */
@@ -254,23 +246,25 @@ hev_task_io_splice (int fd_a_i, int fd_a_o, int fd_b_i, int fd_b_o,
         if (no_data < 2) {
             type = HEV_TASK_YIELD;
         } else {
+            int fd_a, fd_b;
+            unsigned int fd_a_e, fd_b_e;
+
             type = HEV_TASK_WAITIO;
-            if (fd_a_o_e) {
-                if (fd_b_o_e) {
-                    hev_task_io_res_fd4 (fd_a_i, fd_a_i_e, fd_a_o, fd_a_o_e,
-                                         fd_b_i, fd_b_i_e, fd_b_o, fd_b_o_e);
-                } else {
-                    hev_task_io_res_fd3 (fd_a_i, fd_a_i_e, fd_a_o, fd_a_o_e,
-                                         fd_b_i, fd_b_i_e);
-                }
+            if (w_left_f) {
+                fd_b = fd_b_o;
+                fd_b_e = HEV_TASK_IO_REACTOR_EV_WO;
             } else {
-                if (fd_b_o_e) {
-                    hev_task_io_res_fd3 (fd_a_i, fd_a_i_e, fd_b_i, fd_b_i_e,
-                                         fd_b_o, fd_b_o_e);
-                } else {
-                    hev_task_io_res_fd2 (fd_a_i, fd_a_i_e, fd_b_i, fd_b_i_e);
-                }
+                fd_b = fd_b_i;
+                fd_b_e = HEV_TASK_IO_REACTOR_EV_RO;
             }
+            if (w_left_b) {
+                fd_a = fd_a_o;
+                fd_a_e = HEV_TASK_IO_REACTOR_EV_WO;
+            } else {
+                fd_a = fd_a_i;
+                fd_a_e = HEV_TASK_IO_REACTOR_EV_RO;
+            }
+            hev_task_io_res_fd2 (fd_a, fd_a_e, fd_b, fd_b_e);
         }
         if (yielder) {
             if (yielder (type, yielder_data))
