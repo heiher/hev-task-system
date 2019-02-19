@@ -26,6 +26,7 @@ struct _HevTaskMutex
 
 /**
  * hev_task_mutex_init:
+ * @self: a #HevTaskMutex
  *
  * Initialize the task mutex.
  *
@@ -37,6 +38,7 @@ int hev_task_mutex_init (HevTaskMutex *self);
 
 /**
  * hev_task_mutex_lock:
+ * @self: a #HevTaskMutex
  *
  * Lock the task mutex.
  *
@@ -48,6 +50,7 @@ int hev_task_mutex_lock (HevTaskMutex *self);
 
 /**
  * hev_task_mutex_trylock:
+ * @self: a #HevTaskMutex
  *
  * Try lock the task mutex.
  *
@@ -59,6 +62,7 @@ int hev_task_mutex_trylock (HevTaskMutex *self);
 
 /**
  * hev_task_mutex_unlock:
+ * @self: a #HevTaskMutex
  *
  * Unlock the task mutex.
  *
