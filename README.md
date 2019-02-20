@@ -12,6 +12,16 @@ and stack in heap of the process.
 In task, you can allocate memory from heap, read and write data from to stack,
 and do I/O operations in synchronized mode.
 
+## Features
+
+* Simple/lightweight task.
+* I/O operations wrapper.
+* Inter-task synchronous. (Mutex/Condition)
+* Inter-task communications. (Channel)
+* Slice-based memory allocator.
+* Multi-thread support.
+* Multi-platform support. (Linux/BSD/macOS)
+
 ## How to Build
 
 **Unix**:
