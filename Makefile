@@ -99,6 +99,7 @@ $(BINDIR)/test-% : $(TESTDIR)/%.c $(STATIC_TARGET)
 apps : \
 	$(BINDIR)/simple \
 	$(BINDIR)/wakeup \
+	$(BINDIR)/channel \
 	$(BINDIR)/timeout \
 	$(BINDIR)/echo-server \
 	$(BINDIR)/curl \
@@ -109,6 +110,10 @@ $(BINDIR)/simple : $(APPDIR)/simple.c $(STATIC_TARGET)
 	@printf $(LINKMSG) $@
 
 $(BINDIR)/wakeup : $(APPDIR)/wakeup.c $(STATIC_TARGET)
+	$(ECHO_PREFIX) $(CC) -o $@ $^ $(APP_CCFLAGS) $(APP_LDFLAGS)
+	@printf $(LINKMSG) $@
+
+$(BINDIR)/channel : $(APPDIR)/channel.c $(STATIC_TARGET)
 	$(ECHO_PREFIX) $(CC) -o $@ $^ $(APP_CCFLAGS) $(APP_LDFLAGS)
 	@printf $(LINKMSG) $@
 
