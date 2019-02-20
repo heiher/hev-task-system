@@ -70,7 +70,7 @@ ssize_t hev_task_channel_read (HevTaskChannel *self, void *buffer,
  *
  * Since: 4.5
  */
-ssize_t hev_task_channel_write (HevTaskChannel *self, void *buffer,
+ssize_t hev_task_channel_write (HevTaskChannel *self, const void *buffer,
                                 size_t count);
 
 #ifdef __cplusplus

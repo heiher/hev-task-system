@@ -194,7 +194,7 @@ out:
 }
 
 ssize_t
-hev_task_channel_write (HevTaskChannel *self, void *buffer, size_t count)
+hev_task_channel_write (HevTaskChannel *self, const void *buffer, size_t count)
 {
     HevTaskChannel *peer = self->peer;
     HevTaskChannelNode *node;
