@@ -14,72 +14,96 @@
 #include "kern/sync/hev-task-cond.h"
 #include "mm/api/hev-memory-allocator-api.h"
 
+#define MAX_BUFFER_SIZE (16384)
+
 typedef union _HevTaskChannelData HevTaskChannelData;
-typedef struct _HevTaskChannelNode HevTaskChannelNode;
+typedef struct _HevTaskChannelBuffer HevTaskChannelBuffer;
+
+union _HevTaskChannelData
+{
+    char b[MAX_BUFFER_SIZE];
+    short h[0];
+    int w[0];
+    long d[0];
+};
+
+struct _HevTaskChannelBuffer
+{
+    size_t size;
+    HevTaskChannelData data;
+};
 
 struct _HevTaskChannel
 {
     HevTaskChannel *peer;
 
     HevTaskMutex mutex;
-    HevTaskCond cond;
+    HevTaskCond cond_full;
+    HevTaskCond cond_empty;
 
-    HevTaskChannelNode *head;
-    HevTaskChannelNode *tail;
-
+    unsigned int rd_idx;
+    unsigned int wr_idx;
+    unsigned int use_count;
+    unsigned int max_count;
     unsigned int ref_count;
-};
 
-union _HevTaskChannelData
-{
-    char b[0];
-    short h[0];
-    int w[0];
-    long d[0];
-};
-
-struct _HevTaskChannelNode
-{
-    HevTaskChannelNode *prev;
-    HevTaskChannelNode *next;
-
-    size_t size;
-    HevTaskChannelData data;
+    HevTaskChannelBuffer buffers[0];
 };
 
 int
 hev_task_channel_new (HevTaskChannel **chan1, HevTaskChannel **chan2)
 {
+    return hev_task_channel_new_with_buffers (chan1, chan2, 0);
+}
+
+int
+hev_task_channel_new_with_buffers (HevTaskChannel **chan1,
+                                   HevTaskChannel **chan2, unsigned int buffers)
+{
     HevTaskChannel *c1, *c2;
 
-    c1 = hev_malloc (sizeof (HevTaskChannel));
+    buffers += 1;
+
+    c1 = hev_malloc (sizeof (HevTaskChannel) +
+                     sizeof (HevTaskChannelBuffer) * buffers);
     if (!c1)
         goto err0;
 
-    c2 = hev_malloc (sizeof (HevTaskChannel));
+    c2 = hev_malloc (sizeof (HevTaskChannel) +
+                     sizeof (HevTaskChannelBuffer) * buffers);
     if (!c2)
         goto err1;
 
     c1->peer = c2;
-    c1->head = NULL;
-    c1->tail = NULL;
+    c1->rd_idx = 0;
+    c1->wr_idx = 0;
+    c1->use_count = 0;
+    c1->max_count = buffers;
     c1->ref_count = 1;
 
     if (hev_task_mutex_init (&c1->mutex) != 0)
         goto err2;
 
-    if (hev_task_cond_init (&c1->cond) != 0)
+    if (hev_task_cond_init (&c1->cond_full) != 0)
+        goto err2;
+
+    if (hev_task_cond_init (&c1->cond_empty) != 0)
         goto err2;
 
     c2->peer = c1;
-    c2->head = NULL;
-    c2->tail = NULL;
+    c2->rd_idx = 0;
+    c2->wr_idx = 0;
+    c2->use_count = 0;
+    c2->max_count = buffers;
     c2->ref_count = 1;
 
     if (hev_task_mutex_init (&c2->mutex) != 0)
         goto err2;
 
-    if (hev_task_cond_init (&c2->cond) != 0)
+    if (hev_task_cond_init (&c2->cond_full) != 0)
+        goto err2;
+
+    if (hev_task_cond_init (&c2->cond_empty) != 0)
         goto err2;
 
     *chan1 = c1;
@@ -115,27 +139,25 @@ hev_task_channel_unref (HevTaskChannel *self)
 void
 hev_task_channel_destroy (HevTaskChannel *self)
 {
-    HevTaskChannelNode *iter;
-
     hev_task_mutex_lock (&self->mutex);
-    for (iter = self->head; iter;) {
-        HevTaskChannelNode *node = iter;
-        iter = node->next;
-        hev_free (node);
-    }
-    if (self->peer)
+    if (self->peer) {
         self->peer->peer = NULL;
-    hev_task_cond_broadcast (&self->cond);
+        hev_task_cond_broadcast (&self->peer->cond_empty);
+    }
+    hev_task_cond_broadcast (&self->cond_full);
     hev_task_mutex_unlock (&self->mutex);
 
     hev_task_channel_unref (self);
 }
 
-static void
+static ssize_t
 hev_task_channel_data_copy (void *dst, const void *src, size_t size)
 {
     HevTaskChannelData *d = dst;
     const HevTaskChannelData *s = src;
+
+    if (size > MAX_BUFFER_SIZE)
+        size = MAX_BUFFER_SIZE;
 
     switch (size) {
     case 0:
@@ -157,35 +179,38 @@ hev_task_channel_data_copy (void *dst, const void *src, size_t size)
     default:
         memcpy (dst, src, size);
     }
+
+    return size;
 }
 
 ssize_t
 hev_task_channel_read (HevTaskChannel *self, void *buffer, size_t count)
 {
-    HevTaskChannelNode *node;
+    HevTaskChannelBuffer *cbuf;
     ssize_t size = -1;
 
     hev_task_mutex_lock (&self->mutex);
 
-    while (!self->head) {
+    /* wait on empty */
+    while (self->use_count == 0) {
+        /* check is peer alive because cond wait may yield */
         if (!self->peer)
             goto out;
-        hev_task_cond_wait (&self->cond, &self->mutex);
+        hev_task_cond_wait (&self->cond_empty, &self->mutex);
     }
 
-    node = self->head;
-    if (node->next)
-        node->next->prev = NULL;
-    else
-        self->tail = NULL;
-    self->head = node->next;
+    cbuf = &self->buffers[self->rd_idx];
+    self->rd_idx = (self->rd_idx + 1) % self->max_count;
 
     size = count;
-    if (node->size < count)
-        size = node->size;
-    hev_task_channel_data_copy (buffer, &node->data, size);
+    if (cbuf->size < count)
+        size = cbuf->size;
+    size = hev_task_channel_data_copy (buffer, &cbuf->data, size);
 
-    hev_free (node);
+    if (self->use_count == self->max_count)
+        hev_task_cond_signal (&self->cond_full);
+
+    self->use_count--;
 
 out:
     hev_task_mutex_unlock (&self->mutex);
@@ -197,7 +222,7 @@ ssize_t
 hev_task_channel_write (HevTaskChannel *self, const void *buffer, size_t count)
 {
     HevTaskChannel *peer = self->peer;
-    HevTaskChannelNode *node;
+    HevTaskChannelBuffer *cbuf;
     ssize_t size = -1;
 
     if (!peer)
@@ -210,24 +235,35 @@ hev_task_channel_write (HevTaskChannel *self, const void *buffer, size_t count)
     if (!self->peer)
         goto out1;
 
-    node = hev_malloc (sizeof (HevTaskChannelNode) + count);
-    if (!node)
-        goto out1;
+    /* wait on full */
+    while (peer->use_count == peer->max_count) {
+        /* check is peer alive because cond wait may yield */
+        if (!self->peer)
+            goto out1;
+        hev_task_cond_wait (&peer->cond_full, &peer->mutex);
+    }
 
-    if (!peer->tail)
-        hev_task_cond_signal (&peer->cond);
-
-    node->prev = peer->tail;
-    node->next = NULL;
-    node->size = count;
-    if (peer->tail)
-        peer->tail->next = node;
-    else
-        peer->head = node;
-    peer->tail = node;
+    cbuf = &peer->buffers[peer->wr_idx];
+    peer->wr_idx = (peer->wr_idx + 1) % peer->max_count;
 
     size = count;
-    hev_task_channel_data_copy (&node->data, buffer, size);
+    cbuf->size = size;
+    size = hev_task_channel_data_copy (&cbuf->data, buffer, size);
+
+    if (peer->use_count == 0)
+        hev_task_cond_signal (&peer->cond_empty);
+
+    peer->use_count++;
+
+    /* sync */
+    while (peer->use_count == peer->max_count) {
+        /* check is peer alive because cond wait may yield */
+        if (!self->peer) {
+            size = -1;
+            break;
+        }
+        hev_task_cond_wait (&peer->cond_full, &peer->mutex);
+    }
 
 out1:
     hev_task_mutex_unlock (&peer->mutex);
