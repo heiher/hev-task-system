@@ -47,6 +47,7 @@ ndk-build
 
 ## Demos
 1. [simple](https://gitlab.com/hev/hev-task-system/blob/master/apps/simple.c)
+1. [channel](https://gitlab.com/hev/hev-task-system/blob/master/apps/channel.c)
 1. [timeout](https://gitlab.com/hev/hev-task-system/blob/master/apps/timeout.c)
 1. [wakeup](https://gitlab.com/hev/hev-task-system/blob/master/apps/wakeup.c)
 1. [echo-server](https://gitlab.com/hev/hev-task-system/blob/master/apps/echo-server.c)
