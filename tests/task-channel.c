@@ -19,14 +19,15 @@ task1_entry (void *data)
 {
     HevTaskChannel *chan = data;
     int v = 0;
+    const size_t vs = sizeof (v);
 
-    assert (hev_task_channel_read (chan, &v, sizeof (v)) == sizeof (v));
+    assert (hev_task_channel_read (chan, &v, vs) == vs);
     assert (v == 1234);
 
-    assert (hev_task_channel_read (chan, &v, sizeof (v)) == sizeof (v));
+    assert (hev_task_channel_read (chan, &v, vs) == vs);
     assert (v == 5678);
 
-    assert (hev_task_channel_read (chan, &v, sizeof (v)) == -1);
+    assert (hev_task_channel_read (chan, &v, vs) == -1);
 
     hev_task_channel_destroy (chan);
 }
@@ -36,12 +37,13 @@ task2_entry (void *data)
 {
     HevTaskChannel *chan = data;
     int v;
+    const size_t vs = sizeof (v);
 
     v = 1234;
-    assert (hev_task_channel_write (chan, &v, sizeof (v)) == sizeof (v));
+    assert (hev_task_channel_write (chan, &v, vs) == vs);
 
     v = 5678;
-    assert (hev_task_channel_write (chan, &v, sizeof (v)) == sizeof (v));
+    assert (hev_task_channel_write (chan, &v, vs) == vs);
 
     hev_task_channel_destroy (chan);
 }
@@ -50,6 +52,19 @@ static void
 task3_entry (void *data)
 {
     HevTaskChannel *chan = data;
+    int v = 0;
+    const size_t vs = sizeof (v);
+
+    assert (hev_task_channel_read (chan, &v, vs) == vs);
+    assert (v == 1234);
+
+    v = 5678;
+    assert (hev_task_channel_write (chan, &v, vs) == vs);
+
+    assert (hev_task_channel_read (chan, &v, vs) == vs);
+    assert (v == 9012);
+
+    assert (hev_task_channel_write (chan, &v, vs) == -1);
 
     hev_task_channel_destroy (chan);
 }
@@ -59,41 +74,55 @@ task4_entry (void *data)
 {
     HevTaskChannel *chan = data;
     int v;
+    const size_t vs = sizeof (v);
 
-    assert (hev_task_channel_write (chan, &v, sizeof (v)) == -1);
+    v = 1234;
+    assert (hev_task_channel_write (chan, &v, vs) == vs);
+
+    assert (hev_task_channel_read (chan, &v, vs) == vs);
+    assert (v == 5678);
+
+    v = 9012;
+    assert (hev_task_channel_write (chan, &v, vs) == vs);
+
+    hev_task_channel_destroy (chan);
 }
 
 int
 main (int argc, char *argv[])
 {
-    HevTask *task;
-    HevTaskChannel *chan1, *chan2;
+    int i;
 
     assert (hev_task_system_init () == 0);
 
-    assert (hev_task_channel_new (&chan1, &chan2) == 0);
+    for (i = 0; i < 5; i++) {
+        HevTask *task;
+        HevTaskChannel *chan1, *chan2;
 
-    task = hev_task_new (-1);
-    assert (task);
-    hev_task_set_priority (task, 1);
-    hev_task_run (task, task1_entry, chan1);
+        assert (hev_task_channel_new_with_buffers (&chan1, &chan2, i) == 0);
 
-    task = hev_task_new (-1);
-    assert (task);
-    hev_task_set_priority (task, 2);
-    hev_task_run (task, task2_entry, chan2);
+        task = hev_task_new (-1);
+        assert (task);
+        hev_task_set_priority (task, 1);
+        hev_task_run (task, task1_entry, chan1);
 
-    assert (hev_task_channel_new (&chan1, &chan2) == 0);
+        task = hev_task_new (-1);
+        assert (task);
+        hev_task_set_priority (task, 2);
+        hev_task_run (task, task2_entry, chan2);
 
-    task = hev_task_new (-1);
-    assert (task);
-    hev_task_set_priority (task, 1);
-    hev_task_run (task, task3_entry, chan1);
+        assert (hev_task_channel_new_with_buffers (&chan1, &chan2, i) == 0);
 
-    task = hev_task_new (-1);
-    assert (task);
-    hev_task_set_priority (task, 2);
-    hev_task_run (task, task4_entry, chan2);
+        task = hev_task_new (-1);
+        assert (task);
+        hev_task_set_priority (task, 1);
+        hev_task_run (task, task3_entry, chan1);
+
+        task = hev_task_new (-1);
+        assert (task);
+        hev_task_set_priority (task, 2);
+        hev_task_run (task, task4_entry, chan2);
+    }
 
     hev_task_system_run ();
 
