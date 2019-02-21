@@ -1,5 +1,7 @@
 # HevTaskSystem
 
+[![status](https://gitlab.com/hev/hev-task-system/badges/master/pipeline.svg)](https://gitlab.com/hev/hev-task-system/commits/master)
+
 HevTaskSystem is a simple, lightweight multi-task system (coroutines) for Unix.
 
 The task system is executed by a Unix process/thread. In task system, you can
