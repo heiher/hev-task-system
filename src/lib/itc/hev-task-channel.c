@@ -30,7 +30,7 @@ union _HevTaskChannelData
 struct _HevTaskChannelBuffer
 {
     size_t size;
-    HevTaskChannelData data;
+    HevTaskChannelData *data;
 };
 
 struct _HevTaskChannel
@@ -61,16 +61,19 @@ hev_task_channel_new_with_buffers (HevTaskChannel **chan1,
                                    HevTaskChannel **chan2, unsigned int buffers)
 {
     HevTaskChannel *c1, *c2;
+    unsigned int buffers_size;
+    unsigned int data_size = 0;
 
     buffers += 1;
+    if (buffers > 1)
+        data_size = sizeof (HevTaskChannelData) * buffers;
+    buffers_size = sizeof (HevTaskChannelBuffer) * buffers;
 
-    c1 = hev_malloc (sizeof (HevTaskChannel) +
-                     sizeof (HevTaskChannelBuffer) * buffers);
+    c1 = hev_malloc (sizeof (HevTaskChannel) + buffers_size + data_size);
     if (!c1)
         goto err0;
 
-    c2 = hev_malloc (sizeof (HevTaskChannel) +
-                     sizeof (HevTaskChannelBuffer) * buffers);
+    c2 = hev_malloc (sizeof (HevTaskChannel) + buffers_size + data_size);
     if (!c2)
         goto err1;
 
@@ -105,6 +108,19 @@ hev_task_channel_new_with_buffers (HevTaskChannel **chan1,
 
     if (hev_task_cond_init (&c2->cond_empty) != 0)
         goto err2;
+
+    if (buffers > 1) {
+        unsigned int i;
+        HevTaskChannelData *c1_data, *c2_data;
+
+        c1_data = (void *)c1->buffers + buffers_size;
+        c2_data = (void *)c2->buffers + buffers_size;
+
+        for (i = 0; i < buffers; i++) {
+            c1->buffers[i].data = &c1_data[i];
+            c2->buffers[i].data = &c2_data[i];
+        }
+    }
 
     *chan1 = c1;
     *chan2 = c2;
@@ -205,7 +221,7 @@ hev_task_channel_read (HevTaskChannel *self, void *buffer, size_t count)
     size = count;
     if (cbuf->size < count)
         size = cbuf->size;
-    size = hev_task_channel_data_copy (buffer, &cbuf->data, size);
+    size = hev_task_channel_data_copy (buffer, cbuf->data, size);
 
     if (self->use_count == self->max_count)
         hev_task_cond_signal (&self->cond_full);
@@ -248,7 +264,10 @@ hev_task_channel_write (HevTaskChannel *self, const void *buffer, size_t count)
 
     size = count;
     cbuf->size = size;
-    size = hev_task_channel_data_copy (&cbuf->data, buffer, size);
+    if (peer->max_count == 1)
+        cbuf->data = (HevTaskChannelData *)buffer;
+    else
+        size = hev_task_channel_data_copy (cbuf->data, buffer, size);
 
     if (peer->use_count == 0)
         hev_task_cond_signal (&peer->cond_empty);
