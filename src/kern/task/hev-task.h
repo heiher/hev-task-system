@@ -31,8 +31,8 @@ typedef void (*HevTaskEntry) (void *data);
 /**
  * HevTaskState:
  * @HEV_TASK_STOPPED: The task is not in any task system.
- * @HEV_TASK_RUNNING: The task is in a task system's running list.
- * @HEV_TASK_WAITING: The task is in a task system's waiting list.
+ * @HEV_TASK_RUNNING: The task is in a task system's running tree.
+ * @HEV_TASK_WAITING: The task is in a task system's waiting poll.
  *
  * Since: 1.0
  */
@@ -45,8 +45,8 @@ typedef enum
 
 /**
  * HevTaskYieldType:
- * @HEV_TASK_YIELD: Move task to yield waiting list.
- * @HEV_TASK_WAITIO: Move task to I/O waiting list.
+ * @HEV_TASK_YIELD: Move task to yield waiting state.
+ * @HEV_TASK_WAITIO: Move task to I/O waiting state.
  * @HEV_TASK_YIELD_COUNT: Maximum yield type count.
  *
  * Since: 1.0
@@ -255,8 +255,8 @@ unsigned int hev_task_usleep (unsigned int microseconds);
  * @entry: A #HevTaskEntry
  * @data (nullable): a user data to passed to @entry
  *
- * Set the entry and data to a task, and added to running list of task system.
- * The task will be run unitl task system run.
+ * Set the entry and data to the task, and add to running tree of task system.
+ * The task will be really run after task system run or current task yield.
  *
  * Since: 1.0
  */
