@@ -46,16 +46,16 @@ hev_task_system_schedule (HevTaskYieldType type)
 
     if (type == HEV_TASK_RUN_SCHEDULER) {
         switch (_setjmp (ctx->kernel_context)) {
-        case 1:
+        case HEV_TASK_SCHED_SWITCH:
             hev_task_system_update_sched_key (ctx);
             hev_task_system_reinsert_current_task (ctx);
             break;
-        case 2:
-            hev_task_system_remove_current_task (ctx, HEV_TASK_STOPPED);
-            break;
-        case 3:
+        case HEV_TASK_SCHED_WAITIO:
             hev_task_system_update_sched_key (ctx);
             hev_task_system_remove_current_task (ctx, HEV_TASK_WAITING);
+            break;
+        case HEV_TASK_SCHED_REMOVE:
+            hev_task_system_remove_current_task (ctx, HEV_TASK_STOPPED);
             break;
         }
     }
@@ -82,11 +82,8 @@ save_task:
     if (_setjmp (ctx->current_task->context))
         return; /* resume to task context */
 
-    if (type == HEV_TASK_WAITIO)
-        _longjmp (ctx->kernel_context, 3);
-
     /* resume to kernel context */
-    _longjmp (ctx->kernel_context, 1);
+    _longjmp (ctx->kernel_context, type);
 }
 
 void
@@ -120,7 +117,7 @@ hev_task_system_kill_current_task (void)
 
     /* NOTE: remove current task in kernel context, because current
      * task stack may be freed. */
-    _longjmp (ctx->kernel_context, 2);
+    _longjmp (ctx->kernel_context, HEV_TASK_SCHED_REMOVE);
 }
 
 static inline void

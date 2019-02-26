@@ -25,6 +25,13 @@
 
 typedef struct _HevTaskSystemContext HevTaskSystemContext;
 
+enum
+{
+    HEV_TASK_SCHED_SWITCH = HEV_TASK_YIELD,
+    HEV_TASK_SCHED_WAITIO = HEV_TASK_WAITIO,
+    HEV_TASK_SCHED_REMOVE = HEV_TASK_YIELD_COUNT,
+};
+
 struct _HevTaskSystemContext
 {
     unsigned int total_task_count;
