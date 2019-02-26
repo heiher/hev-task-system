@@ -53,7 +53,7 @@ typedef enum
  */
 typedef enum
 {
-    HEV_TASK_YIELD,
+    HEV_TASK_YIELD = 1,
     HEV_TASK_WAITIO,
     HEV_TASK_YIELD_COUNT,
 } HevTaskYieldType;
