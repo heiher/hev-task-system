@@ -155,7 +155,7 @@ hev_task_system_update_sched_key (HevTaskSystemContext *ctx)
         nsec += 1000000000L;
     }
 
-    runtime = (uint64_t)sec * 1000000000UL + nsec;
+    runtime += (uint64_t)sec * 1000000000UL + nsec;
 #endif
 
     curr_task->sched_key += runtime * curr_task->priority;
