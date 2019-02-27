@@ -123,8 +123,10 @@ hev_task_system_kill_current_task (void)
 static inline void
 hev_task_system_get_clock_time (struct timespec *ts)
 {
+#if CONFIG_SCHED_CLOCK != CLOCK_NONE
     if (-1 == clock_gettime (CONFIG_SCHED_CLOCK, ts))
         abort ();
+#endif
 }
 
 static inline void
@@ -137,8 +139,10 @@ static inline void
 hev_task_system_update_sched_key (HevTaskSystemContext *ctx)
 {
     HevTask *curr_task = ctx->current_task;
+    uint64_t runtime = 1;
+
+#if CONFIG_SCHED_CLOCK != CLOCK_NONE
     struct timespec curr_time;
-    uint64_t runtime;
     time_t sec;
     long nsec;
 
@@ -152,6 +156,8 @@ hev_task_system_update_sched_key (HevTaskSystemContext *ctx)
     }
 
     runtime = (uint64_t)sec * 1000000000UL + nsec;
+#endif
+
     curr_task->sched_key += runtime * curr_task->priority;
 }
 

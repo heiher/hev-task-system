@@ -20,6 +20,7 @@
 #include "kern/io/hev-task-io-reactor.h"
 #include "lib/rbtree/hev-rbtree-cached.h"
 
+#define CLOCK_NONE (-1)
 #define HEV_TASK_RUN_SCHEDULER HEV_TASK_YIELD_COUNT
 #define PRIORITY_COUNT (HEV_TASK_PRIORITY_MAX - HEV_TASK_PRIORITY_MIN + 1)
 
