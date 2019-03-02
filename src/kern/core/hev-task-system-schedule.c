@@ -184,16 +184,9 @@ _hev_task_system_insert_task (HevRBTreeCached *tree, HevTask *task)
         parent = *new;
         if (task->sched_key < this->sched_key) {
             new = &((*new)->left);
-        } else if (task->sched_key > this->sched_key) {
+        } else {
             new = &((*new)->right);
             leftmost = 0;
-        } else {
-            if (task < this) {
-                new = &((*new)->left);
-            } else {
-                new = &((*new)->right);
-                leftmost = 0;
-            }
         }
     }
 
