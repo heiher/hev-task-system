@@ -20,6 +20,8 @@
 #include "kern/task/hev-task-executer.h"
 #include "kern/io/hev-task-io-reactor.h"
 
+static inline uint64_t
+hev_task_system_get_min_sched_key (HevTaskSystemContext *ctx);
 static inline void
 hev_task_system_update_sched_time (HevTaskSystemContext *ctx);
 static inline void hev_task_system_update_sched_key (HevTaskSystemContext *ctx);
@@ -102,9 +104,8 @@ hev_task_system_run_new_task (HevTask *task)
 
     hev_task_execute (task, hev_task_executer);
 
-    /* Copy current task's schedule key */
     if (ctx->current_task)
-        task->sched_key += ctx->current_task->sched_key;
+        task->sched_key += hev_task_system_get_min_sched_key (ctx);
 
     hev_task_system_insert_task (ctx, task);
     ctx->total_task_count++;
@@ -127,6 +128,20 @@ hev_task_system_get_clock_time (struct timespec *ts)
     if (-1 == clock_gettime (CONFIG_SCHED_CLOCK, ts))
         abort ();
 #endif
+}
+
+static inline uint64_t
+hev_task_system_get_min_sched_key (HevTaskSystemContext *ctx)
+{
+    HevRBTreeNode *sched_node;
+
+    sched_node = hev_rbtree_cached_first (&ctx->running_tasks);
+    if (sched_node) {
+        HevTask *task = container_of (sched_node, HevTask, sched_node);
+        return task->sched_key;
+    }
+
+    return 0;
 }
 
 static inline void
