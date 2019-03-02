@@ -184,6 +184,8 @@ hev_task_system_wakeup_task_with_context (HevTaskSystemContext *ctx,
     if (task->state == HEV_TASK_RUNNING || task->state == HEV_TASK_STOPPED)
         return;
 
+    task->sched_key += hev_task_system_get_min_sched_key (ctx);
+
     hev_task_system_insert_task (ctx, task);
 }
 
@@ -235,6 +237,8 @@ hev_task_system_remove_current_task (HevTaskSystemContext *ctx,
     if (HEV_TASK_STOPPED == state) {
         ctx->total_task_count--;
         hev_task_unref (task);
+    } else {
+        task->sched_key -= hev_task_system_get_min_sched_key (ctx);
     }
 }
 
