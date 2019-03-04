@@ -238,7 +238,7 @@ hev_task_system_remove_current_task (HevTaskSystemContext *ctx,
         ctx->total_task_count--;
         hev_task_unref (task);
     } else {
-        task->sched_key -= hev_task_system_get_min_sched_key (ctx);
+        task->sched_key = task->next_priority;
     }
 }
 
