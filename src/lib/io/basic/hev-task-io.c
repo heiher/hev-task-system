@@ -246,25 +246,17 @@ hev_task_io_splice (int fd_a_i, int fd_a_o, int fd_b_i, int fd_b_o,
         if (no_data < 2) {
             type = HEV_TASK_YIELD;
         } else {
-            int fd_a, fd_b;
-            unsigned int fd_a_e, fd_b_e;
+            const HevTaskIOReactorEvents ro = HEV_TASK_IO_REACTOR_EV_RO;
+            const HevTaskIOReactorEvents wo = HEV_TASK_IO_REACTOR_EV_WO;
+
+            if (w_left_b)
+                hev_task_io_res_fd (fd_a_o, wo);
+            else if (w_left_f)
+                hev_task_io_res_fd (fd_b_o, wo);
+            else
+                hev_task_io_res_fd2 (fd_a_i, ro, fd_b_i, ro);
 
             type = HEV_TASK_WAITIO;
-            if (w_left_f) {
-                fd_b = fd_b_o;
-                fd_b_e = HEV_TASK_IO_REACTOR_EV_WO;
-            } else {
-                fd_b = fd_b_i;
-                fd_b_e = HEV_TASK_IO_REACTOR_EV_RO;
-            }
-            if (w_left_b) {
-                fd_a = fd_a_o;
-                fd_a_e = HEV_TASK_IO_REACTOR_EV_WO;
-            } else {
-                fd_a = fd_a_i;
-                fd_a_e = HEV_TASK_IO_REACTOR_EV_RO;
-            }
-            hev_task_io_res_fd2 (fd_a, fd_a_e, fd_b, fd_b_e);
         }
         if (yielder) {
             if (yielder (type, yielder_data))
