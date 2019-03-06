@@ -19,7 +19,7 @@
 #define EVFILT_EXCEPT (0)
 #endif
 
-#define HEV_TASK_IO_REACTOR_EVENT_GEN_MAX (4)
+#define HEV_TASK_IO_REACTOR_EVENT_GEN_MAX (3)
 
 typedef struct _HevTaskIOReactorKQueue HevTaskIOReactorKQueue;
 typedef struct kevent HevTaskIOReactorSetupEvent;
@@ -40,7 +40,7 @@ enum _HevTaskIOReactorEvents
 enum _HevTaskIOReactorOperation
 {
     HEV_TASK_IO_REACTOR_OP_ADD = EV_ADD,
-    HEV_TASK_IO_REACTOR_OP_MOD = EV_FLAG1,
+    HEV_TASK_IO_REACTOR_OP_MOD = EV_ADD,
     HEV_TASK_IO_REACTOR_OP_DEL = EV_DELETE,
 };
 
@@ -58,12 +58,6 @@ hev_task_io_reactor_setup_event_gen (HevTaskIOReactorSetupEvent *events, int fd,
                                      unsigned int poll_events, void *data)
 {
     int count = 0;
-
-    if (HEV_TASK_IO_REACTOR_OP_MOD == op) {
-        op = HEV_TASK_IO_REACTOR_OP_DEL;
-        hev_task_io_reactor_setup_event_set (&events[count++], fd, op, 0, NULL);
-        op = HEV_TASK_IO_REACTOR_OP_ADD;
-    }
 
     if (poll_events & POLLIN)
         hev_task_io_reactor_setup_event_set (&events[count++], fd, op,
