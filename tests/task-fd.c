@@ -31,7 +31,6 @@ task1_entry (void *data)
             sizeof (val));
 retry:
     if (read (fds[0], &val, sizeof (val)) == -1 && errno == EAGAIN) {
-        hev_task_res_fd (task, fds[0], POLLIN);
         hev_task_yield (HEV_TASK_WAITIO);
         goto retry;
     }
