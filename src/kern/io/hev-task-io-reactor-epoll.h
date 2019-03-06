@@ -77,6 +77,12 @@ hev_task_io_reactor_setup_event_gen (HevTaskIOReactorSetupEvent *events, int fd,
 }
 
 static inline unsigned int
+hev_task_io_reactor_wait_event_get_error (HevTaskIOReactorWaitEvent *event)
+{
+    return 0;
+}
+
+static inline unsigned int
 hev_task_io_reactor_wait_event_get_events (HevTaskIOReactorWaitEvent *event)
 {
     return event->events;
