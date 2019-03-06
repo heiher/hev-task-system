@@ -16,7 +16,6 @@
 
 #include "kern/task/hev-task.h"
 #include "hev-task-io.h"
-#include "hev-task-io-shared.h"
 
 int
 hev_task_io_open (const char *pathname, int flags, ...)
@@ -71,7 +70,6 @@ hev_task_io_read (int fd, void *buf, size_t count, HevTaskIOYielder yielder,
 retry:
     s = read (fd, buf, count);
     if (s == -1 && errno == EAGAIN) {
-        hev_task_io_res_fd (fd, HEV_TASK_IO_REACTOR_EV_RO);
         if (yielder) {
             if (yielder (HEV_TASK_WAITIO, yielder_data))
                 return -2;
@@ -93,7 +91,6 @@ hev_task_io_readv (int fd, const struct iovec *iov, int iovcnt,
 retry:
     s = readv (fd, iov, iovcnt);
     if (s == -1 && errno == EAGAIN) {
-        hev_task_io_res_fd (fd, HEV_TASK_IO_REACTOR_EV_RO);
         if (yielder) {
             if (yielder (HEV_TASK_WAITIO, yielder_data))
                 return -2;
@@ -115,7 +112,6 @@ hev_task_io_write (int fd, const void *buf, size_t count,
 retry:
     s = write (fd, buf, count);
     if (s == -1 && errno == EAGAIN) {
-        hev_task_io_res_fd (fd, HEV_TASK_IO_REACTOR_EV_WO);
         if (yielder) {
             if (yielder (HEV_TASK_WAITIO, yielder_data))
                 return -2;
@@ -137,7 +133,6 @@ hev_task_io_writev (int fd, const struct iovec *iov, int iovcnt,
 retry:
     s = writev (fd, iov, iovcnt);
     if (s == -1 && errno == EAGAIN) {
-        hev_task_io_res_fd (fd, HEV_TASK_IO_REACTOR_EV_WO);
         if (yielder) {
             if (yielder (HEV_TASK_WAITIO, yielder_data))
                 return -2;
@@ -243,21 +238,7 @@ hev_task_io_splice (int fd_a_i, int fd_a_o, int fd_b_i, int fd_b_o,
         /* single direction no data, goto yield.
 		 * double direction no data, goto waitio.
 		 */
-        if (no_data < 2) {
-            type = HEV_TASK_YIELD;
-        } else {
-            const HevTaskIOReactorEvents ro = HEV_TASK_IO_REACTOR_EV_RO;
-            const HevTaskIOReactorEvents wo = HEV_TASK_IO_REACTOR_EV_WO;
-
-            if (w_left_b)
-                hev_task_io_res_fd (fd_a_o, wo);
-            else if (w_left_f)
-                hev_task_io_res_fd (fd_b_o, wo);
-            else
-                hev_task_io_res_fd2 (fd_a_i, ro, fd_b_i, ro);
-
-            type = HEV_TASK_WAITIO;
-        }
+        type = (no_data < 2) ? HEV_TASK_YIELD : HEV_TASK_WAITIO;
         if (yielder) {
             if (yielder (type, yielder_data))
                 break;
