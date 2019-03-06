@@ -49,7 +49,7 @@ hev_task_io_reactor_setup_event_set (HevTaskIOReactorSetupEvent *event, int fd,
                                      HevTaskIOReactorOperation op,
                                      unsigned int events, void *data)
 {
-    EV_SET (event, fd, events, op | EV_ONESHOT, 0, 0, data);
+    EV_SET (event, fd, events, op | EV_CLEAR, 0, 0, data);
 }
 
 static inline int
