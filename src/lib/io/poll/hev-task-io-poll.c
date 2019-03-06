@@ -9,7 +9,6 @@
 
 #include "hev-task-io-poll.h"
 #include "kern/task/hev-task.h"
-#include "lib/io/basic/hev-task-io-shared.h"
 
 int
 hev_task_io_poll (HevTaskIOPollFD fds[], unsigned int nfds, int timeout)
