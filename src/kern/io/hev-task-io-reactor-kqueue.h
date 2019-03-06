@@ -50,12 +50,6 @@ enum _HevTaskIOReactorOperation
     HEV_TASK_IO_REACTOR_OP_DEL = EV_DELETE,
 };
 
-static inline int
-hev_task_io_reactor_get_oneshot (void)
-{
-    return 1;
-}
-
 static inline void
 hev_task_io_reactor_setup_event_set (HevTaskIOReactorSetupEvent *event, int fd,
                                      HevTaskIOReactorOperation op,
