@@ -10,7 +10,6 @@
 #if !defined(__linux__)
 
 #include <unistd.h>
-#include <string.h>
 #include <fcntl.h>
 
 #include "kern/io/hev-task-io-reactor.h"
@@ -52,8 +51,6 @@ hev_task_io_reactor_destroy (HevTaskIOReactor *reactor)
 {
     HevTaskIOReactorKQueue *self = (HevTaskIOReactorKQueue *)reactor;
 
-    if (self->count > SEVENT_COUNT)
-        hev_free (self->events);
     close (reactor->fd);
     hev_free (self);
 }
@@ -62,29 +59,7 @@ int
 hev_task_io_reactor_setup (HevTaskIOReactor *reactor,
                            HevTaskIOReactorSetupEvent *events, int count)
 {
-    HevTaskIOReactorKQueue *self = (HevTaskIOReactorKQueue *)reactor;
-    int res = 0;
-    size_t size;
-
-    if (self->count) {
-        res = kevent (reactor->fd, self->events, self->count, NULL, 0, NULL);
-        if (self->count > SEVENT_COUNT)
-            hev_free (self->events);
-    }
-
-    size = sizeof (HevTaskIOReactorSetupEvent) * count;
-    if (count > SEVENT_COUNT) {
-        self->events = hev_malloc (size);
-        if (!self->events)
-            return -1;
-    } else {
-        self->events = self->sevents;
-    }
-
-    memcpy (self->events, events, size);
-    self->count = count;
-
-    return res;
+    return kevent (reactor->fd, events, count, NULL, 0, NULL);
 }
 
 int
@@ -92,22 +67,13 @@ hev_task_io_reactor_wait (HevTaskIOReactor *reactor,
                           HevTaskIOReactorWaitEvent *events, int count,
                           int timeout)
 {
-    HevTaskIOReactorKQueue *self = (HevTaskIOReactorKQueue *)reactor;
     struct timespec tsz = { 0 };
     struct timespec *tsp = NULL;
-    int res;
 
     if (timeout >= 0)
         tsp = &tsz;
 
-    res = kevent (reactor->fd, self->events, self->count, events, count, tsp);
-    if (self->count) {
-        if (self->count > SEVENT_COUNT)
-            hev_free (self->events);
-        self->count = 0;
-    }
-
-    return res;
+    return kevent (reactor->fd, NULL, 0, events, count, tsp);
 }
 
 #endif /* !defined(__linux__) */

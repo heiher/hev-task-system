@@ -19,8 +19,6 @@
 #define EVFILT_EXCEPT (0)
 #endif
 
-#define SEVENT_COUNT (8)
-
 #define HEV_TASK_IO_REACTOR_EVENT_GEN_MAX (3)
 
 typedef struct _HevTaskIOReactorKQueue HevTaskIOReactorKQueue;
@@ -30,10 +28,6 @@ typedef struct kevent HevTaskIOReactorWaitEvent;
 struct _HevTaskIOReactorKQueue
 {
     HevTaskIOReactor base;
-
-    HevTaskIOReactorSetupEvent sevents[SEVENT_COUNT];
-    HevTaskIOReactorSetupEvent *events;
-    int count;
 };
 
 enum _HevTaskIOReactorEvents
