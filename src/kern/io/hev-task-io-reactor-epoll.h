@@ -40,12 +40,6 @@ struct _HevTaskIOReactorSetupEvent
     struct epoll_event event;
 };
 
-static inline int
-hev_task_io_reactor_get_oneshot (void)
-{
-    return 0;
-}
-
 static inline void
 hev_task_io_reactor_setup_event_set (HevTaskIOReactorSetupEvent *event, int fd,
                                      HevTaskIOReactorOperation op,
