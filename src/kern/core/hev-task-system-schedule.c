@@ -263,9 +263,6 @@ hev_task_system_io_poll (HevTaskSystemContext *ctx, int timeout)
     for (i = 0; i < count; i++) {
         HevTaskSchedEntity *sched_entity;
 
-        if (hev_task_io_reactor_wait_event_get_error (&events[i]))
-            continue;
-
         sched_entity = hev_task_io_reactor_wait_event_get_data (&events[i]);
         hev_task_system_wakeup_task_with_context (ctx, sched_entity->task);
     }
