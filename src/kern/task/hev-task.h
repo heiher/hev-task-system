@@ -195,7 +195,7 @@ int hev_task_del_fd (HevTask *self, int fd);
  *
  * Returns: When successful, returns zero. When an error occurs, returns -1.
  *
- * Since: 4.0
+ * Deprecated: 4.6
  */
 int hev_task_res_fd (HevTask *self, int fd, unsigned int events);
 

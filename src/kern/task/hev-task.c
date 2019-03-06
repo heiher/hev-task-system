@@ -147,10 +147,7 @@ hev_task_del_fd (HevTask *self, int fd)
 int
 hev_task_res_fd (HevTask *self, int fd, unsigned int events)
 {
-    if (!hev_task_io_reactor_get_oneshot ())
-        return 0;
-
-    return hev_task_mod_fd (self, fd, events);
+    return -1;
 }
 
 void
