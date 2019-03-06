@@ -127,6 +127,30 @@ hev_task_mod_fd (HevTask *self, int fd, unsigned int events)
     int count;
 
     reactor = hev_task_system_get_context ()->reactor;
+
+#if !defined(__linux__)
+    if (!(POLLIN & events)) {
+        hev_task_io_reactor_setup_event_set (revents, fd,
+                                             HEV_TASK_IO_REACTOR_OP_DEL,
+                                             HEV_TASK_IO_REACTOR_EV_RO, NULL);
+        hev_task_io_reactor_setup (reactor, revents, 1);
+    }
+
+    if (!(POLLOUT & events)) {
+        hev_task_io_reactor_setup_event_set (revents, fd,
+                                             HEV_TASK_IO_REACTOR_OP_DEL,
+                                             HEV_TASK_IO_REACTOR_EV_WO, NULL);
+        hev_task_io_reactor_setup (reactor, revents, 1);
+    }
+
+    if (!(POLLERR & events)) {
+        hev_task_io_reactor_setup_event_set (revents, fd,
+                                             HEV_TASK_IO_REACTOR_OP_DEL,
+                                             HEV_TASK_IO_REACTOR_EV_ER, NULL);
+        hev_task_io_reactor_setup (reactor, revents, 1);
+    }
+#endif /* !defined(__linux__) */
+
     count = hev_task_io_reactor_setup_event_gen (
         revents, fd, HEV_TASK_IO_REACTOR_OP_MOD, events, &self->sched_entity);
     return hev_task_io_reactor_setup (reactor, revents, count);
@@ -137,11 +161,24 @@ hev_task_del_fd (HevTask *self, int fd)
 {
     HevTaskIOReactor *reactor;
     HevTaskIOReactorSetupEvent event;
+    int res;
 
     reactor = hev_task_system_get_context ()->reactor;
     hev_task_io_reactor_setup_event_set (&event, fd, HEV_TASK_IO_REACTOR_OP_DEL,
-                                         0, NULL);
-    return hev_task_io_reactor_setup (reactor, &event, 1);
+                                         HEV_TASK_IO_REACTOR_EV_RO, NULL);
+    res = hev_task_io_reactor_setup (reactor, &event, 1);
+
+#if !defined(__linux__)
+    hev_task_io_reactor_setup_event_set (&event, fd, HEV_TASK_IO_REACTOR_OP_DEL,
+                                         HEV_TASK_IO_REACTOR_EV_WO, NULL);
+    res &= hev_task_io_reactor_setup (reactor, &event, 1);
+
+    hev_task_io_reactor_setup_event_set (&event, fd, HEV_TASK_IO_REACTOR_OP_DEL,
+                                         HEV_TASK_IO_REACTOR_EV_ER, NULL);
+    res &= hev_task_io_reactor_setup (reactor, &event, 1);
+#endif /* !defined(__linux__) */
+
+    return res;
 }
 
 int
