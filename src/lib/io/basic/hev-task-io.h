@@ -64,6 +64,35 @@ int hev_task_io_creat (const char *pathname, mode_t mode);
 int hev_task_io_openat (int dirfd, const char *pathname, int flags, ...);
 
 /**
+ * hev_task_io_dup:
+ * @oldfd: old file descriptor
+ *
+ * The dup function creates a copy of the file descriptor @oldfd, using the
+ * lowest-numbered unused file descriptor for the new descriptor.
+ *
+ * Returns: the new file descriptor, or -1 if an error occurred.
+ *
+ * Since: 4.6.1
+ */
+int hev_task_io_dup (int oldfd);
+
+/**
+ * hev_task_io_dup2:
+ * @oldfd: old file descriptor
+ * @newfd: new file descriptor
+ *
+ * The dup2 function performs the same task as dup, but instead of using the
+ * lowest-numbered unused file descriptor, it uses the file descriptor number
+ * specified in @newfd. If the file descriptor @newfd was previously open, it is
+ * silently closed before being reused.
+ *
+ * Returns: the new file descriptor, or -1 if an error occurred.
+ *
+ * Since: 4.6.1
+ */
+int hev_task_io_dup2 (int oldfd, int newfd);
+
+/**
  * hev_task_io_read:
  * @fd: a file descriptor
  * @buf: buffer

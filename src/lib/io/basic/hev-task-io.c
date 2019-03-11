@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/ioctl.h>
 #include <fcntl.h>
 #include <stdarg.h>
 
@@ -59,6 +60,41 @@ hev_task_io_openat (int dirfd, const char *pathname, int flags, ...)
     }
 
     return openat (dirfd, pathname, flags);
+}
+
+int
+hev_task_io_dup (int oldfd)
+{
+    int newfd;
+    int nonblock = 1;
+
+    newfd = dup (oldfd);
+    if (0 > newfd)
+        return -1;
+
+    if (0 > ioctl (newfd, FIONBIO, (char *)&nonblock)) {
+        close (newfd);
+        return -2;
+    }
+
+    return newfd;
+}
+
+int
+hev_task_io_dup2 (int oldfd, int newfd)
+{
+    int nonblock = 1;
+
+    newfd = dup2 (oldfd, newfd);
+    if (0 > newfd)
+        return -1;
+
+    if (0 > ioctl (newfd, FIONBIO, (char *)&nonblock)) {
+        close (newfd);
+        return -2;
+    }
+
+    return newfd;
 }
 
 ssize_t
