@@ -17,6 +17,7 @@
 
 #include "kern/task/hev-task.h"
 #include "hev-task-io.h"
+#include "lib/io/buffer/hev-circular-buffer.h"
 
 int
 hev_task_io_open (const char *pathname, int flags, ...)
@@ -182,40 +183,39 @@ retry:
 }
 
 static int
-task_io_splice (int fd_in, int fd_out, void *buf, size_t len, size_t *w_off,
-                size_t *w_left)
+task_io_splice (int fd_in, int fd_out, HevCircularBuffer *buf)
 {
-    ssize_t s;
+    struct iovec iov[2];
+    int res = 1, iovc;
 
-    if (*w_left == 0) {
-        s = read (fd_in, buf, len);
-        if (s == -1) {
-            if (errno == EAGAIN)
-                return 0;
+    iovc = hev_circular_buffer_writing (buf, iov);
+    if (iovc) {
+        ssize_t s = readv (fd_in, iov, iovc);
+        if (0 >= s) {
+            if ((0 > s) && (EAGAIN == errno))
+                res = 0;
             else
-                return -1;
-        } else if (s == 0) {
-            return -1;
+                res = -1;
         } else {
-            *w_off = 0;
-            *w_left = s;
+            hev_circular_buffer_write_finish (buf, s);
         }
     }
 
-    s = write (fd_out, buf + *w_off, *w_left);
-    if (s == -1) {
-        if (errno == EAGAIN)
-            return 0;
-        else
-            return -1;
-    } else if (s == 0) {
-        return -1;
-    } else {
-        *w_off += s;
-        *w_left -= s;
+    iovc = hev_circular_buffer_reading (buf, iov);
+    if (iovc) {
+        ssize_t s = writev (fd_out, iov, iovc);
+        if (0 >= s) {
+            if ((0 > s) && (EAGAIN == errno))
+                res = 0;
+            else
+                res = -1;
+        } else {
+            res = 1;
+            hev_circular_buffer_read_finish (buf, s);
+        }
     }
 
-    return *w_off;
+    return res;
 }
 
 void
@@ -223,58 +223,51 @@ hev_task_io_splice (int fd_a_i, int fd_a_o, int fd_b_i, int fd_b_o,
                     size_t buf_size, HevTaskIOYielder yielder,
                     void *yielder_data)
 {
-    int splice_f = 1, splice_b = 1;
-    size_t w_off_f = 0, w_off_b = 0;
-    size_t w_left_f = 0, w_left_b = 0;
-    unsigned char buf_f[buf_size];
-    unsigned char buf_b[buf_size];
+    HevCircularBuffer *buf_f;
+    HevCircularBuffer *buf_b;
+
+    buf_f = hev_circular_buffer_new (buf_size);
+    if (!buf_f)
+        return;
+    buf_b = hev_circular_buffer_new (buf_size);
+    if (!buf_b)
+        goto err;
 
     for (;;) {
-        int no_data = 0;
-        HevTaskYieldType type;
+        HevTaskYieldType type = 0;
 
-        if (splice_f) {
-            int ret;
-
-            ret = task_io_splice (fd_a_i, fd_b_o, buf_f, buf_size, &w_off_f,
-                                  &w_left_f);
-            if (ret == 0) { /* no data */
-                /* forward no data and backward closed, quit */
-                if (!splice_b)
+        if (buf_f) {
+            int ret = task_io_splice (fd_a_i, fd_b_o, buf_f);
+            if (0 >= ret) {
+                /* backward closed, quit */
+                if (!buf_b)
                     break;
-                no_data++;
-            } else if (ret == -1) { /* error */
-                /* forward error and backward closed, quit */
-                if (!splice_b)
-                    break;
-                /* forward error or closed, mark to skip */
-                splice_f = 0;
+                if (0 > ret) { /* error */
+                    /* forward error or closed, mark to skip */
+                    hev_circular_buffer_unref (buf_f);
+                    buf_f = NULL;
+                } else { /* no data */
+                    type++;
+                }
             }
         }
 
-        if (splice_b) {
-            int ret;
-
-            ret = task_io_splice (fd_b_i, fd_a_o, buf_b, buf_size, &w_off_b,
-                                  &w_left_b);
-            if (ret == 0) { /* no data */
-                /* backward no data and forward closed, quit */
-                if (!splice_f)
+        if (buf_b) {
+            int ret = task_io_splice (fd_b_i, fd_a_o, buf_b);
+            if (0 >= ret) {
+                /* forward closed, quit */
+                if (!buf_f)
                     break;
-                no_data++;
-            } else if (ret == -1) { /* error */
-                /* backward error and forward closed, quit */
-                if (!splice_f)
-                    break;
-                /* backward error or closed, mark to skip */
-                splice_b = 0;
+                if (0 > ret) { /* error */
+                    /* backward error or closed, mark to skip */
+                    hev_circular_buffer_unref (buf_b);
+                    buf_b = NULL;
+                } else { /* no data */
+                    type++;
+                }
             }
         }
 
-        /* single direction no data, goto yield.
-		 * double direction no data, goto waitio.
-		 */
-        type = (no_data < 2) ? HEV_TASK_YIELD : HEV_TASK_WAITIO;
         if (yielder) {
             if (yielder (type, yielder_data))
                 break;
@@ -282,4 +275,10 @@ hev_task_io_splice (int fd_a_i, int fd_a_o, int fd_b_i, int fd_b_o,
             hev_task_yield (type);
         }
     }
+
+    if (buf_b)
+        hev_circular_buffer_unref (buf_b);
+err:
+    if (buf_f)
+        hev_circular_buffer_unref (buf_f);
 }
