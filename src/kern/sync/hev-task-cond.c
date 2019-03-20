@@ -66,7 +66,7 @@ hev_task_cond_timedwait (HevTaskCond *self, HevTaskMutex *mutex,
     self->waiters = &node;
 
     hev_task_mutex_unlock (mutex);
-    while (milliseconds)
+    while (milliseconds && node.task)
         milliseconds = hev_task_sleep (milliseconds);
     hev_task_mutex_lock (mutex);
 
