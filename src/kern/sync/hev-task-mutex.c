@@ -12,6 +12,7 @@
 #include "kern/task/hev-task.h"
 
 #include "hev-task-mutex.h"
+#include "lib/utils/hev-compiler.h"
 
 struct _HevTaskMutexNode
 {
@@ -46,7 +47,9 @@ hev_task_mutex_lock (HevTaskMutex *self)
         self->waiters = node.next;
     }
 
+    barrier ();
     self->locker = 1;
+    barrier ();
 
     return 0;
 }
@@ -57,7 +60,9 @@ hev_task_mutex_trylock (HevTaskMutex *self)
     if (self->locker)
         return -1;
 
+    barrier ();
     self->locker = 1;
+    barrier ();
 
     return 0;
 }
@@ -65,7 +70,9 @@ hev_task_mutex_trylock (HevTaskMutex *self)
 int
 hev_task_mutex_unlock (HevTaskMutex *self)
 {
+    barrier ();
     self->locker = 0;
+    barrier ();
 
     if (self->waiters)
         hev_task_wakeup (self->waiters->task);
