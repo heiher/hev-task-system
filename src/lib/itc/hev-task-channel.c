@@ -24,7 +24,7 @@ union _HevTaskChannelData
     char b[MAX_BUFFER_SIZE];
     short h[0];
     int w[0];
-    long d[0];
+    long long d[0];
 };
 
 struct _HevTaskChannelBuffer
@@ -187,11 +187,9 @@ hev_task_channel_data_copy (void *dst, const void *src, size_t size)
     case sizeof (int):
         d->w[0] = s->w[0];
         break;
-#ifdef _LP64
-    case sizeof (long):
+    case sizeof (long long):
         d->d[0] = s->d[0];
         break;
-#endif
     default:
         memcpy (dst, src, size);
     }
