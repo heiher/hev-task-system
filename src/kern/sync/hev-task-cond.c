@@ -12,6 +12,7 @@
 #include "kern/task/hev-task.h"
 
 #include "hev-task-cond.h"
+#include "lib/utils/hev-compiler.h"
 
 struct _HevTaskCondNode
 {
@@ -45,7 +46,7 @@ hev_task_cond_wait (HevTaskCond *self, HevTaskMutex *mutex)
     hev_task_mutex_unlock (mutex);
     do {
         hev_task_yield (HEV_TASK_WAITIO);
-    } while (node.task);
+    } while (READ_ONCE (node.task));
     hev_task_mutex_lock (mutex);
 
     return 0;
@@ -66,11 +67,11 @@ hev_task_cond_timedwait (HevTaskCond *self, HevTaskMutex *mutex,
     self->waiters = &node;
 
     hev_task_mutex_unlock (mutex);
-    while (milliseconds && node.task)
+    while (milliseconds && READ_ONCE (node.task))
         milliseconds = hev_task_sleep (milliseconds);
     hev_task_mutex_lock (mutex);
 
-    if (node.task) {
+    if (READ_ONCE (node.task)) {
         if (node.prev)
             node.prev->next = node.next;
         if (node.next)
