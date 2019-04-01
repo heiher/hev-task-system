@@ -42,7 +42,8 @@ hev_task_mutex_lock (HevTaskMutex *self)
 
         do {
             hev_task_yield (HEV_TASK_WAITIO);
-        } while (self->locker || self->waiters != &node);
+        } while (READ_ONCE (self->locker) ||
+                 READ_ONCE (self->waiters) != &node);
 
         self->waiters = node.next;
     }
