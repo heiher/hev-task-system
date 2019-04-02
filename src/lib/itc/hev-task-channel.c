@@ -7,8 +7,6 @@
  ============================================================================
  */
 
-#include <string.h>
-
 #include "hev-task-channel.h"
 
 #include "kern/task/hev-task.h"
@@ -176,7 +174,7 @@ hev_task_channel_data_copy (void *dst, const void *src, size_t size)
         d->d[0] = s->d[0];
         break;
     default:
-        memcpy (dst, src, size);
+        __builtin_memcpy (dst, src, size);
     }
 
     return size;
