@@ -231,11 +231,11 @@ out:
 
 ssize_t
 hev_task_channel_select_read (HevTaskChannel *chans[], unsigned int nchans,
-                              void *buffer, size_t count)
+                              void *buffer, size_t count, int timeout)
 {
     HevTaskChannel *chan = NULL;
     ssize_t size = -1;
-    unsigned int i;
+    unsigned int i, milliseconds = timeout;
 
     if (nchans == 0)
         goto out;
@@ -247,13 +247,16 @@ hev_task_channel_select_read (HevTaskChannel *chans[], unsigned int nchans,
         }
     }
 
-    while (!chan) {
+    while (!chan && milliseconds) {
         for (i = 0; i < nchans; i++)
             chans[i]->reader = hev_task_self ();
 
         /* wait on empty */
         barrier ();
-        hev_task_yield (HEV_TASK_WAITIO);
+        if (timeout < 0)
+            hev_task_yield (HEV_TASK_WAITIO);
+        else
+            milliseconds = hev_task_sleep (milliseconds);
         barrier ();
 
         for (i = 0; i < nchans; i++) {
@@ -263,7 +266,8 @@ hev_task_channel_select_read (HevTaskChannel *chans[], unsigned int nchans,
         }
     }
 
-    size = _hev_task_channel_read (chan, buffer, count);
+    if (chan)
+        size = _hev_task_channel_read (chan, buffer, count);
 
 out:
     return size;

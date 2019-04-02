@@ -83,9 +83,11 @@ ssize_t hev_task_channel_read (HevTaskChannel *self, void *buffer,
  * @nchans: the number of channels that will be select to read
  * @buffer: (array length=count): a buffer to read data into
  * @count: the number of bytes that will be read
+ * @timeout: (milliseconds): wait timeout
  *
  * The select read function shall attempt to select a readable channel and read
- * @count bytes from the channel into @buffer. Just as datagram which the data
+ * @count bytes from the channel into @buffer. The function will wait until at
+ * least one channel is ready or timeout. Just as datagram which the data
  * transfer on task channel.
  *
  * Returns: the number of bytes actually read
@@ -94,7 +96,7 @@ ssize_t hev_task_channel_read (HevTaskChannel *self, void *buffer,
  */
 ssize_t hev_task_channel_select_read (HevTaskChannel *chans[],
                                       unsigned int nchans, void *buffer,
-                                      size_t count);
+                                      size_t count, int timeout);
 
 /**
  * hev_task_channel_write:
