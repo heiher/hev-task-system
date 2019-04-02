@@ -43,11 +43,13 @@ hev_task_cond_wait (HevTaskCond *self, HevTaskMutex *mutex)
         self->waiters->prev = &node;
     self->waiters = &node;
 
-    hev_task_mutex_unlock (mutex);
+    if (mutex)
+        hev_task_mutex_unlock (mutex);
     do {
         hev_task_yield (HEV_TASK_WAITIO);
     } while (READ_ONCE (node.task));
-    hev_task_mutex_lock (mutex);
+    if (mutex)
+        hev_task_mutex_lock (mutex);
 
     return 0;
 }
@@ -66,10 +68,12 @@ hev_task_cond_timedwait (HevTaskCond *self, HevTaskMutex *mutex,
         self->waiters->prev = &node;
     self->waiters = &node;
 
-    hev_task_mutex_unlock (mutex);
+    if (mutex)
+        hev_task_mutex_unlock (mutex);
     while (milliseconds && READ_ONCE (node.task))
         milliseconds = hev_task_sleep (milliseconds);
-    hev_task_mutex_lock (mutex);
+    if (mutex)
+        hev_task_mutex_lock (mutex);
 
     if (READ_ONCE (node.task)) {
         if (node.prev)
