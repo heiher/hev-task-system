@@ -182,24 +182,12 @@ hev_task_channel_data_copy (void *dst, const void *src, size_t size)
     return size;
 }
 
-ssize_t
-hev_task_channel_read (HevTaskChannel *self, void *buffer, size_t count)
+static ssize_t
+_hev_task_channel_read (HevTaskChannel *self, void *buffer, size_t count)
 {
     HevTaskChannelBuffer *cbuf;
-    ssize_t size = -1;
+    ssize_t size;
 
-    /* wait on empty */
-    while (READ_ONCE (self->use_count) == 0) {
-        /* check is peer alive because cond wait may yield */
-        if (!READ_ONCE (self->peer))
-            goto out;
-
-        WRITE_ONCE (self->reader, hev_task_self ());
-        hev_task_yield (HEV_TASK_WAITIO);
-        WRITE_ONCE (self->reader, NULL);
-    }
-
-    barrier ();
     cbuf = &self->buffers[self->rd_idx];
     self->rd_idx = (self->rd_idx + 1) % self->max_count;
 
@@ -214,6 +202,68 @@ hev_task_channel_read (HevTaskChannel *self, void *buffer, size_t count)
     }
 
     self->use_count--;
+
+    return size;
+}
+
+ssize_t
+hev_task_channel_read (HevTaskChannel *self, void *buffer, size_t count)
+{
+    ssize_t size = -1;
+
+    /* wait on empty */
+    while (READ_ONCE (self->use_count) == 0) {
+        /* check is peer alive because cond wait may yield */
+        if (!READ_ONCE (self->peer))
+            goto out;
+
+        WRITE_ONCE (self->reader, hev_task_self ());
+        hev_task_yield (HEV_TASK_WAITIO);
+        WRITE_ONCE (self->reader, NULL);
+    }
+
+    barrier ();
+    size = _hev_task_channel_read (self, buffer, count);
+
+out:
+    return size;
+}
+
+ssize_t
+hev_task_channel_select_read (HevTaskChannel *chans[], unsigned int nchans,
+                              void *buffer, size_t count)
+{
+    HevTaskChannel *chan = NULL;
+    ssize_t size = -1;
+    unsigned int i;
+
+    if (nchans == 0)
+        goto out;
+
+    for (i = 0; i < nchans; i++) {
+        if (chans[i]->use_count != 0) {
+            chan = chans[i];
+            break;
+        }
+    }
+
+    while (!chan) {
+        for (i = 0; i < nchans; i++)
+            chans[i]->reader = hev_task_self ();
+
+        /* wait on empty */
+        barrier ();
+        hev_task_yield (HEV_TASK_WAITIO);
+        barrier ();
+
+        for (i = 0; i < nchans; i++) {
+            chans[i]->reader = NULL;
+            if (chans[i]->use_count != 0)
+                chan = chans[i];
+        }
+    }
+
+    size = _hev_task_channel_read (chan, buffer, count);
 
 out:
     return size;
