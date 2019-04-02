@@ -11,7 +11,8 @@
 
 #include "hev-task-channel.h"
 
-#include "kern/sync/hev-task-cond.h"
+#include "kern/task/hev-task.h"
+#include "lib/utils/hev-compiler.h"
 #include "mm/api/hev-memory-allocator-api.h"
 
 #define MAX_BUFFER_SIZE (16384)
@@ -37,8 +38,8 @@ struct _HevTaskChannel
 {
     HevTaskChannel *peer;
 
-    HevTaskCond cond_full;
-    HevTaskCond cond_empty;
+    HevTask *reader;
+    HevTask *writer;
 
     unsigned int rd_idx;
     unsigned int wr_idx;
@@ -77,30 +78,22 @@ hev_task_channel_new_with_buffers (HevTaskChannel **chan1,
         goto err1;
 
     c1->peer = c2;
+    c1->reader = NULL;
+    c1->writer = NULL;
     c1->rd_idx = 0;
     c1->wr_idx = 0;
     c1->use_count = 0;
     c1->max_count = buffers;
     c1->ref_count = 1;
 
-    if (hev_task_cond_init (&c1->cond_full) != 0)
-        goto err2;
-
-    if (hev_task_cond_init (&c1->cond_empty) != 0)
-        goto err2;
-
     c2->peer = c1;
+    c2->reader = NULL;
+    c2->writer = NULL;
     c2->rd_idx = 0;
     c2->wr_idx = 0;
     c2->use_count = 0;
     c2->max_count = buffers;
     c2->ref_count = 1;
-
-    if (hev_task_cond_init (&c2->cond_full) != 0)
-        goto err2;
-
-    if (hev_task_cond_init (&c2->cond_empty) != 0)
-        goto err2;
 
     if (buffers > 1) {
         unsigned int i;
@@ -120,7 +113,6 @@ hev_task_channel_new_with_buffers (HevTaskChannel **chan1,
 
     return 0;
 
-err2:
     hev_free (c2);
 err1:
     hev_free (c1);
@@ -150,9 +142,11 @@ hev_task_channel_destroy (HevTaskChannel *self)
 {
     if (self->peer) {
         self->peer->peer = NULL;
-        hev_task_cond_broadcast (&self->peer->cond_empty);
+        if (self->peer->reader)
+            hev_task_wakeup (self->peer->reader);
     }
-    hev_task_cond_broadcast (&self->cond_full);
+    if (self->writer)
+        hev_task_wakeup (self->writer);
 
     hev_task_channel_unref (self);
 }
@@ -195,13 +189,17 @@ hev_task_channel_read (HevTaskChannel *self, void *buffer, size_t count)
     ssize_t size = -1;
 
     /* wait on empty */
-    while (self->use_count == 0) {
+    while (READ_ONCE (self->use_count) == 0) {
         /* check is peer alive because cond wait may yield */
-        if (!self->peer)
+        if (!READ_ONCE (self->peer))
             goto out;
-        hev_task_cond_wait (&self->cond_empty, NULL);
+
+        WRITE_ONCE (self->reader, hev_task_self ());
+        hev_task_yield (HEV_TASK_WAITIO);
+        WRITE_ONCE (self->reader, NULL);
     }
 
+    barrier ();
     cbuf = &self->buffers[self->rd_idx];
     self->rd_idx = (self->rd_idx + 1) % self->max_count;
 
@@ -210,8 +208,10 @@ hev_task_channel_read (HevTaskChannel *self, void *buffer, size_t count)
         size = cbuf->size;
     size = hev_task_channel_data_copy (buffer, cbuf->data, size);
 
-    if (self->use_count == self->max_count)
-        hev_task_cond_signal (&self->cond_full);
+    if (self->use_count == self->max_count) {
+        if (self->writer)
+            hev_task_wakeup (self->writer);
+    }
 
     self->use_count--;
 
@@ -232,13 +232,17 @@ hev_task_channel_write (HevTaskChannel *self, const void *buffer, size_t count)
     hev_task_channel_ref (peer);
 
     /* wait on full */
-    while (peer->use_count == peer->max_count) {
+    while (READ_ONCE (peer->use_count) == READ_ONCE (peer->max_count)) {
         /* check is peer alive because cond wait may yield */
-        if (!self->peer)
+        if (!READ_ONCE (self->peer))
             goto out1;
-        hev_task_cond_wait (&peer->cond_full, NULL);
+
+        WRITE_ONCE (peer->writer, hev_task_self ());
+        hev_task_yield (HEV_TASK_WAITIO);
+        WRITE_ONCE (peer->writer, NULL);
     }
 
+    barrier ();
     cbuf = &peer->buffers[peer->wr_idx];
     peer->wr_idx = (peer->wr_idx + 1) % peer->max_count;
 
@@ -249,21 +253,27 @@ hev_task_channel_write (HevTaskChannel *self, const void *buffer, size_t count)
     else
         size = hev_task_channel_data_copy (cbuf->data, buffer, size);
 
-    if (peer->use_count == 0)
-        hev_task_cond_signal (&peer->cond_empty);
+    if (peer->use_count == 0) {
+        if (peer->reader)
+            hev_task_wakeup (peer->reader);
+    }
 
     peer->use_count++;
 
     /* sync */
-    while (peer->use_count == peer->max_count) {
+    while (READ_ONCE (peer->use_count) == READ_ONCE (peer->max_count)) {
         /* check is peer alive because cond wait may yield */
-        if (!self->peer) {
+        if (!READ_ONCE (self->peer)) {
             size = -1;
             break;
         }
-        hev_task_cond_wait (&peer->cond_full, NULL);
+
+        WRITE_ONCE (peer->writer, hev_task_self ());
+        hev_task_yield (HEV_TASK_WAITIO);
+        WRITE_ONCE (peer->writer, NULL);
     }
 
+    barrier ();
 out1:
     hev_task_channel_unref (peer);
 out0:
