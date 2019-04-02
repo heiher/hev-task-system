@@ -101,14 +101,17 @@ task5_entry (void *data)
     assert (hev_task_channel_read (chan, &chans[1], cs) == cs);
     chans[2] = chan;
 
-    assert (hev_task_channel_select_read (&chan, 3, &v, vs) == vs);
+    assert (hev_task_channel_select_read (&chan, 3, &v, vs, -1) == vs);
     assert (v == 1234);
 
-    assert (hev_task_channel_select_read (&chan, 3, &v, vs) == vs);
+    assert (hev_task_channel_select_read (&chan, 3, &v, vs, -1) == vs);
     assert (v == 5678);
 
-    assert (hev_task_channel_select_read (&chan, 3, &v, vs) == vs);
+    assert (hev_task_channel_select_read (&chan, 3, &v, vs, -1) == vs);
     assert (v == 9012);
+
+    assert (hev_task_channel_select_read (&chan, 3, &v, vs, 0) == -1);
+    assert (hev_task_channel_select_read (&chan, 3, &v, vs, 1) == -1);
 
     hev_task_channel_destroy (chans[0]);
     hev_task_channel_destroy (chans[1]);
