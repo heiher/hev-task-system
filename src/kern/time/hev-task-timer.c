@@ -90,7 +90,7 @@ hev_task_timer_wait (HevTaskTimer *self, unsigned int microseconds,
                      HevTask *task)
 {
     HevTaskTimerNode curr_node, *node = &curr_node;
-    HevRBTreeNode **new = &self->sort_tree.base.root, *parent = NULL, *next;
+    HevRBTreeNode **new = &self->sort_tree.base.root, *parent = NULL;
     int leftmost = 1;
 
     /* get expire time */
@@ -123,6 +123,10 @@ hev_task_timer_wait (HevTaskTimer *self, unsigned int microseconds,
     /* slow path: wait io */
     hev_task_yield (HEV_TASK_WAITIO);
 
+    /* check current is first */
+    if (&node->base == hev_rbtree_cached_first (&self->sort_tree))
+        leftmost = 1;
+
     /* remove expired from sort tree */
     hev_rbtree_cached_erase (&self->sort_tree, &node->base);
 
@@ -131,7 +135,7 @@ hev_task_timer_wait (HevTaskTimer *self, unsigned int microseconds,
 
     if (leftmost) {
         /* update timer: pick next */
-        next = hev_rbtree_cached_first (&self->sort_tree);
+        HevRBTreeNode *next = hev_rbtree_cached_first (&self->sort_tree);
         if (next) {
             node = container_of (next, HevTaskTimerNode, base);
             if (hev_task_timer_set_time (self, &node->expire) == -1)
