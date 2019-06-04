@@ -26,15 +26,6 @@ struct _HevTaskTimerTimerFD
 };
 
 static inline int
-hev_task_timer_fast_check (HevTaskTimer *timer)
-{
-    HevTaskTimerTimerFD *self = (HevTaskTimerTimerFD *)timer;
-    uint64_t time;
-
-    return read (self->fd, &time, sizeof (time)) == sizeof (time);
-}
-
-static inline int
 hev_task_timer_set_time (HevTaskTimer *timer, const struct timespec *expire)
 {
     HevTaskTimerTimerFD *self = (HevTaskTimerTimerFD *)timer;
