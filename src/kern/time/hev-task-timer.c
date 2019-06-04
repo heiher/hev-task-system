@@ -48,6 +48,43 @@ hev_task_timer_node_compare (HevTaskTimerNode *a, HevTaskTimerNode *b)
     return 0;
 }
 
+static inline void
+hev_task_timer_get_expire (struct timespec *expire, unsigned int microseconds)
+{
+    if (clock_gettime (CLOCK_MONOTONIC, expire) == -1)
+        abort ();
+
+    expire->tv_sec += microseconds / 1000000;
+    expire->tv_nsec += (microseconds % 1000000) * 1000;
+    if (expire->tv_nsec > 1000000000L) {
+        expire->tv_sec++;
+        expire->tv_nsec -= 1000000000L;
+    }
+}
+
+static inline unsigned int
+hev_task_timer_get_time (const struct timespec *expire)
+{
+    struct timespec curr;
+    time_t sec;
+    long nsec;
+
+    if (clock_gettime (CLOCK_MONOTONIC, &curr) == -1)
+        abort ();
+
+    sec = expire->tv_sec - curr.tv_sec;
+    nsec = expire->tv_nsec - curr.tv_nsec;
+    if (nsec < 0) {
+        sec--;
+        nsec += 1000000000L;
+    }
+
+    if (sec < 0)
+        return 0;
+
+    return (sec * 1000000) + (nsec / 1000);
+}
+
 unsigned int
 hev_task_timer_wait (HevTaskTimer *self, unsigned int microseconds,
                      HevTask *task)
@@ -57,14 +94,7 @@ hev_task_timer_wait (HevTaskTimer *self, unsigned int microseconds,
     int leftmost = 1;
 
     /* get expire time */
-    if (clock_gettime (CLOCK_MONOTONIC, &node->expire) == -1)
-        abort ();
-    node->expire.tv_sec += microseconds / 1000000;
-    node->expire.tv_nsec += (microseconds % 1000000) * 1000;
-    if (node->expire.tv_nsec > 1000000000L) {
-        node->expire.tv_sec++;
-        node->expire.tv_nsec -= 1000000000L;
-    }
+    hev_task_timer_get_expire (&node->expire, microseconds);
     node->task = task;
 
     /* insert to sort tree */
@@ -101,16 +131,18 @@ hev_task_timer_wait (HevTaskTimer *self, unsigned int microseconds,
     /* remove expired from sort tree */
     hev_rbtree_cached_erase (&self->sort_tree, &node->base);
 
-    /* get left microseconds */
-    microseconds = hev_task_timer_get_time (self, &curr_node.expire);
+    /* get remaining microseconds */
+    microseconds = hev_task_timer_get_time (&node->expire);
 
-    /* update timer: pick next */
-    next = hev_rbtree_cached_first (&self->sort_tree);
-    if (next) {
-        node = container_of (next, HevTaskTimerNode, base);
-        if (hev_task_timer_set_time (self, &node->expire) == -1)
-            abort ();
-        self->sched_entity.task = node->task;
+    if (leftmost) {
+        /* update timer: pick next */
+        next = hev_rbtree_cached_first (&self->sort_tree);
+        if (next) {
+            node = container_of (next, HevTaskTimerNode, base);
+            if (hev_task_timer_set_time (self, &node->expire) == -1)
+                abort ();
+            self->sched_entity.task = node->task;
+        }
     }
 
     return microseconds;
