@@ -20,12 +20,6 @@
 #include "kern/core/hev-task-system-private.h"
 
 static inline int
-hev_task_timer_fast_check (HevTaskTimer *self)
-{
-    return 0;
-}
-
-static inline int
 hev_task_timer_set_time (HevTaskTimer *self, const struct timespec *expire)
 {
     HevTaskIOReactor *reactor;
