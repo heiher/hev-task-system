@@ -57,27 +57,4 @@ hev_task_timer_set_time (HevTaskTimer *self, const struct timespec *expire)
     return kevent (fd, &event, 1, NULL, 0, NULL);
 }
 
-static inline unsigned int
-hev_task_timer_get_time (HevTaskTimer *self, const struct timespec *expire)
-{
-    struct timespec curr;
-    time_t sec;
-    long nsec;
-
-    if (clock_gettime (CLOCK_MONOTONIC, &curr) == -1)
-        abort ();
-
-    sec = expire->tv_sec - curr.tv_sec;
-    nsec = expire->tv_nsec - curr.tv_nsec;
-    if (nsec < 0) {
-        sec--;
-        nsec += 1000000000L;
-    }
-
-    if (sec < 0)
-        return 0;
-
-    return (sec * 1000000) + (nsec / 1000);
-}
-
 #endif /* __HEV_TASK_TIMER_KEVENT_H__ */
