@@ -47,19 +47,4 @@ hev_task_timer_set_time (HevTaskTimer *timer, const struct timespec *expire)
     return timerfd_settime (self->fd, TFD_TIMER_ABSTIME, &sp, NULL);
 }
 
-static inline unsigned int
-hev_task_timer_get_time (HevTaskTimer *timer, const struct timespec *expire)
-{
-    HevTaskTimerTimerFD *self = (HevTaskTimerTimerFD *)timer;
-    struct itimerspec sp;
-
-    if (timerfd_gettime (self->fd, &sp) == -1)
-        abort ();
-
-    if ((sp.it_value.tv_sec + sp.it_value.tv_nsec) == 0)
-        return 0;
-
-    return (sp.it_value.tv_sec * 1000000) + (sp.it_value.tv_nsec / 1000);
-}
-
 #endif /* __HEV_TASK_TIMER_TIMER_FD_H__ */
