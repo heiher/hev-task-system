@@ -117,11 +117,6 @@ hev_task_timer_wait (HevTaskTimer *self, unsigned int microseconds,
         /* update timer: pick current */
         if (hev_task_timer_set_time (self, &node->expire) == -1)
             abort ();
-        /* fast path: check is expired */
-        if (hev_task_timer_fast_check (self)) {
-            hev_rbtree_cached_erase (&self->sort_tree, &node->base);
-            return 0;
-        }
         self->sched_entity.task = task;
     }
 
