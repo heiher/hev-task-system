@@ -120,7 +120,6 @@ hev_task_timer_wait (HevTaskTimer *self, unsigned int microseconds,
         self->sched_entity.task = task;
     }
 
-    /* slow path: wait io */
     hev_task_yield (HEV_TASK_WAITIO);
 
     /* check current is first */
@@ -129,9 +128,6 @@ hev_task_timer_wait (HevTaskTimer *self, unsigned int microseconds,
 
     /* remove expired from sort tree */
     hev_rbtree_cached_erase (&self->sort_tree, &node->base);
-
-    /* get remaining microseconds */
-    microseconds = hev_task_timer_get_time (&node->expire);
 
     if (leftmost) {
         /* update timer: pick next */
@@ -144,5 +140,6 @@ hev_task_timer_wait (HevTaskTimer *self, unsigned int microseconds,
         }
     }
 
-    return microseconds;
+    /* get remaining microseconds */
+    return hev_task_timer_get_time (&curr_node.expire);
 }
