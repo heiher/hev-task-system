@@ -257,9 +257,9 @@ static inline void
 hev_task_system_io_poll (HevTaskSystemContext *ctx, int timeout)
 {
     int i, count;
-    HevTaskIOReactorWaitEvent events[256];
+    HevTaskIOReactorWaitEvent events[1024];
 
-    count = hev_task_io_reactor_wait (ctx->reactor, events, 256, timeout);
+    count = hev_task_io_reactor_wait (ctx->reactor, events, 1024, timeout);
     for (i = 0; i < count; i++) {
         HevTaskSchedEntity *sched_entity;
 
