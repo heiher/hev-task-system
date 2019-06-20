@@ -7,17 +7,34 @@
  ============================================================================
  */
 
+#if defined(__linux__)
+#define _GNU_SOURCE
+#endif /* defined(__linux__) */
+
 #include <errno.h>
+#include <fcntl.h>
 #include <unistd.h>
+#include <stdarg.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
-#include <fcntl.h>
-#include <stdarg.h>
 
 #include "kern/task/hev-task.h"
 #include "hev-task-io.h"
 #include "lib/io/buffer/hev-circular-buffer.h"
+
+typedef struct _HevTaskIOSplicer HevTaskIOSplicer;
+
+struct _HevTaskIOSplicer
+{
+#if defined(__linux__)
+    int fd[2];
+    size_t wlen;
+    size_t blen;
+#else
+    HevCircularBuffer *buf;
+#endif /* !defined(__linux__) */
+};
 
 int
 hev_task_io_open (const char *pathname, int flags, ...)
@@ -182,13 +199,106 @@ retry:
     return s;
 }
 
+#if defined(__linux__)
+
 static int
-task_io_splice (int fd_in, int fd_out, HevCircularBuffer *buf)
+task_io_splicer_init (HevTaskIOSplicer *self, size_t buf_size)
+{
+    HevTask *task = hev_task_self ();
+    int res;
+
+    res = pipe2 (self->fd, O_NONBLOCK);
+    if (res < 0)
+        goto exit;
+
+    res = hev_task_add_fd (task, self->fd[0], POLLIN);
+    if (res < 0)
+        goto exit_close;
+
+    res = hev_task_add_fd (task, self->fd[1], POLLOUT);
+    if (res < 0)
+        goto exit_close;
+
+    self->wlen = 0;
+    self->blen = buf_size;
+
+    return 0;
+
+exit_close:
+    close (self->fd[0]);
+    close (self->fd[1]);
+exit:
+    return res;
+}
+
+static void
+task_io_splicer_fini (HevTaskIOSplicer *self)
+{
+    close (self->fd[0]);
+    close (self->fd[1]);
+}
+
+static int
+task_io_splice (HevTaskIOSplicer *self, int fd_in, int fd_out)
+{
+    int res;
+    ssize_t s;
+
+    s = splice (fd_in, NULL, self->fd[1], NULL, self->blen,
+                SPLICE_F_MOVE | SPLICE_F_NONBLOCK);
+    if (0 >= s) {
+        if ((0 > s) && (EAGAIN == errno))
+            res = 0;
+        else
+            res = -1;
+    } else {
+        res = 1;
+        self->wlen += s;
+    }
+
+    if (self->wlen) {
+        s = splice (self->fd[0], NULL, fd_out, NULL, self->blen,
+                    SPLICE_F_MOVE | SPLICE_F_NONBLOCK);
+        if (0 >= s) {
+            if ((0 > s) && (EAGAIN == errno))
+                res = 0;
+            else
+                res = -1;
+        } else {
+            res = 1;
+            self->wlen -= s;
+        }
+    }
+
+    return res;
+}
+
+#else
+
+static int
+task_io_splicer_init (HevTaskIOSplicer *self, size_t buf_size)
+{
+    self->buf = hev_circular_buffer_new (buf_size);
+    if (!self->buf)
+        return -1;
+
+    return 0;
+}
+
+static void
+task_io_splicer_fini (HevTaskIOSplicer *self)
+{
+    if (self->buf)
+        hev_circular_buffer_unref (self->buf);
+}
+
+static int
+task_io_splice (HevTaskIOSplicer *self, int fd_in, int fd_out)
 {
     struct iovec iov[2];
     int res = 1, iovc;
 
-    iovc = hev_circular_buffer_writing (buf, iov);
+    iovc = hev_circular_buffer_writing (self->buf, iov);
     if (iovc) {
         ssize_t s = readv (fd_in, iov, iovc);
         if (0 >= s) {
@@ -197,11 +307,11 @@ task_io_splice (int fd_in, int fd_out, HevCircularBuffer *buf)
             else
                 res = -1;
         } else {
-            hev_circular_buffer_write_finish (buf, s);
+            hev_circular_buffer_write_finish (self->buf, s);
         }
     }
 
-    iovc = hev_circular_buffer_reading (buf, iov);
+    iovc = hev_circular_buffer_reading (self->buf, iov);
     if (iovc) {
         ssize_t s = writev (fd_out, iov, iovc);
         if (0 >= s) {
@@ -211,57 +321,57 @@ task_io_splice (int fd_in, int fd_out, HevCircularBuffer *buf)
                 res = -1;
         } else {
             res = 1;
-            hev_circular_buffer_read_finish (buf, s);
+            hev_circular_buffer_read_finish (self->buf, s);
         }
     }
 
     return res;
 }
 
+#endif /* !defined(__linux__) */
+
 void
 hev_task_io_splice (int fd_a_i, int fd_a_o, int fd_b_i, int fd_b_o,
                     size_t buf_size, HevTaskIOYielder yielder,
                     void *yielder_data)
 {
-    HevCircularBuffer *buf_f;
-    HevCircularBuffer *buf_b;
+    HevTaskIOSplicer splicer_f;
+    HevTaskIOSplicer splicer_b;
+    int err_f = 0;
+    int err_b = 0;
 
-    buf_f = hev_circular_buffer_new (buf_size);
-    if (!buf_f)
+    if (task_io_splicer_init (&splicer_f, buf_size) < 0)
         return;
-    buf_b = hev_circular_buffer_new (buf_size);
-    if (!buf_b)
-        goto err;
+    if (task_io_splicer_init (&splicer_b, buf_size) < 0)
+        goto exit;
 
     for (;;) {
         HevTaskYieldType type = 0;
 
-        if (buf_f) {
-            int ret = task_io_splice (fd_a_i, fd_b_o, buf_f);
+        if (!err_f) {
+            int ret = task_io_splice (&splicer_f, fd_a_i, fd_b_o);
             if (0 >= ret) {
                 /* backward closed, quit */
-                if (!buf_b)
+                if (err_b)
                     break;
                 if (0 > ret) { /* error */
                     /* forward error or closed, mark to skip */
-                    hev_circular_buffer_unref (buf_f);
-                    buf_f = NULL;
+                    err_f = 1;
                 } else { /* no data */
                     type++;
                 }
             }
         }
 
-        if (buf_b) {
-            int ret = task_io_splice (fd_b_i, fd_a_o, buf_b);
+        if (!err_b) {
+            int ret = task_io_splice (&splicer_b, fd_b_i, fd_a_o);
             if (0 >= ret) {
                 /* forward closed, quit */
-                if (!buf_f)
+                if (err_f)
                     break;
                 if (0 > ret) { /* error */
                     /* backward error or closed, mark to skip */
-                    hev_circular_buffer_unref (buf_b);
-                    buf_b = NULL;
+                    err_b = 1;
                 } else { /* no data */
                     type++;
                 }
@@ -276,9 +386,7 @@ hev_task_io_splice (int fd_a_i, int fd_a_o, int fd_b_i, int fd_b_o,
         }
     }
 
-    if (buf_b)
-        hev_circular_buffer_unref (buf_b);
-err:
-    if (buf_f)
-        hev_circular_buffer_unref (buf_f);
+    task_io_splicer_fini (&splicer_b);
+exit:
+    task_io_splicer_fini (&splicer_f);
 }
