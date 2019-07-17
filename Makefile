@@ -32,7 +32,7 @@ CCFLAGS+=-I$(SRCDIR) $(CONFIG_CFLAGS)
 CCSRCS=$(filter %.c,$(SRCFILES))
 ASSRCS=$(filter %.S,$(SRCFILES))
 LDOBJS=$(patsubst $(SRCDIR)/%.c,$(BUILDDIR)/%.o,$(CCSRCS)) \
-	   $(patsubst $(SRCDIR)/%.S,$(BUILDDIR)/%.o,$(ASSRCS))
+       $(patsubst $(SRCDIR)/%.S,$(BUILDDIR)/%.o,$(ASSRCS))
 DEPEND=$(LDOBJS:.o=.dep)
 
 BUILDMSG="\e[1;31mBUILD\e[0m %s\n"
@@ -43,7 +43,7 @@ TESTMSG="\e[1;34mTEST\e[0m  \e[1;32m%s\e[0m\n"
 V:=
 ECHO_PREFIX:=@
 ifeq ($(V),1)
-	undefine ECHO_PREFIX
+    undefine ECHO_PREFIX
 endif
 
 .PHONY: static shared clean tests apps
@@ -52,7 +52,7 @@ static : $(STATIC_TARGET)
 
 shared : $(SHARED_TARGET)
 
-clean : 
+clean :
 	$(ECHO_PREFIX) $(RM) -rf $(BINDIR) $(BUILDDIR)
 	@printf $(CLEANMSG) $(PROJECT)
 
