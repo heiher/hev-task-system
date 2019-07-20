@@ -10,9 +10,11 @@
 #include <unistd.h>
 #include <sys/ioctl.h>
 
+#include "lib/utils/hev-compiler.h"
+
 #include "hev-task-io-pipe.h"
 
-int
+EXPORT_SYMBOL int
 hev_task_io_pipe_pipe (int pipefd[2])
 {
     int nonblock = 1;
