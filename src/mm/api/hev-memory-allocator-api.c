@@ -12,6 +12,8 @@
 #include "lib/utils/hev-compiler.h"
 #include "mm/base/hev-memory-allocator.h"
 
+#include "hev-memory-allocator-api.h"
+
 EXPORT_SYMBOL void *
 hev_malloc (size_t size)
 {
