@@ -7,8 +7,10 @@
  ============================================================================
  */
 
-#include "hev-circular-buffer.h"
+#include "lib/utils/hev-compiler.h"
 #include "mm/api/hev-memory-allocator-api.h"
+
+#include "hev-circular-buffer.h"
 
 struct _HevCircularBuffer
 {
@@ -20,7 +22,7 @@ struct _HevCircularBuffer
     unsigned char data[0];
 };
 
-HevCircularBuffer *
+EXPORT_SYMBOL HevCircularBuffer *
 hev_circular_buffer_new (size_t max_size)
 {
     HevCircularBuffer *self;
@@ -37,7 +39,7 @@ hev_circular_buffer_new (size_t max_size)
     return self;
 }
 
-HevCircularBuffer *
+EXPORT_SYMBOL HevCircularBuffer *
 hev_circular_buffer_ref (HevCircularBuffer *self)
 {
     self->ref_count++;
@@ -45,7 +47,7 @@ hev_circular_buffer_ref (HevCircularBuffer *self)
     return self;
 }
 
-void
+EXPORT_SYMBOL void
 hev_circular_buffer_unref (HevCircularBuffer *self)
 {
     self->ref_count--;
@@ -55,19 +57,19 @@ hev_circular_buffer_unref (HevCircularBuffer *self)
     hev_free (self);
 }
 
-size_t
+EXPORT_SYMBOL size_t
 hev_circular_buffer_get_max_size (HevCircularBuffer *self)
 {
     return self->max_size;
 }
 
-size_t
+EXPORT_SYMBOL size_t
 hev_circular_buffer_get_use_size (HevCircularBuffer *self)
 {
     return self->use_size;
 }
 
-int
+EXPORT_SYMBOL int
 hev_circular_buffer_reading (HevCircularBuffer *self, struct iovec *iov)
 {
     size_t upper_size = self->max_size - self->rp;
@@ -87,14 +89,14 @@ hev_circular_buffer_reading (HevCircularBuffer *self, struct iovec *iov)
     return 2;
 }
 
-void
+EXPORT_SYMBOL void
 hev_circular_buffer_read_finish (HevCircularBuffer *self, size_t size)
 {
     self->rp = (self->rp + size) % self->max_size;
     self->use_size -= size;
 }
 
-int
+EXPORT_SYMBOL int
 hev_circular_buffer_writing (HevCircularBuffer *self, struct iovec *iov)
 {
     size_t wp = (self->rp + self->use_size) % self->max_size;
@@ -116,7 +118,7 @@ hev_circular_buffer_writing (HevCircularBuffer *self, struct iovec *iov)
     return 2;
 }
 
-void
+EXPORT_SYMBOL void
 hev_circular_buffer_write_finish (HevCircularBuffer *self, size_t size)
 {
     self->use_size += size;
