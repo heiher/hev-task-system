@@ -22,7 +22,7 @@ include $(LOCAL_PATH)/configs.mk
 LOCAL_MODULE    := libhev-task-system
 LOCAL_SRC_FILES := $(patsubst $(SRCDIR)/%,src/%,$(SRCFILES))
 LOCAL_C_INCLUDES := $(SRCDIR)
-LOCAL_CFLAGS += $(CONFIG_CFLAGS)
+LOCAL_CFLAGS += -fvisibility=hidden $(CONFIG_CFLAGS)
 ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
 LOCAL_CFLAGS += -mfpu=neon
 endif
