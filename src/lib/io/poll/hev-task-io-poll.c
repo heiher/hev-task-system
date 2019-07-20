@@ -7,10 +7,12 @@
  ============================================================================
  */
 
-#include "hev-task-io-poll.h"
 #include "kern/task/hev-task.h"
+#include "lib/utils/hev-compiler.h"
 
-int
+#include "hev-task-io-poll.h"
+
+EXPORT_SYMBOL int
 hev_task_io_poll (HevTaskIOPollFD fds[], unsigned int nfds, int timeout)
 {
     HevTask *task;
