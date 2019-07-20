@@ -20,8 +20,10 @@
 #include <sys/ioctl.h>
 
 #include "kern/task/hev-task.h"
-#include "hev-task-io.h"
 #include "lib/io/buffer/hev-circular-buffer.h"
+#include "lib/utils/hev-compiler.h"
+
+#include "hev-task-io.h"
 
 typedef struct _HevTaskIOSplicer HevTaskIOSplicer;
 
@@ -36,7 +38,7 @@ struct _HevTaskIOSplicer
 #endif /* !defined(__linux__) */
 };
 
-int
+EXPORT_SYMBOL int
 hev_task_io_open (const char *pathname, int flags, ...)
 {
     flags |= O_NONBLOCK;
@@ -55,13 +57,13 @@ hev_task_io_open (const char *pathname, int flags, ...)
     return open (pathname, flags);
 }
 
-int
+EXPORT_SYMBOL int
 hev_task_io_creat (const char *pathname, mode_t mode)
 {
     return hev_task_io_open (pathname, O_CREAT | O_WRONLY | O_TRUNC, mode);
 }
 
-int
+EXPORT_SYMBOL int
 hev_task_io_openat (int dirfd, const char *pathname, int flags, ...)
 {
     flags |= O_NONBLOCK;
@@ -80,7 +82,7 @@ hev_task_io_openat (int dirfd, const char *pathname, int flags, ...)
     return openat (dirfd, pathname, flags);
 }
 
-int
+EXPORT_SYMBOL int
 hev_task_io_dup (int oldfd)
 {
     int newfd;
@@ -98,7 +100,7 @@ hev_task_io_dup (int oldfd)
     return newfd;
 }
 
-int
+EXPORT_SYMBOL int
 hev_task_io_dup2 (int oldfd, int newfd)
 {
     int nonblock = 1;
@@ -115,7 +117,7 @@ hev_task_io_dup2 (int oldfd, int newfd)
     return newfd;
 }
 
-ssize_t
+EXPORT_SYMBOL ssize_t
 hev_task_io_read (int fd, void *buf, size_t count, HevTaskIOYielder yielder,
                   void *yielder_data)
 {
@@ -136,7 +138,7 @@ retry:
     return s;
 }
 
-ssize_t
+EXPORT_SYMBOL ssize_t
 hev_task_io_readv (int fd, const struct iovec *iov, int iovcnt,
                    HevTaskIOYielder yielder, void *yielder_data)
 {
@@ -157,7 +159,7 @@ retry:
     return s;
 }
 
-ssize_t
+EXPORT_SYMBOL ssize_t
 hev_task_io_write (int fd, const void *buf, size_t count,
                    HevTaskIOYielder yielder, void *yielder_data)
 {
@@ -178,7 +180,7 @@ retry:
     return s;
 }
 
-ssize_t
+EXPORT_SYMBOL ssize_t
 hev_task_io_writev (int fd, const struct iovec *iov, int iovcnt,
                     HevTaskIOYielder yielder, void *yielder_data)
 {
@@ -330,7 +332,7 @@ task_io_splice (HevTaskIOSplicer *self, int fd_in, int fd_out)
 
 #endif /* !defined(__linux__) */
 
-void
+EXPORT_SYMBOL void
 hev_task_io_splice (int fd_a_i, int fd_a_o, int fd_b_i, int fd_b_o,
                     size_t buf_size, HevTaskIOYielder yielder,
                     void *yielder_data)
