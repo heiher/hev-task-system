@@ -11,10 +11,13 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#include "hev-task.h"
-#include "hev-task-private.h"
 #include "kern/core/hev-task-system-private.h"
+#include "lib/utils/hev-compiler.h"
 #include "mm/api/hev-memory-allocator-api.h"
+
+#include "hev-task-private.h"
+
+#include "hev-task.h"
 
 #define STACK_OVERFLOW_DETECTION_TAG (0xdeadbeefu)
 
@@ -22,7 +25,7 @@
 
 #define ALIGN_DOWN(addr, align) ((addr) & ~((typeof(addr))align - 1))
 
-HevTask *
+EXPORT_SYMBOL HevTask *
 hev_task_new (int stack_size)
 {
     HevTask *self;
@@ -55,7 +58,7 @@ hev_task_new (int stack_size)
     return self;
 }
 
-HevTask *
+EXPORT_SYMBOL HevTask *
 hev_task_ref (HevTask *self)
 {
     self->ref_count++;
@@ -63,7 +66,7 @@ hev_task_ref (HevTask *self)
     return self;
 }
 
-void
+EXPORT_SYMBOL void
 hev_task_unref (HevTask *self)
 {
     self->ref_count--;
@@ -77,19 +80,19 @@ hev_task_unref (HevTask *self)
     hev_free (self);
 }
 
-HevTask *
+EXPORT_SYMBOL HevTask *
 hev_task_self (void)
 {
     return hev_task_system_get_context ()->current_task;
 }
 
-HevTaskState
+EXPORT_SYMBOL HevTaskState
 hev_task_get_state (HevTask *self)
 {
     return self->state;
 }
 
-void
+EXPORT_SYMBOL void
 hev_task_set_priority (HevTask *self, int priority)
 {
     if (priority < HEV_TASK_PRIORITY_MIN)
@@ -100,13 +103,13 @@ hev_task_set_priority (HevTask *self, int priority)
     self->next_priority = priority;
 }
 
-int
+EXPORT_SYMBOL int
 hev_task_get_priority (HevTask *self)
 {
     return self->next_priority;
 }
 
-int
+EXPORT_SYMBOL int
 hev_task_add_fd (HevTask *self, int fd, unsigned int events)
 {
     HevTaskIOReactor *reactor;
@@ -119,7 +122,7 @@ hev_task_add_fd (HevTask *self, int fd, unsigned int events)
     return hev_task_io_reactor_setup (reactor, revents, count);
 }
 
-int
+EXPORT_SYMBOL int
 hev_task_mod_fd (HevTask *self, int fd, unsigned int events)
 {
     HevTaskIOReactor *reactor;
@@ -156,7 +159,7 @@ hev_task_mod_fd (HevTask *self, int fd, unsigned int events)
     return hev_task_io_reactor_setup (reactor, revents, count);
 }
 
-int
+EXPORT_SYMBOL int
 hev_task_del_fd (HevTask *self, int fd)
 {
     HevTaskIOReactor *reactor;
@@ -181,31 +184,31 @@ hev_task_del_fd (HevTask *self, int fd)
     return res;
 }
 
-int
+EXPORT_SYMBOL int
 hev_task_res_fd (HevTask *self, int fd, unsigned int events)
 {
     return -1;
 }
 
-void
+EXPORT_SYMBOL void
 hev_task_wakeup (HevTask *task)
 {
     hev_task_system_wakeup_task (task);
 }
 
-void
+EXPORT_SYMBOL void
 hev_task_yield (HevTaskYieldType type)
 {
     hev_task_system_schedule (type);
 }
 
-unsigned int
+EXPORT_SYMBOL unsigned int
 hev_task_sleep (unsigned int milliseconds)
 {
     return hev_task_usleep (milliseconds * 1000) / 1000;
 }
 
-unsigned int
+EXPORT_SYMBOL unsigned int
 hev_task_usleep (unsigned int microseconds)
 {
     HevTaskSystemContext *ctx;
@@ -217,7 +220,7 @@ hev_task_usleep (unsigned int microseconds)
     return hev_task_timer_wait (ctx->timer, microseconds, ctx->current_task);
 }
 
-void
+EXPORT_SYMBOL void
 hev_task_run (HevTask *self, HevTaskEntry entry, void *data)
 {
     /* Skip to run task that already running */
@@ -232,13 +235,13 @@ hev_task_run (HevTask *self, HevTaskEntry entry, void *data)
     hev_task_system_run_new_task (self);
 }
 
-void
+EXPORT_SYMBOL void
 hev_task_exit (void)
 {
     hev_task_system_kill_current_task ();
 }
 
-void *
+EXPORT_SYMBOL void *
 hev_task_get_data (HevTask *self)
 {
     return self->data;
