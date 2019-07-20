@@ -10,9 +10,9 @@
 #include <stddef.h>
 
 #include "kern/task/hev-task.h"
+#include "lib/utils/hev-compiler.h"
 
 #include "hev-task-mutex.h"
-#include "lib/utils/hev-compiler.h"
 
 struct _HevTaskMutexNode
 {
@@ -21,7 +21,7 @@ struct _HevTaskMutexNode
     HevTask *task;
 };
 
-int
+EXPORT_SYMBOL int
 hev_task_mutex_init (HevTaskMutex *self)
 {
     self->locker = 0;
@@ -30,7 +30,7 @@ hev_task_mutex_init (HevTaskMutex *self)
     return 0;
 }
 
-int
+EXPORT_SYMBOL int
 hev_task_mutex_lock (HevTaskMutex *self)
 {
     if (self->locker) {
@@ -55,7 +55,7 @@ hev_task_mutex_lock (HevTaskMutex *self)
     return 0;
 }
 
-int
+EXPORT_SYMBOL int
 hev_task_mutex_trylock (HevTaskMutex *self)
 {
     if (self->locker)
@@ -68,7 +68,7 @@ hev_task_mutex_trylock (HevTaskMutex *self)
     return 0;
 }
 
-int
+EXPORT_SYMBOL int
 hev_task_mutex_unlock (HevTaskMutex *self)
 {
     barrier ();
