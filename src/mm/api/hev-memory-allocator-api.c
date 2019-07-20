@@ -9,9 +9,10 @@
 
 #include <string.h>
 
+#include "lib/utils/hev-compiler.h"
 #include "mm/base/hev-memory-allocator.h"
 
-void *
+EXPORT_SYMBOL void *
 hev_malloc (size_t size)
 {
     HevMemoryAllocator *allocator;
@@ -20,7 +21,7 @@ hev_malloc (size_t size)
     return hev_memory_allocator_alloc (allocator, size);
 }
 
-void *
+EXPORT_SYMBOL void *
 hev_malloc0 (size_t size)
 {
     HevMemoryAllocator *allocator;
@@ -33,7 +34,7 @@ hev_malloc0 (size_t size)
     return data;
 }
 
-void *
+EXPORT_SYMBOL void *
 hev_realloc (void *ptr, size_t size)
 {
     HevMemoryAllocator *allocator;
@@ -42,7 +43,7 @@ hev_realloc (void *ptr, size_t size)
     return hev_memory_allocator_realloc (allocator, ptr, size);
 }
 
-void
+EXPORT_SYMBOL void
 hev_free (void *ptr)
 {
     HevMemoryAllocator *allocator;
