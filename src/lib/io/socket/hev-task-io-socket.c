@@ -14,9 +14,11 @@
 
 #include "kern/task/hev-task.h"
 #include "lib/io/basic/hev-task-io.h"
+#include "lib/utils/hev-compiler.h"
+
 #include "hev-task-io-socket.h"
 
-int
+EXPORT_SYMBOL int
 hev_task_io_socket_socket (int domain, int type, int protocol)
 {
     int fd, nonblock = 1;
@@ -33,7 +35,7 @@ hev_task_io_socket_socket (int domain, int type, int protocol)
     return fd;
 }
 
-int
+EXPORT_SYMBOL int
 hev_task_io_socket_socketpair (int domain, int type, int protocol,
                                int socket_vector[2])
 {
@@ -57,7 +59,7 @@ hev_task_io_socket_socketpair (int domain, int type, int protocol,
     return 0;
 }
 
-int
+EXPORT_SYMBOL int
 hev_task_io_socket_connect (int fd, const struct sockaddr *addr,
                             socklen_t addr_len, HevTaskIOYielder yielder,
                             void *yielder_data)
@@ -82,7 +84,7 @@ retry:
     return ret;
 }
 
-int
+EXPORT_SYMBOL int
 hev_task_io_socket_accept (int fd, struct sockaddr *addr, socklen_t *addr_len,
                            HevTaskIOYielder yielder, void *yielder_data)
 {
@@ -108,7 +110,7 @@ retry:
     return new_fd;
 }
 
-ssize_t
+EXPORT_SYMBOL ssize_t
 hev_task_io_socket_recv (int fd, void *buf, size_t len, int flags,
                          HevTaskIOYielder yielder, void *yielder_data)
 {
@@ -140,7 +142,7 @@ retry:
     return size;
 }
 
-ssize_t
+EXPORT_SYMBOL ssize_t
 hev_task_io_socket_send (int fd, const void *buf, size_t len, int flags,
                          HevTaskIOYielder yielder, void *yielder_data)
 {
@@ -172,7 +174,7 @@ retry:
     return size;
 }
 
-ssize_t
+EXPORT_SYMBOL ssize_t
 hev_task_io_socket_recvfrom (int fd, void *buf, size_t len, int flags,
                              struct sockaddr *addr, socklen_t *addr_len,
                              HevTaskIOYielder yielder, void *yielder_data)
@@ -194,7 +196,7 @@ retry:
     return s;
 }
 
-ssize_t
+EXPORT_SYMBOL ssize_t
 hev_task_io_socket_sendto (int fd, const void *buf, size_t len, int flags,
                            const struct sockaddr *addr, socklen_t addr_len,
                            HevTaskIOYielder yielder, void *yielder_data)
@@ -216,7 +218,7 @@ retry:
     return s;
 }
 
-ssize_t
+EXPORT_SYMBOL ssize_t
 hev_task_io_socket_recvmsg (int fd, struct msghdr *msg, int flags,
                             HevTaskIOYielder yielder, void *yielder_data)
 {
@@ -277,7 +279,7 @@ retry:
     return size;
 }
 
-ssize_t
+EXPORT_SYMBOL ssize_t
 hev_task_io_socket_sendmsg (int fd, const struct msghdr *msg, int flags,
                             HevTaskIOYielder yielder, void *yielder_data)
 {
