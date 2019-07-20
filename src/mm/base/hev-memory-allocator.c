@@ -14,8 +14,10 @@
 #include <pthread.h>
 #endif
 
-#include "hev-memory-allocator.h"
+#include "lib/utils/hev-compiler.h"
 #include "mm/simple/hev-memory-allocator-simple.h"
+
+#include "hev-memory-allocator.h"
 
 #ifdef ENABLE_PTHREAD
 static pthread_key_t key;
@@ -26,7 +28,7 @@ static void pthread_key_creator (void);
 static HevMemoryAllocator *default_allocator;
 #endif
 
-HevMemoryAllocator *
+EXPORT_SYMBOL HevMemoryAllocator *
 hev_memory_allocator_default (void)
 {
 #ifdef ENABLE_PTHREAD
@@ -47,7 +49,7 @@ hev_memory_allocator_default (void)
     return default_allocator;
 }
 
-HevMemoryAllocator *
+EXPORT_SYMBOL HevMemoryAllocator *
 hev_memory_allocator_set_default (HevMemoryAllocator *allocator)
 {
     HevMemoryAllocator *old_allocator;
@@ -65,14 +67,14 @@ hev_memory_allocator_set_default (HevMemoryAllocator *allocator)
     return old_allocator;
 }
 
-HevMemoryAllocator *
+EXPORT_SYMBOL HevMemoryAllocator *
 hev_memory_allocator_ref (HevMemoryAllocator *self)
 {
     self->ref_count++;
     return self;
 }
 
-void
+EXPORT_SYMBOL void
 hev_memory_allocator_unref (HevMemoryAllocator *self)
 {
     self->ref_count--;
@@ -92,19 +94,19 @@ pthread_key_creator (void)
 }
 #endif
 
-void *
+EXPORT_SYMBOL void *
 hev_memory_allocator_alloc (HevMemoryAllocator *self, size_t size)
 {
     return self->alloc (self, size);
 }
 
-void *
+EXPORT_SYMBOL void *
 hev_memory_allocator_realloc (HevMemoryAllocator *self, void *ptr, size_t size)
 {
     return self->realloc (self, ptr, size);
 }
 
-void
+EXPORT_SYMBOL void
 hev_memory_allocator_free (HevMemoryAllocator *self, void *ptr)
 {
     return self->free (self, ptr);
