@@ -18,6 +18,10 @@ extern "C" {
 #define ARRAY_SIZE(x) (sizeof (x) / sizeof (x[0]))
 #endif
 
+#ifndef EXPORT_SYMBOL
+#define EXPORT_SYMBOL __attribute__ ((visibility ("default")))
+#endif
+
 #define barrier() __asm__ __volatile__("" : : : "memory")
 
 static inline void
