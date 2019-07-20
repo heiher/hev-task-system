@@ -17,6 +17,8 @@
 #include "kern/time/hev-task-timer-kevent.h"
 #endif
 
+#include "lib/utils/hev-compiler.h"
+
 typedef struct _HevTaskTimerNode HevTaskTimerNode;
 
 struct _HevTaskTimerNode
