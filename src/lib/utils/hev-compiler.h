@@ -14,6 +14,10 @@
 extern "C" {
 #endif
 
+#ifndef ARRAY_SIZE
+#define ARRAY_SIZE(x) (sizeof (x) / sizeof (x[0]))
+#endif
+
 #define barrier() __asm__ __volatile__("" : : : "memory")
 
 static inline void
