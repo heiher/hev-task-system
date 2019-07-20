@@ -7,11 +7,11 @@
  ============================================================================
  */
 
-#include "hev-task-channel.h"
-
 #include "kern/task/hev-task.h"
 #include "lib/utils/hev-compiler.h"
 #include "mm/api/hev-memory-allocator-api.h"
+
+#include "hev-task-channel.h"
 
 #define MAX_BUFFER_SIZE (16384)
 
@@ -48,13 +48,13 @@ struct _HevTaskChannel
     HevTaskChannelBuffer buffers[0];
 };
 
-int
+EXPORT_SYMBOL int
 hev_task_channel_new (HevTaskChannel **chan1, HevTaskChannel **chan2)
 {
     return hev_task_channel_new_with_buffers (chan1, chan2, 0);
 }
 
-int
+EXPORT_SYMBOL int
 hev_task_channel_new_with_buffers (HevTaskChannel **chan1,
                                    HevTaskChannel **chan2, unsigned int buffers)
 {
@@ -135,7 +135,7 @@ hev_task_channel_unref (HevTaskChannel *self)
     hev_free (self);
 }
 
-void
+EXPORT_SYMBOL void
 hev_task_channel_destroy (HevTaskChannel *self)
 {
     if (self->peer) {
@@ -204,7 +204,7 @@ _hev_task_channel_read (HevTaskChannel *self, void *buffer, size_t count)
     return size;
 }
 
-ssize_t
+EXPORT_SYMBOL ssize_t
 hev_task_channel_read (HevTaskChannel *self, void *buffer, size_t count)
 {
     ssize_t size = -1;
@@ -227,7 +227,7 @@ out:
     return size;
 }
 
-ssize_t
+EXPORT_SYMBOL ssize_t
 hev_task_channel_select_read (HevTaskChannel *chans[], unsigned int nchans,
                               void *buffer, size_t count, int timeout)
 {
@@ -271,7 +271,7 @@ out:
     return size;
 }
 
-ssize_t
+EXPORT_SYMBOL ssize_t
 hev_task_channel_write (HevTaskChannel *self, const void *buffer, size_t count)
 {
     HevTaskChannel *peer = self->peer;
