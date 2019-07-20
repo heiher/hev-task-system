@@ -13,10 +13,13 @@
 #include <pthread.h>
 #endif
 
-#include "hev-task-system.h"
-#include "hev-task-system-private.h"
+#include "lib/utils/hev-compiler.h"
 #include "mm/api/hev-memory-allocator-api.h"
 #include "mm/slice/hev-memory-allocator-slice.h"
+
+#include "hev-task-system-private.h"
+
+#include "hev-task-system.h"
 
 #ifdef ENABLE_PTHREAD
 static pthread_key_t key;
@@ -27,7 +30,7 @@ static void pthread_key_creator (void);
 static HevTaskSystemContext *default_context;
 #endif
 
-int
+EXPORT_SYMBOL int
 hev_task_system_init (void)
 {
 #ifdef ENABLE_MEMALLOC_SLICE
@@ -73,7 +76,7 @@ hev_task_system_init (void)
     return 0;
 }
 
-void
+EXPORT_SYMBOL void
 hev_task_system_fini (void)
 {
 #ifdef ENABLE_MEMALLOC_SLICE
@@ -100,7 +103,7 @@ hev_task_system_fini (void)
 #endif
 }
 
-void
+EXPORT_SYMBOL void
 hev_task_system_run (void)
 {
     hev_task_system_schedule (HEV_TASK_RUN_SCHEDULER);
