@@ -61,6 +61,14 @@ __copy_once_size (void *dst, const volatile void *src, int size)
         __u.__val;                                    \
     })
 
+#ifndef container_of
+#define container_of(ptr, type, member)               \
+    ({                                                \
+        void *__mptr = (void *)(ptr);                 \
+        ((type *)(__mptr - offsetof (type, member))); \
+    })
+#endif
+
 #ifdef __cplusplus
 }
 #endif
