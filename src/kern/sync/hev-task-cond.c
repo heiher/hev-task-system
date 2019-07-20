@@ -10,9 +10,9 @@
 #include <stddef.h>
 
 #include "kern/task/hev-task.h"
+#include "lib/utils/hev-compiler.h"
 
 #include "hev-task-cond.h"
-#include "lib/utils/hev-compiler.h"
 
 struct _HevTaskCondNode
 {
@@ -22,7 +22,7 @@ struct _HevTaskCondNode
     HevTask *task;
 };
 
-int
+EXPORT_SYMBOL int
 hev_task_cond_init (HevTaskCond *self)
 {
     self->waiters = NULL;
@@ -30,7 +30,7 @@ hev_task_cond_init (HevTaskCond *self)
     return 0;
 }
 
-int
+EXPORT_SYMBOL int
 hev_task_cond_wait (HevTaskCond *self, HevTaskMutex *mutex)
 {
     HevTaskCondNode node;
@@ -54,7 +54,7 @@ hev_task_cond_wait (HevTaskCond *self, HevTaskMutex *mutex)
     return 0;
 }
 
-int
+EXPORT_SYMBOL int
 hev_task_cond_timedwait (HevTaskCond *self, HevTaskMutex *mutex,
                          unsigned int milliseconds)
 {
@@ -88,7 +88,7 @@ hev_task_cond_timedwait (HevTaskCond *self, HevTaskMutex *mutex,
     return 0;
 }
 
-int
+EXPORT_SYMBOL int
 hev_task_cond_signal (HevTaskCond *self)
 {
     if (self->waiters) {
@@ -103,7 +103,7 @@ hev_task_cond_signal (HevTaskCond *self)
     return 0;
 }
 
-int
+EXPORT_SYMBOL int
 hev_task_cond_broadcast (HevTaskCond *self)
 {
     while (self->waiters) {
