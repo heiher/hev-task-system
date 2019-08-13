@@ -185,21 +185,6 @@ int hev_task_mod_fd (HevTask *self, int fd, unsigned int events);
 int hev_task_del_fd (HevTask *self, int fd);
 
 /**
- * hev_task_res_fd:
- * @self: a #HevTask
- * @fd: a file descriptor
- * @events: a poll events.
- *
- * Resume events of a file descriptor that added into I/O reactor of task
- * system.
- *
- * Returns: When successful, returns zero. When an error occurs, returns -1.
- *
- * Deprecated: 4.6
- */
-int hev_task_res_fd (HevTask *self, int fd, unsigned int events);
-
-/**
  * hev_task_wakeup:
  * @self: a #HevTask
  *

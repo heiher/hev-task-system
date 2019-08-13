@@ -184,12 +184,6 @@ hev_task_del_fd (HevTask *self, int fd)
     return res;
 }
 
-EXPORT_SYMBOL int
-hev_task_res_fd (HevTask *self, int fd, unsigned int events)
-{
-    return -1;
-}
-
 EXPORT_SYMBOL void
 hev_task_wakeup (HevTask *task)
 {
