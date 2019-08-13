@@ -228,50 +228,6 @@ out:
 }
 
 EXPORT_SYMBOL ssize_t
-hev_task_channel_select_read (HevTaskChannel *chans[], unsigned int nchans,
-                              void *buffer, size_t count, int timeout)
-{
-    HevTaskChannel *chan = NULL;
-    ssize_t size = -1;
-    unsigned int i, milliseconds = timeout;
-
-    if (nchans == 0)
-        goto out;
-
-    for (i = 0; i < nchans; i++) {
-        if (chans[i]->use_count != 0) {
-            chan = chans[i];
-            break;
-        }
-    }
-
-    while (!chan && milliseconds) {
-        for (i = 0; i < nchans; i++)
-            chans[i]->reader = hev_task_self ();
-
-        /* wait on empty */
-        barrier ();
-        if (timeout < 0)
-            hev_task_yield (HEV_TASK_WAITIO);
-        else
-            milliseconds = hev_task_sleep (milliseconds);
-        barrier ();
-
-        for (i = 0; i < nchans; i++) {
-            chans[i]->reader = NULL;
-            if (chans[i]->use_count != 0)
-                chan = chans[i];
-        }
-    }
-
-    if (chan)
-        size = _hev_task_channel_read (chan, buffer, count);
-
-out:
-    return size;
-}
-
-EXPORT_SYMBOL ssize_t
 hev_task_channel_write (HevTaskChannel *self, const void *buffer, size_t count)
 {
     HevTaskChannel *peer = self->peer;
