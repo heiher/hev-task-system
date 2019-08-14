@@ -10,6 +10,11 @@
 #ifndef __HEV_TASK_CHANNEL_PRIVATE_H__
 #define __HEV_TASK_CHANNEL_PRIVATE_H__
 
+#include "lib/list/hev-list.h"
+#include "kern/task/hev-task.h"
+
+#include "hev-task-channel-select.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -37,7 +42,15 @@ struct _HevTaskChannel
 {
     HevTaskChannel *peer;
 
+    struct
+    {
+        HevListNode node;
+        int used;
+    } read;
+    HevListNode chan_node;
+
     HevTask *task;
+    HevTaskChannelSelect *select;
 
     unsigned int rd_idx;
     unsigned int wr_idx;

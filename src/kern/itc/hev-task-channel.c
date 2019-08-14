@@ -11,6 +11,8 @@
 #include "lib/utils/hev-compiler.h"
 #include "mm/api/hev-memory-allocator-api.h"
 
+#include "hev-task-channel-select-private.h"
+
 #include "hev-task-channel.h"
 #include "hev-task-channel-private.h"
 
@@ -41,19 +43,13 @@ hev_task_channel_new_with_buffers (HevTaskChannel **chan1,
     if (!c2)
         goto err1;
 
+    __builtin_bzero (c1, sizeof (HevTaskChannel));
     c1->peer = c2;
-    c1->task = NULL;
-    c1->rd_idx = 0;
-    c1->wr_idx = 0;
-    c1->use_count = 0;
     c1->max_count = buffers;
     c1->ref_count = 1;
 
+    __builtin_bzero (c2, sizeof (HevTaskChannel));
     c2->peer = c1;
-    c2->task = NULL;
-    c2->rd_idx = 0;
-    c2->wr_idx = 0;
-    c2->use_count = 0;
     c2->max_count = buffers;
     c2->ref_count = 1;
 
@@ -158,7 +154,6 @@ hev_task_channel_read (HevTaskChannel *self, void *buffer, size_t count)
 
         WRITE_ONCE (self->task, hev_task_self ());
         hev_task_yield (HEV_TASK_WAITIO);
-        WRITE_ONCE (self->task, NULL);
     }
 
     barrier ();
@@ -178,6 +173,8 @@ hev_task_channel_read (HevTaskChannel *self, void *buffer, size_t count)
     }
 
     self->use_count--;
+    if (self->select && !hev_task_channel_is_readable (self))
+        hev_task_channel_select_del_read (self->select, self);
 
 out:
     return size;
@@ -203,7 +200,6 @@ hev_task_channel_write (HevTaskChannel *self, const void *buffer, size_t count)
 
         WRITE_ONCE (self->task, hev_task_self ());
         hev_task_yield (HEV_TASK_WAITIO);
-        WRITE_ONCE (self->task, NULL);
     }
 
     barrier ();
@@ -218,6 +214,8 @@ hev_task_channel_write (HevTaskChannel *self, const void *buffer, size_t count)
         size = hev_task_channel_data_copy (cbuf->data, buffer, size);
 
     if (peer->use_count == 0) {
+        if (peer->select)
+            hev_task_channel_select_add_read (peer->select, peer);
         if (peer->task)
             hev_task_wakeup (peer->task);
     }
@@ -234,7 +232,6 @@ hev_task_channel_write (HevTaskChannel *self, const void *buffer, size_t count)
 
         WRITE_ONCE (self->task, hev_task_self ());
         hev_task_yield (HEV_TASK_WAITIO);
-        WRITE_ONCE (self->task, NULL);
     }
 
     barrier ();
