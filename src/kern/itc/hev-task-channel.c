@@ -146,33 +146,10 @@ hev_task_channel_data_copy (void *dst, const void *src, size_t size)
     return size;
 }
 
-static ssize_t
-_hev_task_channel_read (HevTaskChannel *self, void *buffer, size_t count)
-{
-    HevTaskChannelBuffer *cbuf;
-    ssize_t size;
-
-    cbuf = &self->buffers[self->rd_idx];
-    self->rd_idx = (self->rd_idx + 1) % self->max_count;
-
-    size = count;
-    if (cbuf->size < count)
-        size = cbuf->size;
-    size = hev_task_channel_data_copy (buffer, cbuf->data, size);
-
-    if (self->use_count == self->max_count) {
-        if (self->writer)
-            hev_task_wakeup (self->writer);
-    }
-
-    self->use_count--;
-
-    return size;
-}
-
 EXPORT_SYMBOL ssize_t
 hev_task_channel_read (HevTaskChannel *self, void *buffer, size_t count)
 {
+    HevTaskChannelBuffer *cbuf;
     ssize_t size = -1;
 
     /* wait on empty */
@@ -187,7 +164,20 @@ hev_task_channel_read (HevTaskChannel *self, void *buffer, size_t count)
     }
 
     barrier ();
-    size = _hev_task_channel_read (self, buffer, count);
+    cbuf = &self->buffers[self->rd_idx];
+    self->rd_idx = (self->rd_idx + 1) % self->max_count;
+
+    size = count;
+    if (cbuf->size < count)
+        size = cbuf->size;
+    size = hev_task_channel_data_copy (buffer, cbuf->data, size);
+
+    if (self->use_count == self->max_count) {
+        if (self->writer)
+            hev_task_wakeup (self->writer);
+    }
+
+    self->use_count--;
 
 out:
     return size;
