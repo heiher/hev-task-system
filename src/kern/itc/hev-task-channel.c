@@ -42,8 +42,7 @@ hev_task_channel_new_with_buffers (HevTaskChannel **chan1,
         goto err1;
 
     c1->peer = c2;
-    c1->reader = NULL;
-    c1->writer = NULL;
+    c1->task = NULL;
     c1->rd_idx = 0;
     c1->wr_idx = 0;
     c1->use_count = 0;
@@ -51,8 +50,7 @@ hev_task_channel_new_with_buffers (HevTaskChannel **chan1,
     c1->ref_count = 1;
 
     c2->peer = c1;
-    c2->reader = NULL;
-    c2->writer = NULL;
+    c2->task = NULL;
     c2->rd_idx = 0;
     c2->wr_idx = 0;
     c2->use_count = 0;
@@ -106,11 +104,11 @@ hev_task_channel_destroy (HevTaskChannel *self)
 {
     if (self->peer) {
         self->peer->peer = NULL;
-        if (self->peer->reader)
-            hev_task_wakeup (self->peer->reader);
+        if (self->peer->task)
+            hev_task_wakeup (self->peer->task);
     }
-    if (self->writer)
-        hev_task_wakeup (self->writer);
+    if (self->task)
+        hev_task_wakeup (self->task);
 
     hev_task_channel_unref (self);
 }
@@ -158,9 +156,9 @@ hev_task_channel_read (HevTaskChannel *self, void *buffer, size_t count)
         if (!hev_task_channel_is_active (self))
             goto out;
 
-        WRITE_ONCE (self->reader, hev_task_self ());
+        WRITE_ONCE (self->task, hev_task_self ());
         hev_task_yield (HEV_TASK_WAITIO);
-        WRITE_ONCE (self->reader, NULL);
+        WRITE_ONCE (self->task, NULL);
     }
 
     barrier ();
@@ -173,8 +171,10 @@ hev_task_channel_read (HevTaskChannel *self, void *buffer, size_t count)
     size = hev_task_channel_data_copy (buffer, cbuf->data, size);
 
     if (self->use_count == self->max_count) {
-        if (self->writer)
-            hev_task_wakeup (self->writer);
+        HevTaskChannel *peer = self->peer;
+
+        if (peer && peer->task)
+            hev_task_wakeup (peer->task);
     }
 
     self->use_count--;
@@ -201,9 +201,9 @@ hev_task_channel_write (HevTaskChannel *self, const void *buffer, size_t count)
         if (!hev_task_channel_is_active (self))
             goto out1;
 
-        WRITE_ONCE (peer->writer, hev_task_self ());
+        WRITE_ONCE (self->task, hev_task_self ());
         hev_task_yield (HEV_TASK_WAITIO);
-        WRITE_ONCE (peer->writer, NULL);
+        WRITE_ONCE (self->task, NULL);
     }
 
     barrier ();
@@ -218,8 +218,8 @@ hev_task_channel_write (HevTaskChannel *self, const void *buffer, size_t count)
         size = hev_task_channel_data_copy (cbuf->data, buffer, size);
 
     if (peer->use_count == 0) {
-        if (peer->reader)
-            hev_task_wakeup (peer->reader);
+        if (peer->task)
+            hev_task_wakeup (peer->task);
     }
 
     peer->use_count++;
@@ -232,9 +232,9 @@ hev_task_channel_write (HevTaskChannel *self, const void *buffer, size_t count)
             break;
         }
 
-        WRITE_ONCE (peer->writer, hev_task_self ());
+        WRITE_ONCE (self->task, hev_task_self ());
         hev_task_yield (HEV_TASK_WAITIO);
-        WRITE_ONCE (peer->writer, NULL);
+        WRITE_ONCE (self->task, NULL);
     }
 
     barrier ();

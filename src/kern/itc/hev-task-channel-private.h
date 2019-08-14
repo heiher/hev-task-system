@@ -37,8 +37,7 @@ struct _HevTaskChannel
 {
     HevTaskChannel *peer;
 
-    HevTask *reader;
-    HevTask *writer;
+    HevTask *task;
 
     unsigned int rd_idx;
     unsigned int wr_idx;
