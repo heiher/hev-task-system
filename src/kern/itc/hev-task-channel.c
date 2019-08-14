@@ -12,41 +12,7 @@
 #include "mm/api/hev-memory-allocator-api.h"
 
 #include "hev-task-channel.h"
-
-#define MAX_BUFFER_SIZE (16384)
-
-typedef union _HevTaskChannelData HevTaskChannelData;
-typedef struct _HevTaskChannelBuffer HevTaskChannelBuffer;
-
-union _HevTaskChannelData
-{
-    char b[MAX_BUFFER_SIZE];
-    short h[0];
-    int w[0];
-    long long d[0];
-};
-
-struct _HevTaskChannelBuffer
-{
-    size_t size;
-    HevTaskChannelData *data;
-};
-
-struct _HevTaskChannel
-{
-    HevTaskChannel *peer;
-
-    HevTask *reader;
-    HevTask *writer;
-
-    unsigned int rd_idx;
-    unsigned int wr_idx;
-    unsigned int use_count;
-    unsigned int max_count;
-    unsigned int ref_count;
-
-    HevTaskChannelBuffer buffers[0];
-};
+#include "hev-task-channel-private.h"
 
 EXPORT_SYMBOL int
 hev_task_channel_new (HevTaskChannel **chan1, HevTaskChannel **chan2)
@@ -210,9 +176,9 @@ hev_task_channel_read (HevTaskChannel *self, void *buffer, size_t count)
     ssize_t size = -1;
 
     /* wait on empty */
-    while (READ_ONCE (self->use_count) == 0) {
+    while (!hev_task_channel_is_readable (self)) {
         /* check is peer alive because cond wait may yield */
-        if (!READ_ONCE (self->peer))
+        if (!hev_task_channel_is_active (self))
             goto out;
 
         WRITE_ONCE (self->reader, hev_task_self ());
@@ -240,9 +206,9 @@ hev_task_channel_write (HevTaskChannel *self, const void *buffer, size_t count)
     hev_task_channel_ref (peer);
 
     /* wait on full */
-    while (READ_ONCE (peer->use_count) == READ_ONCE (peer->max_count)) {
+    while (!hev_task_channel_is_writable (peer)) {
         /* check is peer alive because cond wait may yield */
-        if (!READ_ONCE (self->peer))
+        if (!hev_task_channel_is_active (self))
             goto out1;
 
         WRITE_ONCE (peer->writer, hev_task_self ());
@@ -269,9 +235,9 @@ hev_task_channel_write (HevTaskChannel *self, const void *buffer, size_t count)
     peer->use_count++;
 
     /* sync */
-    while (READ_ONCE (peer->use_count) == READ_ONCE (peer->max_count)) {
+    while (!hev_task_channel_is_writable (peer)) {
         /* check is peer alive because cond wait may yield */
-        if (!READ_ONCE (self->peer)) {
+        if (!hev_task_channel_is_active (self)) {
             size = -1;
             break;
         }
