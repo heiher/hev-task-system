@@ -73,7 +73,7 @@ void hev_task_channel_select_del (HevTaskChannelSelect *self,
  * The select read function shall attempt to select a readable channel.
  * The function will wait until at least one channel is ready or timeout.
  *
- * Returns: A #HevTaskChannelSelect
+ * Returns: A #HevTaskChannel
  *
  * Since: 4.6.9
  */
