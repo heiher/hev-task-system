@@ -8,6 +8,7 @@
  */
 
 #include <stddef.h>
+#include <stdint.h>
 #include <assert.h>
 
 #include <hev-task.h>
@@ -15,81 +16,192 @@
 #include <hev-task-channel.h>
 #include <hev-task-channel-select.h>
 
+#define MAX_CHANNELS (1024)
+
+typedef struct _ChannelData ChannelData;
+
+typedef enum
+{
+    CHANNEL_DATA_U8,
+    CHANNEL_DATA_U16,
+    CHANNEL_DATA_U32,
+    CHANNEL_DATA_U64,
+    CHANNEL_DATA_CHAN,
+} ChannelDataType;
+
+struct _ChannelData
+{
+    uint32_t type;
+
+    union
+    {
+        uint8_t u8;
+        uint16_t u16;
+        uint32_t u32;
+        uint64_t u64;
+        HevTaskChannel *chan;
+    };
+};
+
 static void
-task1_entry (void *data)
+task_read_entry (void *data)
 {
     HevTaskChannelSelect *sel;
     HevTaskChannel *chan = data;
-    HevTaskChannel *chans[2];
-    HevTaskChannel *c;
-    int v = 0;
-    const size_t vs = sizeof (v);
-    const size_t cs = sizeof (HevTaskChannel *);
+    HevTaskChannel *chans[MAX_CHANNELS];
+    size_t i, chan_count = 0;
 
     sel = hev_task_channel_select_new ();
     assert (sel != NULL);
 
     hev_task_channel_select_add (sel, chan);
 
-    assert (hev_task_channel_read (chan, &chans[0], cs) == cs);
-    hev_task_channel_select_add (sel, chans[0]);
+    for (;;) {
+        HevTaskChannel *c;
+        ChannelData d = { 0 };
+        const size_t ds = sizeof (d);
 
-    assert (hev_task_channel_read (chan, &chans[1], cs) == cs);
-    hev_task_channel_select_add (sel, chans[1]);
+        c = hev_task_channel_select_read (sel, 10);
+        if (!c)
+            break;
 
-    c = hev_task_channel_select_read (sel, -1);
-    assert (c != NULL);
-    assert (hev_task_channel_read (c, &v, vs) == vs);
-    assert (v == 1234);
+        assert (hev_task_channel_read (c, &d, ds) == ds);
 
-    c = hev_task_channel_select_read (sel, -1);
-    assert (c != NULL);
-    assert (hev_task_channel_read (c, &v, vs) == vs);
-    assert (v == 5678);
-
-    c = hev_task_channel_select_read (sel, -1);
-    assert (c != NULL);
-    assert (hev_task_channel_read (c, &v, vs) == vs);
-    assert (v == 9012);
+        switch (d.type) {
+        case CHANNEL_DATA_U8:
+            assert (d.u8 == 123);
+            break;
+        case CHANNEL_DATA_U16:
+            assert (d.u16 == 32767);
+            break;
+        case CHANNEL_DATA_U32:
+            assert (d.u32 == 387563847);
+            break;
+        case CHANNEL_DATA_U64:
+            assert (d.u64 == 3784597313707128903);
+            break;
+        case CHANNEL_DATA_CHAN:
+            hev_task_channel_select_add (sel, d.chan);
+            chans[chan_count] = d.chan;
+            chan_count++;
+            break;
+        }
+    }
 
     assert (hev_task_channel_select_read (sel, 0) == NULL);
     assert (hev_task_channel_select_read (sel, 1) == NULL);
 
-    hev_task_channel_select_del (sel, chans[0]);
-    hev_task_channel_select_del (sel, chans[1]);
+    for (i = 0; i < chan_count; i++) {
+        hev_task_channel_select_del (sel, chans[i]);
+        hev_task_channel_destroy (chans[i]);
+    }
     hev_task_channel_select_del (sel, chan);
-    hev_task_channel_destroy (chans[0]);
-    hev_task_channel_destroy (chans[1]);
     hev_task_channel_destroy (chan);
     hev_task_channel_select_destroy (sel);
 }
 
 static void
-task2_entry (void *data)
+task_write_u8_entry (void *data)
 {
     HevTaskChannel *chan = data;
-    HevTaskChannel *chans[4];
-    int v;
-    const size_t vs = sizeof (v);
-    const size_t cs = sizeof (HevTaskChannel *);
+    int i;
 
-    assert (hev_task_channel_new_with_buffers (&chans[0], &chans[2], 2) == 0);
-    assert (hev_task_channel_new_with_buffers (&chans[1], &chans[3], 4) == 0);
+    for (i = 0; i < 8; i++) {
+        ChannelData d;
+        const size_t ds = sizeof (d);
 
-    assert (hev_task_channel_write (chan, &chans[0], cs) == cs);
-    assert (hev_task_channel_write (chan, &chans[1], cs) == cs);
+        d.type = CHANNEL_DATA_U8;
+        d.u8 = 123;
+        assert (hev_task_channel_write (chan, &d, ds) == ds);
+    }
 
-    v = 1234;
-    assert (hev_task_channel_write (chan, &v, vs) == vs);
+    hev_task_channel_destroy (chan);
+}
 
-    v = 5678;
-    assert (hev_task_channel_write (chans[2], &v, vs) == vs);
+static void
+task_write_u16_entry (void *data)
+{
+    HevTaskChannel *chan = data;
+    int i;
 
-    v = 9012;
-    assert (hev_task_channel_write (chans[3], &v, vs) == vs);
+    for (i = 0; i < 16; i++) {
+        ChannelData d;
+        const size_t ds = sizeof (d);
 
-    hev_task_channel_destroy (chans[2]);
-    hev_task_channel_destroy (chans[3]);
+        d.type = CHANNEL_DATA_U16;
+        d.u16 = 32767;
+        assert (hev_task_channel_write (chan, &d, ds) == ds);
+    }
+
+    hev_task_channel_destroy (chan);
+}
+
+static void
+task_write_u32_entry (void *data)
+{
+    HevTaskChannel *chan = data;
+    int i;
+
+    for (i = 0; i < 32; i++) {
+        ChannelData d;
+        const size_t ds = sizeof (d);
+
+        d.type = CHANNEL_DATA_U32;
+        d.u32 = 387563847;
+        assert (hev_task_channel_write (chan, &d, ds) == ds);
+    }
+
+    hev_task_channel_destroy (chan);
+}
+
+static void
+task_write_u64_entry (void *data)
+{
+    HevTaskChannel *chan = data;
+    int i;
+
+    for (i = 0; i < 64; i++) {
+        ChannelData d;
+        const size_t ds = sizeof (d);
+
+        d.type = CHANNEL_DATA_U64;
+        d.u64 = 3784597313707128903;
+        assert (hev_task_channel_write (chan, &d, ds) == ds);
+    }
+
+    hev_task_channel_destroy (chan);
+}
+
+static void
+task_fork_entry (void *data)
+{
+    HevTaskChannel *chan = data;
+    int i;
+
+    for (i = 0; i < MAX_CHANNELS; i++) {
+        HevTaskChannel *chan1, *chan2;
+        HevTask *task;
+        ChannelData d;
+        const size_t ds = sizeof (d);
+        static const HevTaskEntry entries[] = {
+            task_write_u8_entry,
+            task_write_u16_entry,
+            task_write_u32_entry,
+            task_write_u64_entry,
+        };
+
+        assert (hev_task_channel_new (&chan1, &chan2) == 0);
+
+        task = hev_task_new (-1);
+        assert (task);
+        hev_task_set_priority (task, i % (HEV_TASK_PRIORITY_MAX + 1));
+        hev_task_run (task, entries[i % 4], chan1);
+
+        d.type = CHANNEL_DATA_CHAN;
+        d.chan = chan2;
+        assert (hev_task_channel_write (chan, &d, ds) == ds);
+    }
+
     hev_task_channel_destroy (chan);
 }
 
@@ -106,12 +218,12 @@ main (int argc, char *argv[])
     task = hev_task_new (-1);
     assert (task);
     hev_task_set_priority (task, 1);
-    hev_task_run (task, task1_entry, chan1);
+    hev_task_run (task, task_read_entry, chan1);
 
     task = hev_task_new (-1);
     assert (task);
     hev_task_set_priority (task, 2);
-    hev_task_run (task, task2_entry, chan2);
+    hev_task_run (task, task_fork_entry, chan2);
 
     hev_task_system_run ();
 
