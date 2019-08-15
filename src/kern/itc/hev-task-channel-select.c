@@ -23,13 +23,13 @@ hev_task_channel_select_new (void)
     return self;
 }
 
-void
+EXPORT_SYMBOL void
 hev_task_channel_select_destroy (HevTaskChannelSelect *self)
 {
     hev_free (self);
 }
 
-void
+EXPORT_SYMBOL void
 hev_task_channel_select_add (HevTaskChannelSelect *self, HevTaskChannel *chan)
 {
     chan->select = self;
@@ -40,7 +40,7 @@ hev_task_channel_select_add (HevTaskChannelSelect *self, HevTaskChannel *chan)
         hev_task_channel_select_add_read (self, chan);
 }
 
-void
+EXPORT_SYMBOL void
 hev_task_channel_select_del (HevTaskChannelSelect *self, HevTaskChannel *chan)
 {
     hev_task_channel_select_del_read (self, chan);
@@ -50,7 +50,7 @@ hev_task_channel_select_del (HevTaskChannelSelect *self, HevTaskChannel *chan)
     chan->select = NULL;
 }
 
-HevTaskChannel *
+EXPORT_SYMBOL HevTaskChannel *
 hev_task_channel_select_read (HevTaskChannelSelect *self, int timeout)
 {
     HevListNode *node;
