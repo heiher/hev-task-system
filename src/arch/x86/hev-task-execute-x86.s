@@ -10,20 +10,16 @@
 #include "asm.h"
 
 NESTED(hev_task_execute)
+    mov  %esp, %eax
     mov  0x4(%esp), %edx
-    mov  (%edx), %ecx
-    mov  (%esp), %eax
-    add  $0x4, %esp
-    mov  %esp, -0x4(%ecx)
-    mov  %eax, -0x8(%ecx)
-    mov  0x4(%esp), %eax
-    mov  %ecx, %esp
-    sub  $0x10, %esp
+    mov  0x8(%esp), %ecx
+    mov  (%edx), %esp
+    sub  $0x8, %esp
+    push %eax
 
-    mov  %edx, (%esp)
-    call  *%eax
+    push %edx
+    call  *%ecx
 
-    mov  0x8(%esp), %eax
-    mov  0xc(%esp), %esp
-    jmp  *%eax
+    mov  0x4(%esp), %esp
+    ret
 END(hev_task_execute)
