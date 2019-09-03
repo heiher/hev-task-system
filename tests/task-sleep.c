@@ -95,10 +95,11 @@ task_entry7 (void *data)
     counter++;
     clock_gettime (CLOCK_MONOTONIC, &sp1);
     remaining = hev_task_usleep (200);
-    assert (remaining > 100);
+    assert (remaining >= 0);
     assert (remaining <= 200);
+    assert (hev_task_usleep (remaining) == 0);
     clock_gettime (CLOCK_MONOTONIC, &sp2);
-    assert (time_diff (&sp1, &sp2) < 200);
+    assert (time_diff (&sp1, &sp2) >= 200);
 }
 
 static void
