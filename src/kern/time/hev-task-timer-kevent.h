@@ -39,6 +39,8 @@ hev_task_timer_set_time (HevTaskTimer *self, const struct timespec *expire)
         nsec += 1000000000L;
     }
     nsec += sec * 1000000000L;
+    if (nsec < 0)
+        nsec = 0;
 
     reactor = hev_task_system_get_context ()->reactor;
     fd = hev_task_io_reactor_get_fd (reactor);
