@@ -59,7 +59,17 @@ int
 hev_task_io_reactor_setup (HevTaskIOReactor *reactor,
                            HevTaskIOReactorSetupEvent *events, int count)
 {
-    return kevent (reactor->fd, events, count, NULL, 0, NULL);
+    int i, res = -1;
+
+    for (i = 0; i < count; i++) {
+        if (!(events[i].flags & EV_DELETE)) {
+            res = kevent (reactor->fd, &events[i], count - i, NULL, 0, NULL);
+            break;
+        }
+        res &= kevent (reactor->fd, &events[i], 1, NULL, 0, NULL);
+    }
+
+    return res;
 }
 
 int

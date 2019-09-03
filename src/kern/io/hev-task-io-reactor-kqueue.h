@@ -19,7 +19,7 @@
 #define EVFILT_EXCEPT (0)
 #endif
 
-#define HEV_TASK_IO_REACTOR_EVENT_GEN_MAX (3)
+#define HEV_TASK_IO_REACTOR_EVENT_GEN_MAX (6)
 
 typedef struct _HevTaskIOReactorKQueue HevTaskIOReactorKQueue;
 typedef struct kevent HevTaskIOReactorSetupEvent;
@@ -39,9 +39,9 @@ enum _HevTaskIOReactorEvents
 
 enum _HevTaskIOReactorOperation
 {
-    HEV_TASK_IO_REACTOR_OP_ADD = EV_ADD,
-    HEV_TASK_IO_REACTOR_OP_MOD = EV_ADD,
-    HEV_TASK_IO_REACTOR_OP_DEL = EV_DELETE,
+    HEV_TASK_IO_REACTOR_OP_ADD,
+    HEV_TASK_IO_REACTOR_OP_MOD,
+    HEV_TASK_IO_REACTOR_OP_DEL,
 };
 
 static inline void
@@ -49,7 +49,18 @@ hev_task_io_reactor_setup_event_set (HevTaskIOReactorSetupEvent *event, int fd,
                                      HevTaskIOReactorOperation op,
                                      unsigned int events, void *data)
 {
-    EV_SET (event, fd, events, op | EV_CLEAR, 0, 0, data);
+    int action;
+
+    switch (op) {
+    case HEV_TASK_IO_REACTOR_OP_ADD:
+    case HEV_TASK_IO_REACTOR_OP_MOD:
+        action = EV_ADD;
+        break;
+    case HEV_TASK_IO_REACTOR_OP_DEL:
+        action = EV_DELETE;
+    }
+
+    EV_SET (event, fd, events, action | EV_CLEAR, 0, 0, data);
 }
 
 static inline int
@@ -58,6 +69,26 @@ hev_task_io_reactor_setup_event_gen (HevTaskIOReactorSetupEvent *events, int fd,
                                      unsigned int poll_events, void *data)
 {
     int count = 0;
+
+    if (op > HEV_TASK_IO_REACTOR_OP_ADD) {
+        if (!(poll_events & POLLIN))
+            hev_task_io_reactor_setup_event_set (&events[count++], fd,
+                                                 HEV_TASK_IO_REACTOR_OP_DEL,
+                                                 HEV_TASK_IO_REACTOR_EV_RO,
+                                                 data);
+        if (!(poll_events & POLLOUT))
+            hev_task_io_reactor_setup_event_set (&events[count++], fd,
+                                                 HEV_TASK_IO_REACTOR_OP_DEL,
+                                                 HEV_TASK_IO_REACTOR_EV_WO,
+                                                 data);
+        if (!(poll_events & POLLERR))
+            hev_task_io_reactor_setup_event_set (&events[count++], fd,
+                                                 HEV_TASK_IO_REACTOR_OP_DEL,
+                                                 HEV_TASK_IO_REACTOR_EV_ER,
+                                                 data);
+        if (op == HEV_TASK_IO_REACTOR_OP_DEL)
+            return count;
+    }
 
     if (poll_events & POLLIN)
         hev_task_io_reactor_setup_event_set (&events[count++], fd, op,
