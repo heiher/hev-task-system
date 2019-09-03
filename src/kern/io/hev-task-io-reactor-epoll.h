@@ -47,7 +47,7 @@ hev_task_io_reactor_setup_event_set (HevTaskIOReactorSetupEvent *event, int fd,
 {
     event->op = op;
     event->fd = fd;
-    event->event.events = events;
+    event->event.events = events | EPOLLET;
     event->event.data.ptr = data;
 }
 

@@ -61,7 +61,6 @@ hev_task_io_reactor_setup (HevTaskIOReactor *self,
 
     for (i = 0; i < count; i++) {
         HevTaskIOReactorSetupEvent *ev = &events[i];
-        ev->event.events |= EPOLLET;
         res |= epoll_ctl (self->fd, ev->op, ev->fd, &ev->event);
     }
 
