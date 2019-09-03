@@ -10,17 +10,13 @@
 #include "asm.h"
 
 NESTED(hev_task_execute)
-    movq  (%rdi), %rcx
-    movq  (%rsp), %rax
-    addq  $0x08, %rsp
-    movq  %rsp, -0x08(%rcx)
-    movq  %rax, -0x10(%rcx)
-    movq  %rcx, %rsp
-    subq  $0x10, %rsp
+    movq  %rsp, %rax
+    movq  (%rdi), %rsp
+    subq  $0x8, %rsp
+    pushq %rax
 
     callq  *%rsi
 
-    movq  (%rsp), %rax
-    movq  0x8(%rsp), %rsp
-    jmpq  *%rax
+    popq  %rsp
+    retq
 END(hev_task_execute)
