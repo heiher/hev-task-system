@@ -23,18 +23,17 @@ static void
 task1_entry (void *data)
 {
     HevTask *task = hev_task_self ();
-    int val;
+    int val, count = 0;
 
     assert (hev_task_add_fd (task, fds[0], POLLOUT) == 0);
     assert (hev_task_mod_fd (task, fds[0], POLLIN) == 0);
-    assert (hev_task_io_read (fds[0], &val, sizeof (val), NULL, NULL) ==
-            sizeof (val));
 retry:
     if (read (fds[0], &val, sizeof (val)) == -1 && errno == EAGAIN) {
         hev_task_yield (HEV_TASK_WAITIO);
+        assert (count++ == 0);
         goto retry;
     }
-    hev_task_del_fd (task, fds[0]);
+    assert (hev_task_del_fd (task, fds[0]) == 0);
 }
 
 static void
@@ -43,13 +42,10 @@ task2_entry (void *data)
     HevTask *task = hev_task_self ();
     int val;
 
+    assert (hev_task_sleep (50) == 0);
     assert (hev_task_add_fd (task, fds[1], POLLOUT) == 0);
-    assert (hev_task_io_write (fds[1], &val, sizeof (val), NULL, NULL) ==
-            sizeof (val));
-    hev_task_sleep (50);
-    assert (hev_task_io_write (fds[1], &val, sizeof (val), NULL, NULL) ==
-            sizeof (val));
-    hev_task_del_fd (task, fds[1]);
+    assert (hev_task_io_write (fds[1], &val, sizeof (val), NULL, NULL) > 0);
+    assert (hev_task_del_fd (task, fds[1]) == 0);
 }
 
 int
