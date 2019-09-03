@@ -14,8 +14,7 @@ hev_task_execute:
     ldr  r3, [r0]
     str  sp, [r3, #-0x4]
     str  lr, [r3, #-0x8]
-    mov  sp, r3
-    sub  sp, #0x8
+    sub  sp, r3, #0x8
 
     blx  r1
 
