@@ -25,39 +25,35 @@ int
 poll (struct pollfd fds[], nfds_t nfds, int timeout)
 {
     HevTask *task = hev_task_self ();
-    int i, ret;
+    int res;
 
     if (!task)
         return posix_poll (fds, nfds, timeout);
 
-    ret = posix_poll (fds, nfds, 0);
-    if ((ret > 0) || (timeout == 0))
-        return ret;
+    if (timeout == 0) {
+        res = posix_poll (fds, nfds, 0);
+    } else {
+        unsigned int i;
 
-    for (i = 0; i < nfds; i++) {
-        if (hev_task_mod_fd (task, fds[i].fd, fds[i].events) == -1)
-            hev_task_add_fd (task, fds[i].fd, fds[i].events);
+        for (i = 0; i < nfds; i++) {
+            if (hev_task_mod_fd (task, fds[i].fd, fds[i].events) < 0)
+                hev_task_add_fd (task, fds[i].fd, fds[i].events);
+        }
+
+        if (timeout > 0) {
+            do {
+                timeout = hev_task_sleep (timeout);
+                res = posix_poll (fds, nfds, 0);
+            } while (timeout > 0 && res == 0);
+        } else {
+            do {
+                hev_task_yield (HEV_TASK_WAITIO);
+                res = posix_poll (fds, nfds, 0);
+            } while (res == 0);
+        }
     }
 
-    if (timeout > 0) {
-    retry_sleep:
-        timeout = hev_task_sleep (timeout);
-        ret = posix_poll (fds, nfds, 0);
-        if (timeout > 0 && ret == 0)
-            goto retry_sleep;
-
-        goto quit;
-    }
-
-retry:
-    ret = posix_poll (fds, nfds, 0);
-    if (ret == 0) {
-        hev_task_yield (HEV_TASK_WAITIO);
-        goto retry;
-    }
-
-quit:
-    return ret;
+    return res;
 }
 
 static void
