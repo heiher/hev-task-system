@@ -26,30 +26,28 @@ hev_task_timer_set_time (HevTaskTimer *self, const struct timespec *expire)
     struct kevent event;
     struct timespec curr;
     time_t sec;
-    long nsec;
+    long usec;
     int fd;
 
     if (clock_gettime (CLOCK_MONOTONIC, &curr) == -1)
         abort ();
 
     sec = expire->tv_sec - curr.tv_sec;
-    nsec = expire->tv_nsec - curr.tv_nsec;
-    if (nsec < 0) {
+    usec = (expire->tv_nsec - curr.tv_nsec) / 1000;
+    if (usec < 0) {
         sec--;
-        nsec += 1000000000L;
+        usec += 1000000L;
     }
-    nsec += sec * 1000000000L;
-    if (nsec < 0)
-        nsec = 0;
+    if (sec < 0)
+        usec = 0;
+    else
+        usec += sec * 1000000L;
 
     reactor = hev_task_system_get_context ()->reactor;
     fd = hev_task_io_reactor_get_fd (reactor);
 
-    EV_SET (&event, (uintptr_t)self, EVFILT_TIMER, EV_DELETE, 0, 0, 0);
-    kevent (fd, &event, 1, NULL, 0, NULL);
-
     EV_SET (&event, (uintptr_t)self, EVFILT_TIMER, EV_ADD | EV_ONESHOT,
-            NOTE_NSECONDS, nsec, &self->sched_entity);
+            NOTE_USECONDS, usec, &self->sched_entity);
     return kevent (fd, &event, 1, NULL, 0, NULL);
 }
 
