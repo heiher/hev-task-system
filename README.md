@@ -32,10 +32,25 @@ git clone https://gitlab.com/hev/hev-task-system
 cd hev-task-system
 make
 
-# demos
+# Link with librt (only for glibc versions before 2.17)
+make LDFLAGS=-lrt
+
+# Disable multi-thread support
+make ENABLE_PTHREAD=0
+
+# Disable stack overflow detection
+make ENABLE_STACK_OVERFLOW_DETECTION=0
+
+# Disable sliced memory allocator
+make ENABLE_MEMALLOC_SLICE=0
+
+# Disable I/O splice by splice syscall (for old Linux kernel)
+make ENABLE_IO_SPLICE_SYSCALL=0
+
+# Demos
 make apps
 
-# tests
+# Tests
 make tests
 ```
 
