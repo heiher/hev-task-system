@@ -7,9 +7,13 @@
  ============================================================================
  */
 
-#if defined(__linux__)
+#if !defined(__linux__) && defined(ENABLE_IO_SPLICE_SYSCALL)
+#undef ENABLE_IO_SPLICE_SYSCALL
+#endif /* !defined(__linux__) && ENABLE_IO_SPLICE_SYSCALL */
+
+#ifdef ENABLE_IO_SPLICE_SYSCALL
 #define _GNU_SOURCE
-#endif /* defined(__linux__) */
+#endif /* ENABLE_IO_SPLICE_SYSCALL */
 
 #include <errno.h>
 #include <fcntl.h>
@@ -29,13 +33,13 @@ typedef struct _HevTaskIOSplicer HevTaskIOSplicer;
 
 struct _HevTaskIOSplicer
 {
-#if defined(__linux__)
+#ifdef ENABLE_IO_SPLICE_SYSCALL
     int fd[2];
     size_t wlen;
     size_t blen;
 #else
     HevCircularBuffer *buf;
-#endif /* !defined(__linux__) */
+#endif /* !ENABLE_IO_SPLICE_SYSCALL */
 };
 
 EXPORT_SYMBOL int
@@ -201,7 +205,7 @@ retry:
     return s;
 }
 
-#if defined(__linux__)
+#ifdef ENABLE_IO_SPLICE_SYSCALL
 
 static int
 task_io_splicer_init (HevTaskIOSplicer *self, size_t buf_size)
@@ -330,7 +334,7 @@ task_io_splice (HevTaskIOSplicer *self, int fd_in, int fd_out)
     return res;
 }
 
-#endif /* !defined(__linux__) */
+#endif /* !ENABLE_IO_SPLICE_SYSCALL */
 
 EXPORT_SYMBOL void
 hev_task_io_splice (int fd_a_i, int fd_a_o, int fd_b_i, int fd_b_o,
