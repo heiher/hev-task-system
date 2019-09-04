@@ -37,9 +37,6 @@ __read_once_size (void *dst, const volatile void *src, int size)
     case sizeof (int):
         *(int *)dst = *(volatile int *)src;
         break;
-    case sizeof (long long):
-        *(long long *)dst = *(volatile long long *)src;
-        break;
     default:
         barrier ();
         __builtin_memcpy ((void *)dst, (const void *)src, size);
@@ -59,9 +56,6 @@ __write_once_size (volatile void *dst, const void *src, int size)
         break;
     case sizeof (int):
         *(volatile int *)dst = *(int *)src;
-        break;
-    case sizeof (long long):
-        *(volatile long long *)dst = *(long long *)src;
         break;
     default:
         barrier ();
