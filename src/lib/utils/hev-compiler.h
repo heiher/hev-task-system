@@ -25,7 +25,7 @@ extern "C" {
 #define barrier() __asm__ __volatile__("" : : : "memory")
 
 static inline void
-__copy_once_size (void *dst, const volatile void *src, int size)
+__read_once_size (void *dst, const volatile void *src, int size)
 {
     switch (size) {
     case sizeof (char):
@@ -47,6 +47,29 @@ __copy_once_size (void *dst, const volatile void *src, int size)
     }
 }
 
+static inline void
+__write_once_size (volatile void *dst, const void *src, int size)
+{
+    switch (size) {
+    case sizeof (char):
+        *(volatile char *)dst = *(char *)src;
+        break;
+    case sizeof (short):
+        *(volatile short *)dst = *(short *)src;
+        break;
+    case sizeof (int):
+        *(volatile int *)dst = *(int *)src;
+        break;
+    case sizeof (long long):
+        *(volatile long long *)dst = *(long long *)src;
+        break;
+    default:
+        barrier ();
+        __builtin_memcpy ((void *)dst, (const void *)src, size);
+        barrier ();
+    }
+}
+
 #define READ_ONCE(x)                                  \
     ({                                                \
         union                                         \
@@ -54,19 +77,19 @@ __copy_once_size (void *dst, const volatile void *src, int size)
             typeof(x) __val;                          \
             char __c[1];                              \
         } __u;                                        \
-        __copy_once_size (__u.__c, &(x), sizeof (x)); \
+        __read_once_size (__u.__c, &(x), sizeof (x)); \
         __u.__val;                                    \
     })
 
-#define WRITE_ONCE(x, val)                            \
-    ({                                                \
-        union                                         \
-        {                                             \
-            typeof(x) __val;                          \
-            char __c[1];                              \
-        } __u = { .__val = (typeof(x)) (val) };       \
-        __copy_once_size (&(x), __u.__c, sizeof (x)); \
-        __u.__val;                                    \
+#define WRITE_ONCE(x, val)                             \
+    ({                                                 \
+        union                                          \
+        {                                              \
+            typeof(x) __val;                           \
+            char __c[1];                               \
+        } __u = { .__val = (typeof(x)) (val) };        \
+        __write_once_size (&(x), __u.__c, sizeof (x)); \
+        __u.__val;                                     \
     })
 
 #ifndef container_of
