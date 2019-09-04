@@ -7,7 +7,7 @@ PP=$(CROSS_PREFIX)cpp
 CC=$(CROSS_PREFIX)gcc
 LD=$(CROSS_PREFIX)ld
 AR=$(CROSS_PREFIX)ar
-CCFLAGS=-O3 -pipe -Werror -Wall -fvisibility=hidden $(CFLAGS)
+CCFLAGS=-O3 -pipe -Werror -Wall $(CFLAGS)
 LDFLAGS=
 
 APP_CCFLAGS=$(CCFLAGS) -I include
@@ -22,7 +22,7 @@ BUILDDIR=build
 STATIC_TARGET=$(BINDIR)/lib$(PROJECT).a
 SHARED_TARGET=$(BINDIR)/lib$(PROJECT).so
 
-$(SHARED_TARGET) : CCFLAGS+=-fPIC
+$(SHARED_TARGET) : CCFLAGS+=-fPIC -fvisibility=hidden
 $(SHARED_TARGET) : LDFLAGS+=-shared -pthread
 
 -include build.mk
