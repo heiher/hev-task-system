@@ -434,8 +434,7 @@ _hev_rbtree_erase (HevRBTree *self, HevRBTreeNode *node)
             hev_rbtree_node_set_parent_color (child2, parent, HEV_RBTREE_BLACK);
             rebalance = NULL;
         } else {
-            unsigned long pc2 = successor->__parent_color;
-            rebalance = _hev_rbtree_node_is_black (pc2) ? parent : NULL;
+            rebalance = hev_rbtree_node_is_black (successor) ? parent : NULL;
         }
         successor->__parent_color = pc;
         tmp = successor;
