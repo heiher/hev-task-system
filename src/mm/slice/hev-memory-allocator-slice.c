@@ -19,7 +19,7 @@
 #define MAX_CACHED_SLICE_INDEX (MAX_CACHED_SLICE_SIZE / CACHED_SLICE_ALIGN)
 
 #define ALIGN_UP(addr, align) \
-    ((addr + (typeof(addr))align - 1) & ~((typeof(addr))align - 1))
+    ((addr + (typeof (addr))align - 1) & ~((typeof (addr))align - 1))
 
 typedef struct _HevMemorySlice HevMemorySlice;
 typedef struct _HevMemoryLRUNode HevMemoryLRUNode;
