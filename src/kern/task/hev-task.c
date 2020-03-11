@@ -23,7 +23,7 @@
 
 #define HEV_TASK_STACK_SIZE (64 * 1024)
 
-#define ALIGN_DOWN(addr, align) ((addr) & ~((typeof(addr))align - 1))
+#define ALIGN_DOWN(addr, align) ((addr) & ~((typeof (addr))align - 1))
 
 EXPORT_SYMBOL HevTask *
 hev_task_new (int stack_size)
