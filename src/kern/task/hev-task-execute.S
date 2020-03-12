@@ -35,9 +35,13 @@
 
 # include "arch/sw64/hev-task-execute-sw64.s"
 
-#elif defined(__riscv) && defined(_LP64)
+#elif defined(__riscv)
 
-# include "arch/riscv/hev-task-execute-riscv64.s"
+# if defined(_LP64)
+#  include "arch/riscv/hev-task-execute-riscv64.s"
+# else
+#  include "arch/riscv/hev-task-execute-riscv32.s"
+# endif
 
 #else
 
