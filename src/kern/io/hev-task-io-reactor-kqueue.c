@@ -13,7 +13,7 @@
 #include <fcntl.h>
 
 #include "kern/io/hev-task-io-reactor.h"
-#include "mm/api/hev-memory-allocator-api.h"
+#include "mem/api/hev-memory-allocator-api.h"
 
 HevTaskIOReactor *
 hev_task_io_reactor_new (void)

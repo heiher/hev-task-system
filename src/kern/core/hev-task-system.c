@@ -14,8 +14,8 @@
 #endif
 
 #include "lib/utils/hev-compiler.h"
-#include "mm/api/hev-memory-allocator-api.h"
-#include "mm/slice/hev-memory-allocator-slice.h"
+#include "mem/api/hev-memory-allocator-api.h"
+#include "mem/slice/hev-memory-allocator-slice.h"
 
 #include "hev-task-system-private.h"
 

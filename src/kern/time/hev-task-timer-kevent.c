@@ -10,7 +10,7 @@
 #if !defined(__linux__)
 
 #include "hev-task-timer-kevent.h"
-#include "mm/api/hev-memory-allocator-api.h"
+#include "mem/api/hev-memory-allocator-api.h"
 
 HevTaskTimer *
 hev_task_timer_new (void)

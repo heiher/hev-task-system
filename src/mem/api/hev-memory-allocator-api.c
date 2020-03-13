@@ -10,7 +10,7 @@
 #include <string.h>
 
 #include "lib/utils/hev-compiler.h"
-#include "mm/base/hev-memory-allocator.h"
+#include "mem/base/hev-memory-allocator.h"
 
 #include "hev-memory-allocator-api.h"
 

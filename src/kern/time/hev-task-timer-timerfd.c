@@ -11,7 +11,7 @@
 
 #include "hev-task-timer-timerfd.h"
 #include "kern/core/hev-task-system-private.h"
-#include "mm/api/hev-memory-allocator-api.h"
+#include "mem/api/hev-memory-allocator-api.h"
 
 HevTaskTimer *
 hev_task_timer_new (void)

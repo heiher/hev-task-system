@@ -8,7 +8,7 @@
  */
 
 #include "lib/utils/hev-compiler.h"
-#include "mm/api/hev-memory-allocator-api.h"
+#include "mem/api/hev-memory-allocator-api.h"
 
 #include "hev-circular-buffer.h"
 

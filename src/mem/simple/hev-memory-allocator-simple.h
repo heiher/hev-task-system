@@ -10,7 +10,7 @@
 #ifndef __HEV_MEMORY_ALLOCATOR_SIMPLE_H__
 #define __HEV_MEMORY_ALLOCATOR_SIMPLE_H__
 
-#include "mm/base/hev-memory-allocator.h"
+#include "mem/base/hev-memory-allocator.h"
 
 /**
  * hev_memory_allocator_simple_new:

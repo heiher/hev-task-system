@@ -10,7 +10,7 @@
 #ifndef __HEV_MEMORY_ALLOCATOR_SLICE_H__
 #define __HEV_MEMORY_ALLOCATOR_SLICE_H__
 
-#include "mm/base/hev-memory-allocator.h"
+#include "mem/base/hev-memory-allocator.h"
 
 typedef struct _HevMemoryAllocatorSlice HevMemoryAllocatorSlice;
 

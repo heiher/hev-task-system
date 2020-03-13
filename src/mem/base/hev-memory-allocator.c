@@ -15,7 +15,7 @@
 #endif
 
 #include "lib/utils/hev-compiler.h"
-#include "mm/simple/hev-memory-allocator-simple.h"
+#include "mem/simple/hev-memory-allocator-simple.h"
 
 #include "hev-memory-allocator.h"
 
