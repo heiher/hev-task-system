@@ -14,6 +14,10 @@
 extern "C" {
 #endif
 
+#define HEV_TASK_SYSTEM_MAJOR_VERSION (4)
+#define HEV_TASK_SYSTEM_MINOR_VERSION (7)
+#define HEV_TASK_SYSTEM_MICRO_VERSION (4)
+
 /**
  * hev_task_system_init:
  *
