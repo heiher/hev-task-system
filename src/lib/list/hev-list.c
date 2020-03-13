@@ -9,7 +9,7 @@
 
 #include <stddef.h>
 
-#include "lib/utils/hev-compiler.h"
+#include "lib/misc/hev-compiler.h"
 
 #include "hev-list.h"
 

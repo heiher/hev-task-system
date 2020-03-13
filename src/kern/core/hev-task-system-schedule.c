@@ -19,7 +19,7 @@
 #include "kern/task/hev-task-private.h"
 #include "kern/task/hev-task-executer.h"
 #include "kern/io/hev-task-io-reactor.h"
-#include "lib/utils/hev-compiler.h"
+#include "lib/misc/hev-compiler.h"
 
 static inline uint64_t
 hev_task_system_get_min_sched_key (HevTaskSystemContext *ctx);

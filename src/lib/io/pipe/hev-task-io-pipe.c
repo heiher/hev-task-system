@@ -10,7 +10,7 @@
 #include <unistd.h>
 #include <sys/ioctl.h>
 
-#include "lib/utils/hev-compiler.h"
+#include "lib/misc/hev-compiler.h"
 
 #include "hev-task-io-pipe.h"
 

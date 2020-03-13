@@ -14,7 +14,7 @@
 
 #include "kern/task/hev-task.h"
 #include "lib/io/basic/hev-task-io.h"
-#include "lib/utils/hev-compiler.h"
+#include "lib/misc/hev-compiler.h"
 
 #include "hev-task-io-socket.h"
 

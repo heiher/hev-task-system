@@ -12,7 +12,7 @@
 #include <stdint.h>
 
 #include "kern/core/hev-task-system-private.h"
-#include "lib/utils/hev-compiler.h"
+#include "lib/misc/hev-compiler.h"
 #include "mem/api/hev-memory-allocator-api.h"
 
 #include "hev-task-private.h"

@@ -9,7 +9,7 @@
 
 #include <string.h>
 
-#include "lib/utils/hev-compiler.h"
+#include "lib/misc/hev-compiler.h"
 #include "mem/base/hev-memory-allocator.h"
 
 #include "hev-memory-allocator-api.h"

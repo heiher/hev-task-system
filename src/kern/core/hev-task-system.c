@@ -13,7 +13,7 @@
 #include <pthread.h>
 #endif
 
-#include "lib/utils/hev-compiler.h"
+#include "lib/misc/hev-compiler.h"
 #include "mem/api/hev-memory-allocator-api.h"
 #include "mem/slice/hev-memory-allocator-slice.h"
 

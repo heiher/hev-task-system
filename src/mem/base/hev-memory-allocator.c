@@ -14,7 +14,7 @@
 #include <pthread.h>
 #endif
 
-#include "lib/utils/hev-compiler.h"
+#include "lib/misc/hev-compiler.h"
 #include "mem/simple/hev-memory-allocator-simple.h"
 
 #include "hev-memory-allocator.h"

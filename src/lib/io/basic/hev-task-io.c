@@ -25,7 +25,7 @@
 
 #include "kern/task/hev-task.h"
 #include "lib/io/buffer/hev-circular-buffer.h"
-#include "lib/utils/hev-compiler.h"
+#include "lib/misc/hev-compiler.h"
 
 #include "hev-task-io.h"
 

@@ -8,7 +8,7 @@
  */
 
 #include "kern/task/hev-task.h"
-#include "lib/utils/hev-compiler.h"
+#include "lib/misc/hev-compiler.h"
 #include "mem/api/hev-memory-allocator-api.h"
 
 #include "hev-task-channel-select-private.h"
