@@ -11,8 +11,8 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#include "kern/core/hev-task-system-private.h"
 #include "lib/misc/hev-compiler.h"
+#include "kern/core/hev-task-system-private.h"
 #include "mem/api/hev-memory-allocator-api.h"
 
 #include "hev-task-private.h"
@@ -22,8 +22,6 @@
 #define STACK_OVERFLOW_DETECTION_TAG (0xdeadbeefu)
 
 #define HEV_TASK_STACK_SIZE (64 * 1024)
-
-#define ALIGN_DOWN(addr, align) ((addr) & ~((typeof (addr))align - 1))
 
 EXPORT_SYMBOL HevTask *
 hev_task_new (int stack_size)
