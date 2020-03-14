@@ -11,15 +11,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "lib/misc/hev-compiler.h"
+
 #include "hev-memory-allocator-slice.h"
 
 #define CACHED_SLICE_ALIGN CONFIG_MEMALLOC_SLICE_ALIGN
 #define MAX_CACHED_SLICE_SIZE CONFIG_MEMALLOC_SLICE_MAX_SIZE
 #define MAX_CACHED_SLICE_COUNT CONFIG_MEMALLOC_SLICE_MAX_COUNT
 #define MAX_CACHED_SLICE_INDEX (MAX_CACHED_SLICE_SIZE / CACHED_SLICE_ALIGN)
-
-#define ALIGN_UP(addr, align) \
-    ((addr + (typeof (addr))align - 1) & ~((typeof (addr))align - 1))
 
 typedef struct _HevMemorySlice HevMemorySlice;
 typedef struct _HevMemoryLRUNode HevMemoryLRUNode;
