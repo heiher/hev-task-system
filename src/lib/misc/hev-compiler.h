@@ -14,6 +14,11 @@
 extern "C" {
 #endif
 
+#define ALIGN_UP(addr, align) \
+    ((addr + (typeof (addr))align - 1) & ~((typeof (addr))align - 1))
+
+#define ALIGN_DOWN(addr, align) ((addr) & ~((typeof (addr))align - 1))
+
 #ifndef ARRAY_SIZE
 #define ARRAY_SIZE(x) (sizeof (x) / sizeof (x[0]))
 #endif
