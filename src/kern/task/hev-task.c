@@ -50,7 +50,6 @@ hev_task_new (int stack_size)
 
     stack_addr = (uintptr_t) (self->stack + stack_size);
     self->stack_top = (void *)ALIGN_DOWN (stack_addr, 16);
-    self->stack_size = stack_size;
     self->sched_entity.task = self;
 
     return self;

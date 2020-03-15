@@ -38,7 +38,6 @@ struct _HevTask
     int ref_count;
     int priority;
     int next_priority;
-    int stack_size;
     HevTaskState state;
 
     jmp_buf context;
