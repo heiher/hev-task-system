@@ -129,7 +129,7 @@ hev_task_io_read (int fd, void *buf, size_t count, HevTaskIOYielder yielder,
 
 retry:
     s = read (fd, buf, count);
-    if (s == -1 && errno == EAGAIN) {
+    if (s < 0 && errno == EAGAIN) {
         if (yielder) {
             if (yielder (HEV_TASK_WAITIO, yielder_data))
                 return -2;
@@ -150,7 +150,7 @@ hev_task_io_readv (int fd, const struct iovec *iov, int iovcnt,
 
 retry:
     s = readv (fd, iov, iovcnt);
-    if (s == -1 && errno == EAGAIN) {
+    if (s < 0 && errno == EAGAIN) {
         if (yielder) {
             if (yielder (HEV_TASK_WAITIO, yielder_data))
                 return -2;
@@ -171,7 +171,7 @@ hev_task_io_write (int fd, const void *buf, size_t count,
 
 retry:
     s = write (fd, buf, count);
-    if (s == -1 && errno == EAGAIN) {
+    if (s < 0 && errno == EAGAIN) {
         if (yielder) {
             if (yielder (HEV_TASK_WAITIO, yielder_data))
                 return -2;
@@ -192,7 +192,7 @@ hev_task_io_writev (int fd, const struct iovec *iov, int iovcnt,
 
 retry:
     s = writev (fd, iov, iovcnt);
-    if (s == -1 && errno == EAGAIN) {
+    if (s < 0 && errno == EAGAIN) {
         if (yielder) {
             if (yielder (HEV_TASK_WAITIO, yielder_data))
                 return -2;
