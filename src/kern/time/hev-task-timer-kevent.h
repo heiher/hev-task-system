@@ -29,7 +29,7 @@ hev_task_timer_set_time (HevTaskTimer *self, const struct timespec *expire)
     long usec;
     int fd;
 
-    if (clock_gettime (CLOCK_MONOTONIC, &curr) == -1)
+    if (clock_gettime (CLOCK_MONOTONIC, &curr) < 0)
         abort ();
 
     sec = expire->tv_sec - curr.tv_sec;
