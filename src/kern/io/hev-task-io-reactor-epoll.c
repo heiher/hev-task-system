@@ -26,19 +26,19 @@ hev_task_io_reactor_new (void)
         return NULL;
 
     self->fd = epoll_create (128);
-    if (self->fd == -1) {
+    if (self->fd < 0) {
         hev_free (self);
         return NULL;
     }
 
     flags = fcntl (self->fd, F_GETFD);
-    if (flags == -1) {
+    if (flags < 0) {
         hev_free (self);
         return NULL;
     }
 
     flags |= FD_CLOEXEC;
-    if (fcntl (self->fd, F_SETFD, flags) == -1) {
+    if (fcntl (self->fd, F_SETFD, flags) < 0) {
         hev_free (self);
         return NULL;
     }
