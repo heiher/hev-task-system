@@ -1,6 +1,8 @@
 image: ubuntu:latest
 
 build-armhf:
+  variables:
+    DEBIAN_FRONTEND: noninteractive
   before_script:
     - apt-get update
     - apt-get install -y crossbuild-essential-armhf
@@ -8,6 +10,8 @@ build-armhf:
     - make CROSS_PREFIX=arm-linux-gnueabihf-
 
 build-aarch64:
+  variables:
+    DEBIAN_FRONTEND: noninteractive
   before_script:
     - apt-get update
     - apt-get install -y crossbuild-essential-arm64
@@ -15,6 +19,8 @@ build-aarch64:
     - make CROSS_PREFIX=aarch64-linux-gnu-
 
 build-x86_64:
+  variables:
+    DEBIAN_FRONTEND: noninteractive
   before_script:
     - apt-get update
     - apt-get install -y build-essential
