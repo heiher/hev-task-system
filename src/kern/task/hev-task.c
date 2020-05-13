@@ -69,7 +69,7 @@ hev_task_new (int stack_size)
     self->ref_count = 1;
     self->next_priority = HEV_TASK_PRIORITY_DEFAULT;
 
-    if (stack_size == -1)
+    if (stack_size < 0)
         stack_size = HEV_TASK_STACK_SIZE;
     stack_size += STACK_OVERFLOW_DETECTION_SIZE;
 
