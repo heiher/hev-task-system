@@ -25,7 +25,7 @@ hev_task_timer_new (void)
         return NULL;
 
     self->fd = timerfd_create (CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
-    if (self->fd == -1) {
+    if (self->fd < 0) {
         hev_free (self);
         return NULL;
     }
@@ -35,7 +35,7 @@ hev_task_timer_new (void)
                                          HEV_TASK_IO_REACTOR_OP_ADD,
                                          HEV_TASK_IO_REACTOR_EV_RO,
                                          &self->base.sched_entity);
-    if (hev_task_io_reactor_setup (reactor, &event, 1) == -1) {
+    if (hev_task_io_reactor_setup (reactor, &event, 1) < 0) {
         close (self->fd);
         hev_free (self);
         return NULL;
