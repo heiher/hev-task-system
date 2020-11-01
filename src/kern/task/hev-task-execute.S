@@ -43,6 +43,14 @@
 #  include "arch/riscv/hev-task-execute-riscv32.s"
 # endif
 
+#elif defined(__loongarch__)
+
+# if defined(_LP64)
+#  include "arch/loong/hev-task-execute-la64.s"
+# else
+#  include "arch/loong/hev-task-execute-la32.s"
+# endif
+
 #else
 
 # error "Unsupported platform!"
