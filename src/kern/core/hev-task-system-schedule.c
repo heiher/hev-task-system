@@ -44,9 +44,19 @@ hev_task_system_schedule (HevTaskYieldType type)
 {
     HevTaskSystemContext *ctx = hev_task_system_get_context ();
 
-    if (ctx->current_task)
-        goto save_task;
+    if (ctx->current_task) {
+        /*
+         * NOTE: in task context
+         * save current task context
+         */
+        if (_setjmp (ctx->current_task->context))
+            return; /* resume to task context */
 
+        /* resume to kernel context */
+        _longjmp (ctx->kernel_context, type);
+    }
+
+    /* NOTE: in kernel context */
     if (type == HEV_TASK_RUN_SCHEDULER) {
         switch (_setjmp (ctx->kernel_context)) {
         case HEV_TASK_SCHED_SWITCH:
@@ -63,7 +73,6 @@ hev_task_system_schedule (HevTaskYieldType type)
         }
     }
 
-    /* NOTE: in kernel context */
     /* All tasks exited, Bye! */
     if (ctx->total_task_count == 0) {
         ctx->current_task = NULL;
@@ -78,15 +87,6 @@ hev_task_system_schedule (HevTaskYieldType type)
 
     /* switch to task */
     _longjmp (ctx->current_task->context, 1);
-
-save_task:
-    /* NOTE: in task context */
-    /* save current task context */
-    if (_setjmp (ctx->current_task->context))
-        return; /* resume to task context */
-
-    /* resume to kernel context */
-    _longjmp (ctx->kernel_context, type);
 }
 
 void
@@ -117,8 +117,10 @@ hev_task_system_kill_current_task (void)
 {
     HevTaskSystemContext *ctx = hev_task_system_get_context ();
 
-    /* NOTE: remove current task in kernel context, because current
-     * task stack may be freed. */
+    /*
+     * NOTE: remove current task in kernel context, because current
+     * task stack may be freed.
+     */
     _longjmp (ctx->kernel_context, HEV_TASK_SCHED_REMOVE);
 }
 
