@@ -42,7 +42,7 @@ hev_task_stack_new (int size)
         return NULL;
 
     self->stack = mmap (NULL, size, PROT_READ | PROT_WRITE,
-                        MAP_PRIVATE | MAP_ANON, -1, 0);
+                        MAP_PRIVATE | MAP_ANON | MAP_STACK, -1, 0);
     if (self->stack == MAP_FAILED) {
         hev_free (self);
         return NULL;
