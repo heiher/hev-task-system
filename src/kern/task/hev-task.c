@@ -41,7 +41,7 @@ hev_task_new (int stack_size)
         return NULL;
     }
 
-    self->stack_top = hev_task_stack_get_top (self->stack);
+    self->stack_bottom = hev_task_stack_get_bottom (self->stack);
     self->sched_entity.task = self;
 
     return self;

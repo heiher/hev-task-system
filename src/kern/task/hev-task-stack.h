@@ -18,6 +18,6 @@ typedef struct _HevTaskStack HevTaskStack;
 HevTaskStack *hev_task_stack_new (int size);
 void hev_task_stack_destroy (HevTaskStack *self);
 
-void *hev_task_stack_get_top (HevTaskStack *self);
+void *hev_task_stack_get_bottom (HevTaskStack *self);
 
 #endif /* __HEV_TASK_STACK_H__ */

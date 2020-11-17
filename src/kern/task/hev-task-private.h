@@ -26,7 +26,7 @@ struct _HevTaskSchedEntity
 
 struct _HevTask
 {
-    void *stack_top;
+    void *stack_bottom;
     HevTaskEntry entry;
     void *data;
 

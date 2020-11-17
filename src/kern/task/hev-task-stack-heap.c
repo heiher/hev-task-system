@@ -85,7 +85,7 @@ hev_task_stack_destroy (HevTaskStack *self)
 }
 
 void *
-hev_task_stack_get_top (HevTaskStack *self)
+hev_task_stack_get_bottom (HevTaskStack *self)
 {
     return (void *)ALIGN_DOWN ((intptr_t)self + self->size, 16);
 }
