@@ -7,7 +7,6 @@
  ============================================================================
  */
 
-#include <assert.h>
 #include <stdlib.h>
 #include <stdint.h>
 
@@ -21,46 +20,10 @@
 
 #define HEV_TASK_STACK_SIZE (64 * 1024)
 
-#ifdef ENABLE_STACK_OVERFLOW_DETECTION
-#if CONFIG_STACK_OVERFLOW_DETECTION == 1
-#define STACK_OVERFLOW_DETECTION_SIZE (4)
-#elif CONFIG_STACK_OVERFLOW_DETECTION == 2
-#define STACK_OVERFLOW_DETECTION_SIZE (4096)
-#else
-#define STACK_OVERFLOW_DETECTION_SIZE (8192)
-#endif
-#define STACK_OVERFLOW_DETECTION_TAG (0xdeadbeefu)
-#endif
-
-static inline void
-hev_task_stack_detection_mark (HevTask *self)
-{
-#ifdef ENABLE_STACK_OVERFLOW_DETECTION
-    const unsigned int tag = STACK_OVERFLOW_DETECTION_TAG;
-    int i;
-
-    for (i = 0; i < STACK_OVERFLOW_DETECTION_SIZE; i += sizeof (tag))
-        *(unsigned int *)(self->stack + i) = tag;
-#endif
-}
-
-static inline void
-hev_task_stack_detection_check (HevTask *self)
-{
-#ifdef ENABLE_STACK_OVERFLOW_DETECTION
-    const unsigned int tag = STACK_OVERFLOW_DETECTION_TAG;
-    int i;
-
-    for (i = 0; i < STACK_OVERFLOW_DETECTION_SIZE; i += sizeof (tag))
-        assert (*(unsigned int *)(self->stack + i) == tag);
-#endif
-}
-
 EXPORT_SYMBOL HevTask *
 hev_task_new (int stack_size)
 {
     HevTask *self;
-    uintptr_t stack_addr;
 
     self = hev_malloc0 (sizeof (HevTask));
     if (!self)
@@ -71,18 +34,14 @@ hev_task_new (int stack_size)
 
     if (stack_size < 0)
         stack_size = HEV_TASK_STACK_SIZE;
-    stack_size += STACK_OVERFLOW_DETECTION_SIZE;
 
-    self->stack = hev_malloc (stack_size);
+    self->stack = hev_task_stack_new (stack_size);
     if (!self->stack) {
         hev_free (self);
         return NULL;
     }
 
-    hev_task_stack_detection_mark (self);
-
-    stack_addr = (uintptr_t) (self->stack + stack_size);
-    self->stack_top = (void *)ALIGN_DOWN (stack_addr, 16);
+    self->stack_top = hev_task_stack_get_top (self->stack);
     self->sched_entity.task = self;
 
     return self;
@@ -103,9 +62,7 @@ hev_task_unref (HevTask *self)
     if (self->ref_count)
         return;
 
-    hev_task_stack_detection_check (self);
-
-    hev_free (self->stack);
+    hev_task_stack_destroy (self->stack);
     hev_free (self);
 }
 

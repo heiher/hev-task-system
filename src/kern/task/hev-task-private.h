@@ -14,6 +14,7 @@
 #include <setjmp.h>
 
 #include "hev-task.h"
+#include "hev-task-stack.h"
 #include "lib/rbtree/hev-rbtree.h"
 
 typedef struct _HevTaskSchedEntity HevTaskSchedEntity;
@@ -33,7 +34,7 @@ struct _HevTask
     HevRBTreeNode sched_node;
     HevTaskSchedEntity sched_entity;
 
-    void *stack;
+    HevTaskStack *stack;
 
     int ref_count;
     int priority;
