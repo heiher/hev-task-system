@@ -42,6 +42,9 @@ make ENABLE_PTHREAD=0
 # Disable stack overflow detection
 make ENABLE_STACK_OVERFLOW_DETECTION=0
 
+# Set stack backend to heap (Recommended for 32-bit)
+make CONFIG_STACK_BACKEND=STACK_HEAP
+
 # Disable sliced memory allocator
 make ENABLE_MEMALLOC_SLICE=0
 
