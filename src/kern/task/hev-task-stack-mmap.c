@@ -69,6 +69,12 @@ hev_task_stack_destroy (HevTaskStack *self)
 }
 
 void *
+hev_task_stack_get_base (HevTaskStack *self)
+{
+    return self->stack;
+}
+
+void *
 hev_task_stack_get_bottom (HevTaskStack *self)
 {
     return self->stack + self->size;
