@@ -2,7 +2,7 @@
  ============================================================================
  Name        : hev-task.c
  Author      : Heiher <r@hev.cc>
- Copyright   : Copyright (c) 2017 everyone.
+ Copyright   : Copyright (c) 2017 - 2020 everyone.
  Description :
  ============================================================================
  */
@@ -44,6 +44,11 @@ hev_task_new (int stack_size)
     self->stack_bottom = hev_task_stack_get_bottom (self->stack);
     self->sched_entity.task = self;
 
+#ifdef ENABLE_DEBUG
+    hev_list_add_tail (&hev_task_system_get_context ()->all_tasks,
+                       &self->list_node);
+#endif
+
     return self;
 }
 
@@ -61,6 +66,10 @@ hev_task_unref (HevTask *self)
     self->ref_count--;
     if (self->ref_count)
         return;
+
+#ifdef ENABLE_DEBUG
+    hev_list_del (&hev_task_system_get_context ()->all_tasks, &self->list_node);
+#endif
 
     hev_task_stack_destroy (self->stack);
     hev_free (self);

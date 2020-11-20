@@ -2,7 +2,7 @@
  ============================================================================
  Name        : hev-task-private.h
  Author      : Heiher <r@hev.cc>
- Copyright   : Copyright (c) 2017 everyone.
+ Copyright   : Copyright (c) 2017 - 2020 everyone.
  Description :
  ============================================================================
  */
@@ -15,6 +15,7 @@
 
 #include "hev-task.h"
 #include "hev-task-stack.h"
+#include "lib/list/hev-list.h"
 #include "lib/rbtree/hev-rbtree.h"
 
 typedef struct _HevTaskSchedEntity HevTaskSchedEntity;
@@ -42,6 +43,10 @@ struct _HevTask
     HevTaskState state;
 
     jmp_buf context;
+
+#ifdef ENABLE_DEBUG
+    HevListNode list_node;
+#endif
 };
 
 extern void hev_task_execute (HevTask *self, void *executer);
