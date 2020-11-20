@@ -2,7 +2,7 @@
  ============================================================================
  Name        : hev-task-system-private.h
  Author      : Heiher <r@hev.cc>
- Copyright   : Copyright (c) 2017 everyone.
+ Copyright   : Copyright (c) 2017 - 2020 everyone.
  Description :
  ============================================================================
  */
@@ -18,6 +18,7 @@
 #include "kern/task/hev-task-private.h"
 #include "kern/time/hev-task-timer.h"
 #include "kern/io/hev-task-io-reactor.h"
+#include "lib/list/hev-list.h"
 #include "lib/rbtree/hev-rbtree-cached.h"
 
 #define CLOCK_NONE (-1)
@@ -47,6 +48,10 @@ struct _HevTaskSystemContext
     struct timespec sched_time;
 
     jmp_buf kernel_context;
+
+#ifdef ENABLE_DEBUG
+    HevList all_tasks;
+#endif
 };
 
 void hev_task_system_schedule (HevTaskYieldType type);
