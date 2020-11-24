@@ -112,7 +112,7 @@ EXPORT_SYMBOL void
 hev_task_system_fini (void)
 {
     HevMemoryAllocator *allocator;
-    HevTaskSystemContext *context = pthread_getspecific (key);
+    HevTaskSystemContext *context = hev_task_system_get_context ();
 
     hev_task_timer_destroy (context->timer);
     hev_task_io_reactor_destroy (context->reactor);
