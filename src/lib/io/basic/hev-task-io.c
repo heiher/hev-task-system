@@ -343,8 +343,8 @@ hev_task_io_splice (int fd_a_i, int fd_a_o, int fd_b_i, int fd_b_o,
 {
     HevTaskIOSplicer splicer_f;
     HevTaskIOSplicer splicer_b;
-    int err_f = 0;
-    int err_b = 0;
+    int res_f = 1;
+    int res_b = 1;
 
     if (task_io_splicer_init (&splicer_f, buf_size) < 0)
         return;
@@ -352,37 +352,19 @@ hev_task_io_splice (int fd_a_i, int fd_a_o, int fd_b_i, int fd_b_o,
         goto exit;
 
     for (;;) {
-        HevTaskYieldType type = 0;
+        HevTaskYieldType type;
 
-        if (!err_f) {
-            int ret = task_io_splice (&splicer_f, fd_a_i, fd_b_o);
-            if (0 >= ret) {
-                /* backward closed, quit */
-                if (err_b)
-                    break;
-                if (0 > ret) { /* error */
-                    /* forward error or closed, mark to skip */
-                    err_f = 1;
-                } else { /* no data */
-                    type++;
-                }
-            }
-        }
+        if (res_f >= 0)
+            res_f = task_io_splice (&splicer_f, fd_a_i, fd_b_o);
+        if (res_b >= 0)
+            res_b = task_io_splice (&splicer_b, fd_b_i, fd_a_o);
 
-        if (!err_b) {
-            int ret = task_io_splice (&splicer_b, fd_b_i, fd_a_o);
-            if (0 >= ret) {
-                /* forward closed, quit */
-                if (err_f)
-                    break;
-                if (0 > ret) { /* error */
-                    /* backward error or closed, mark to skip */
-                    err_b = 1;
-                } else { /* no data */
-                    type++;
-                }
-            }
-        }
+        if (res_f < 0 && res_b < 0)
+            break;
+        else if (res_f > 0 || res_b > 0)
+            type = HEV_TASK_YIELD;
+        else
+            type = HEV_TASK_WAITIO;
 
         if (yielder) {
             if (yielder (type, yielder_data))
