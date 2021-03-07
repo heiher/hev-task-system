@@ -2,7 +2,7 @@
  ============================================================================
  Name        : hev-task-system.h
  Author      : Heiher <r@hev.cc>
- Copyright   : Copyright (c) 2017 everyone.
+ Copyright   : Copyright (c) 2021 everyone.
  Description :
  ============================================================================
  */
@@ -16,7 +16,7 @@ extern "C" {
 
 #define HEV_TASK_SYSTEM_MAJOR_VERSION (4)
 #define HEV_TASK_SYSTEM_MINOR_VERSION (9)
-#define HEV_TASK_SYSTEM_MICRO_VERSION (5)
+#define HEV_TASK_SYSTEM_MICRO_VERSION (6)
 
 /**
  * hev_task_system_init:
