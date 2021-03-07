@@ -2,7 +2,7 @@
  ============================================================================
  Name        : hev-task-stack-mmap.c
  Author      : Heiher <r@hev.cc>
- Copyright   : Copyright (c) 2020 everyone.
+ Copyright   : Copyright (c) 2021 everyone.
  Description :
  ============================================================================
  */
@@ -16,6 +16,10 @@
 #include "hev-task-stack.h"
 
 #if CONFIG_STACK_BACKEND == STACK_MMAP
+
+#if defined(__APPLE__) && !defined(MAP_STACK)
+#define MAP_STACK (0)
+#endif
 
 struct _HevTaskStack
 {
