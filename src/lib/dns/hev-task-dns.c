@@ -38,3 +38,18 @@ hev_task_dns_getaddrinfo (const char *node, const char *service,
 
     return ret;
 }
+
+EXPORT_SYMBOL int
+hev_task_dns_getnameinfo (const struct sockaddr *addr, socklen_t addrlen,
+                          char *node, socklen_t nodelen, char *service,
+                          socklen_t servicelen, int flags)
+{
+    HevTaskDNSProxy *proxy = hev_task_dns_proxy_get ();
+    int ret = -1;
+
+    if (proxy)
+        ret = hev_task_dns_proxy_getnameinfo (
+            proxy, addr, addrlen, node, nodelen, service, servicelen, flags);
+
+    return ret;
+}

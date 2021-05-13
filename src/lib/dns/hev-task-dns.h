@@ -35,6 +35,26 @@ int hev_task_dns_getaddrinfo (const char *node, const char *service,
                               const struct addrinfo *hints,
                               struct addrinfo **res);
 
+/**
+ * hev_task_dns_getnameinfo:
+ * @addr: a #sockaddr
+ * @addrlen: length of @addr
+ * @node: a buffer
+ * @nodelen: length of @node
+ * @service: a buffer
+ * @servicelen: length of @service
+ * @flags: flags
+ *
+ * Convert a sockaddr structure to a pair of host name and service strings.
+ *
+ * Returns: When successful, returns zero. When error occurs, returns nonzero.
+ *
+ * Since: 5.0.1
+ */
+int hev_task_dns_getnameinfo (const struct sockaddr *addr, socklen_t addrlen,
+                              char *node, socklen_t nodelen, char *service,
+                              socklen_t servicelen, int flags);
+
 #ifdef __cplusplus
 }
 #endif
