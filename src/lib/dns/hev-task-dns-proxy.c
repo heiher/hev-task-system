@@ -29,10 +29,12 @@
 typedef enum _HevTaskDNSCallType HevTaskDNSCallType;
 typedef struct _HevTaskDNSCall HevTaskDNSCall;
 typedef struct _HevTaskDNSCallGetAddrInfo HevTaskDNSCallGetAddrInfo;
+typedef struct _HevTaskDNSCallGetNameInfo HevTaskDNSCallGetNameInfo;
 
 enum _HevTaskDNSCallType
 {
     HEV_TASK_DNS_CALL_GETADDRINFO,
+    HEV_TASK_DNS_CALL_GETNAMEINFO,
 };
 
 struct _HevTaskDNSProxy
@@ -60,6 +62,19 @@ struct _HevTaskDNSCallGetAddrInfo
     int ret;
 };
 
+struct _HevTaskDNSCallGetNameInfo
+{
+    HevTaskDNSCall base;
+    const struct sockaddr *addr;
+    char *node;
+    char *service;
+    socklen_t addrlen;
+    socklen_t nodelen;
+    socklen_t servicelen;
+    int flags;
+    int ret;
+};
+
 static HevTaskIOReactor *server_reactor;
 
 #ifdef ENABLE_PTHREAD
@@ -74,6 +89,15 @@ hev_task_dns_server_getaddrinfo (HevTaskDNSCall *call)
     HevTaskDNSCallGetAddrInfo *gai = (HevTaskDNSCallGetAddrInfo *)call;
 
     gai->ret = getaddrinfo (gai->node, gai->service, gai->hints, gai->res);
+}
+
+static void
+hev_task_dns_server_getnameinfo (HevTaskDNSCall *call)
+{
+    HevTaskDNSCallGetNameInfo *gni = (HevTaskDNSCallGetNameInfo *)call;
+
+    gni->ret = getnameinfo (gni->addr, gni->addrlen, gni->node, gni->nodelen,
+                            gni->service, gni->servicelen, gni->flags);
 }
 
 static void *
@@ -105,6 +129,9 @@ hev_task_dns_server_handler (void *data)
                 switch (call->type) {
                 case HEV_TASK_DNS_CALL_GETADDRINFO:
                     hev_task_dns_server_getaddrinfo (call);
+                    break;
+                case HEV_TASK_DNS_CALL_GETNAMEINFO:
+                    hev_task_dns_server_getnameinfo (call);
                     break;
                 }
 
@@ -279,4 +306,27 @@ hev_task_dns_proxy_getaddrinfo (HevTaskDNSProxy *self, const char *node,
     hev_task_dns_proxy_call (self, &gai.base);
 
     return gai.ret;
+}
+
+int
+hev_task_dns_proxy_getnameinfo (HevTaskDNSProxy *self,
+                                const struct sockaddr *addr, socklen_t addrlen,
+                                char *node, socklen_t nodelen, char *service,
+                                socklen_t servicelen, int flags)
+{
+    HevTaskDNSCallGetNameInfo gni;
+
+    gni.base.type = HEV_TASK_DNS_CALL_GETNAMEINFO;
+    gni.addr = addr;
+    gni.addrlen = addrlen;
+    gni.node = node;
+    gni.nodelen = nodelen;
+    gni.service = service;
+    gni.servicelen = servicelen;
+    gni.flags = flags;
+    gni.ret = -1;
+
+    hev_task_dns_proxy_call (self, &gni.base);
+
+    return gni.ret;
 }

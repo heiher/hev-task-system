@@ -24,4 +24,10 @@ int hev_task_dns_proxy_getaddrinfo (HevTaskDNSProxy *self, const char *node,
                                     const struct addrinfo *hints,
                                     struct addrinfo **res);
 
+int hev_task_dns_proxy_getnameinfo (HevTaskDNSProxy *self,
+                                    const struct sockaddr *addr,
+                                    socklen_t addrlen, char *node,
+                                    socklen_t nodelen, char *service,
+                                    socklen_t servicelen, int flags);
+
 #endif /* __HEV_TASK_DNS_PROXY_H__ */
