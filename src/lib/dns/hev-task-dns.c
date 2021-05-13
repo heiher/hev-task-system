@@ -7,6 +7,7 @@
  ============================================================================
  */
 
+#include "lib/misc/hev-compiler.h"
 #include "lib/dns/hev-task-dns-proxy.h"
 #include "kern/core/hev-task-system-private.h"
 
@@ -25,7 +26,7 @@ hev_task_dns_proxy_get (void)
     return context->dns_proxy;
 }
 
-int
+EXPORT_SYMBOL int
 hev_task_dns_getaddrinfo (const char *node, const char *service,
                           const struct addrinfo *hints, struct addrinfo **res)
 {
