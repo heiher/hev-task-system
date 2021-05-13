@@ -19,6 +19,7 @@
 #include "kern/time/hev-task-timer.h"
 #include "kern/io/hev-task-io-reactor.h"
 #include "lib/list/hev-list.h"
+#include "lib/dns/hev-task-dns-proxy.h"
 #include "lib/rbtree/hev-rbtree-cached.h"
 
 #define CLOCK_NONE (-1)
@@ -41,6 +42,7 @@ struct _HevTaskSystemContext
 
     HevTaskTimer *timer;
     HevTaskIOReactor *reactor;
+    HevTaskDNSProxy *dns_proxy;
 
     HevTask *current_task;
     HevRBTreeCached running_tasks;

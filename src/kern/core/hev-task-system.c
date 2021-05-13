@@ -114,6 +114,8 @@ hev_task_system_fini (void)
     HevMemoryAllocator *allocator;
     HevTaskSystemContext *context = hev_task_system_get_context ();
 
+    if (context->dns_proxy)
+        hev_task_dns_proxy_destroy (context->dns_proxy);
     hev_task_timer_destroy (context->timer);
     hev_task_io_reactor_destroy (context->reactor);
     hev_free (context);
