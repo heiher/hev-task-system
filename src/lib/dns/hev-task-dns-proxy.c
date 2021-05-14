@@ -48,6 +48,7 @@ struct _HevTaskDNSProxy
 struct _HevTaskDNSCall
 {
     int type;
+    int stat;
     HevTask *task;
     HevListNode node;
 };
@@ -249,6 +250,7 @@ hev_task_dns_proxy_call (HevTaskDNSProxy *self, HevTaskDNSCall *call)
     HevListNode *node;
     int res;
 
+    call->stat = 0;
     call->task = task_self;
     call->node.prev = NULL;
     call->node.next = NULL;
@@ -267,7 +269,7 @@ hev_task_dns_proxy_call (HevTaskDNSProxy *self, HevTaskDNSCall *call)
         res = read (self->client_fd, &repl, sizeof (repl));
         if (0 >= res) {
             if ((0 > res) && (EAGAIN == errno)) {
-                if (call->task) {
+                if (call->stat == 0) {
                     self->sched_entity.task = task_self;
                     hev_task_yield (HEV_TASK_WAITIO);
                     continue;
@@ -276,8 +278,8 @@ hev_task_dns_proxy_call (HevTaskDNSProxy *self, HevTaskDNSCall *call)
             break;
         }
 
+        repl->stat = 1;
         hev_task_wakeup (repl->task);
-        repl->task = NULL;
     }
 
     hev_list_del (&self->call_list, &call->node);
