@@ -9,11 +9,9 @@
 
 #include <stddef.h>
 
-#include "lib/misc/hev-compiler.h"
-
 #include "hev-list.h"
 
-EXPORT_SYMBOL void
+void
 hev_list_add_tail (HevList *self, HevListNode *new_)
 {
     new_->prev = self->tail;
@@ -26,7 +24,7 @@ hev_list_add_tail (HevList *self, HevListNode *new_)
     self->tail = new_;
 }
 
-EXPORT_SYMBOL void
+void
 hev_list_del (HevList *self, HevListNode *node)
 {
     if (node->prev)
