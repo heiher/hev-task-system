@@ -8,7 +8,6 @@
  */
 
     .globl hev_task_execute
-    .ent hev_task_execute, 0
     .type hev_task_execute, @function
 
 hev_task_execute:
@@ -23,5 +22,4 @@ hev_task_execute:
     ld.d  $sp, $sp, 8
     jirl  $zero, $ra, 0
 
-    .end hev_task_execute
     .size hev_task_execute, . - hev_task_execute
