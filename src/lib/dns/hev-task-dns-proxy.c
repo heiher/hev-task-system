@@ -60,6 +60,7 @@ struct _HevTaskDNSCallGetAddrInfo
     const char *service;
     const struct addrinfo *hints;
     struct addrinfo **res;
+    int err;
     int ret;
 };
 
@@ -73,6 +74,7 @@ struct _HevTaskDNSCallGetNameInfo
     socklen_t nodelen;
     socklen_t servicelen;
     int flags;
+    int err;
     int ret;
 };
 
@@ -90,6 +92,7 @@ hev_task_dns_server_getaddrinfo (HevTaskDNSCall *call)
     HevTaskDNSCallGetAddrInfo *gai = (HevTaskDNSCallGetAddrInfo *)call;
 
     gai->ret = getaddrinfo (gai->node, gai->service, gai->hints, gai->res);
+    gai->err = errno;
 }
 
 static void
@@ -99,6 +102,7 @@ hev_task_dns_server_getnameinfo (HevTaskDNSCall *call)
 
     gni->ret = getnameinfo (gni->addr, gni->addrlen, gni->node, gni->nodelen,
                             gni->service, gni->servicelen, gni->flags);
+    gni->err = errno;
 }
 
 static void *
@@ -307,6 +311,7 @@ hev_task_dns_proxy_getaddrinfo (HevTaskDNSProxy *self, const char *node,
 
     hev_task_dns_proxy_call (self, &gai.base);
 
+    errno = gai.err;
     return gai.ret;
 }
 
@@ -330,5 +335,6 @@ hev_task_dns_proxy_getnameinfo (HevTaskDNSProxy *self,
 
     hev_task_dns_proxy_call (self, &gni.base);
 
+    errno = gni.err;
     return gni.ret;
 }
