@@ -10,16 +10,14 @@
 #include <poll.h>
 #include <errno.h>
 #include <unistd.h>
-#include <sys/ioctl.h>
 
 #ifdef ENABLE_PTHREAD
 #include <pthread.h>
 #endif
 
 #include "kern/task/hev-task.h"
+#include "kern/sync/hev-task-mutex.h"
 #include "kern/core/hev-task-system-private.h"
-#include "lib/list/hev-list.h"
-#include "lib/misc/hev-compiler.h"
 #include "lib/io/basic/hev-task-io.h"
 #include "lib/io/socket/hev-task-io-socket.h"
 #include "mem/api/hev-memory-allocator-api.h"
@@ -41,16 +39,14 @@ struct _HevTaskDNSProxy
 {
     int client_fd;
     int server_fd;
-    HevList call_list;
+    HevTaskMutex mutex;
+    HevTaskDNSCall *call;
     HevTaskSchedEntity sched_entity;
 };
 
 struct _HevTaskDNSCall
 {
     int type;
-    int stat;
-    HevTask *task;
-    HevListNode node;
 };
 
 struct _HevTaskDNSCallGetAddrInfo
@@ -114,40 +110,41 @@ hev_task_dns_server_handler (void *data)
     pthread_mutex_unlock (&mutex);
 
     for (;;) {
-        int i, count;
         HevTaskIOReactorWaitEvent events[256];
+        int i, count;
 
         count = hev_task_io_reactor_wait (server_reactor, events, 256, -1);
 
         for (i = 0; i < count; i++) {
-            HevTaskDNSCall *call;
-            int res;
-            int fd;
+            HevTaskDNSProxy *proxy;
 
-            fd = (intptr_t)hev_task_io_reactor_wait_event_get_data (&events[i]);
+            proxy = hev_task_io_reactor_wait_event_get_data (&events[i]);
 
             for (;;) {
-                res = read (fd, &call, sizeof (call));
+                char sync = 's';
+                int res;
+
+                res = read (proxy->server_fd, &sync, sizeof (sync));
                 if (0 >= res)
                     break;
 
-                switch (call->type) {
+                switch (proxy->call->type) {
                 case HEV_TASK_DNS_CALL_GETADDRINFO:
-                    hev_task_dns_server_getaddrinfo (call);
+                    hev_task_dns_server_getaddrinfo (proxy->call);
                     break;
                 case HEV_TASK_DNS_CALL_GETNAMEINFO:
-                    hev_task_dns_server_getnameinfo (call);
+                    hev_task_dns_server_getnameinfo (proxy->call);
                     break;
                 }
 
                 for (;;) {
                     struct pollfd pfd;
 
-                    res = write (fd, &call, sizeof (call));
-                    if (0 < res)
+                    res = write (proxy->server_fd, &sync, sizeof (sync));
+                    if ((0 <= res) || (EAGAIN != errno))
                         break;
 
-                    pfd.fd = fd;
+                    pfd.fd = proxy->server_fd;
                     pfd.events = POLLOUT;
                     poll (&pfd, 1, -1);
                 }
@@ -203,7 +200,7 @@ hev_task_dns_proxy_new (void)
     if (!self)
         goto exit;
 
-    res = hev_task_io_socket_socketpair (PF_LOCAL, SOCK_SEQPACKET, 0, fds);
+    res = hev_task_io_socket_socketpair (PF_LOCAL, SOCK_STREAM, 0, fds);
     if (0 > res)
         goto free;
 
@@ -216,10 +213,8 @@ hev_task_dns_proxy_new (void)
     if (0 > res)
         goto close;
 
-    count = hev_task_io_reactor_setup_event_gen (revents, fds[1],
-                                                 HEV_TASK_IO_REACTOR_OP_ADD,
-                                                 POLLIN,
-                                                 (void *)(intptr_t)fds[1]);
+    count = hev_task_io_reactor_setup_event_gen (
+        revents, fds[1], HEV_TASK_IO_REACTOR_OP_ADD, POLLIN, self);
     res = hev_task_io_reactor_setup (server_reactor, revents, count);
     if (0 > res)
         goto close;
@@ -249,49 +244,30 @@ hev_task_dns_proxy_destroy (HevTaskDNSProxy *self)
 static void
 hev_task_dns_proxy_call (HevTaskDNSProxy *self, HevTaskDNSCall *call)
 {
-    HevTask *task_self = hev_task_self ();
-    HevTaskDNSCall *repl;
-    HevListNode *node;
-    int res;
+    hev_task_mutex_lock (&self->mutex);
 
-    call->stat = 0;
-    call->task = task_self;
-    call->node.prev = NULL;
-    call->node.next = NULL;
-    hev_list_add_tail (&self->call_list, &call->node);
+    self->call = call;
+    self->sched_entity.task = hev_task_self ();
 
     for (;;) {
-        res = write (self->client_fd, &call, sizeof (call));
-        if ((0 < res) || ((0 > res) && (EAGAIN != errno)))
+        char sync = 's';
+        int res = write (self->client_fd, &sync, sizeof (sync));
+        if ((0 <= res) || (EAGAIN != errno))
             break;
 
-        self->sched_entity.task = task_self;
         hev_task_yield (HEV_TASK_WAITIO);
     }
 
     for (;;) {
-        res = read (self->client_fd, &repl, sizeof (repl));
-        if (0 >= res) {
-            if ((0 > res) && (EAGAIN == errno)) {
-                if (call->stat == 0) {
-                    self->sched_entity.task = task_self;
-                    hev_task_yield (HEV_TASK_WAITIO);
-                    continue;
-                }
-            }
+        char sync;
+        int res = read (self->client_fd, &sync, sizeof (sync));
+        if ((0 <= res) || (EAGAIN != errno))
             break;
-        }
 
-        repl->stat = 1;
-        hev_task_wakeup (repl->task);
+        hev_task_yield (HEV_TASK_WAITIO);
     }
 
-    hev_list_del (&self->call_list, &call->node);
-    node = hev_list_first (&self->call_list);
-    if (node) {
-        call = container_of (node, HevTaskDNSCall, node);
-        self->sched_entity.task = call->task;
-    }
+    hev_task_mutex_unlock (&self->mutex);
 }
 
 int
