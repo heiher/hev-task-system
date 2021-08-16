@@ -102,9 +102,11 @@ retry:
         goto retry;
     }
 
-    if (0 > ioctl (new_fd, FIONBIO, (char *)&nonblock)) {
-        close (new_fd);
-        return -3;
+    if (new_fd >= 0) {
+        if (ioctl (new_fd, FIONBIO, (char *)&nonblock) < 0) {
+            close (new_fd);
+            return -3;
+        }
     }
 
     return new_fd;
