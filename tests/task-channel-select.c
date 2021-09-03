@@ -61,7 +61,7 @@ task_read_entry (void *data)
         ChannelData d = { 0 };
         const size_t ds = sizeof (d);
 
-        c = hev_task_channel_select_read (sel, 10);
+        c = hev_task_channel_select_read (sel, 100);
         if (!c)
             break;
 
@@ -205,6 +205,53 @@ task_fork_entry (void *data)
     hev_task_channel_destroy (chan);
 }
 
+static void
+task_select_entry (void *data)
+{
+    HevTaskChannel *chans[MAX_CHANNELS];
+    HevTaskChannel *chan = data;
+    HevTaskChannelSelect *sel;
+    int i;
+
+    sel = hev_task_channel_select_new ();
+    assert (sel != NULL);
+
+    for (i = 0; i < MAX_CHANNELS; i++) {
+        HevTask *task;
+
+        assert (hev_task_channel_new (&chan, &chans[i]) == 0);
+        hev_task_channel_select_add (sel, chans[i]);
+
+        task = hev_task_new (-1);
+        assert (task);
+        hev_task_set_priority (task, 1);
+        hev_task_run (task, task_read_entry, chan);
+    }
+
+    for (i = 0; i < MAX_CHANNELS; i++) {
+        HevTaskChannel *c;
+        ChannelData d;
+        const size_t ds = sizeof (d);
+
+        c = hev_task_channel_select_write (sel, 100);
+        if (!c)
+            break;
+
+        d.type = CHANNEL_DATA_U64;
+        d.u64 = 3784597313707128903;
+        assert (hev_task_channel_write (c, &d, ds) == ds);
+    }
+
+    assert (hev_task_channel_select_write (sel, 0) == NULL);
+    assert (hev_task_channel_select_write (sel, 1) == NULL);
+
+    for (i = 0; i < MAX_CHANNELS; i++) {
+        hev_task_channel_select_del (sel, chans[i]);
+        hev_task_channel_destroy (chans[i]);
+    }
+    hev_task_channel_select_destroy (sel);
+}
+
 int
 main (int argc, char *argv[])
 {
@@ -224,6 +271,11 @@ main (int argc, char *argv[])
     assert (task);
     hev_task_set_priority (task, 2);
     hev_task_run (task, task_fork_entry, chan2);
+
+    task = hev_task_new (-1);
+    assert (task);
+    hev_task_set_priority (task, 2);
+    hev_task_run (task, task_select_entry, NULL);
 
     hev_task_system_run ();
 
