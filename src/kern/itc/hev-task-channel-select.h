@@ -80,6 +80,21 @@ void hev_task_channel_select_del (HevTaskChannelSelect *self,
 HevTaskChannel *hev_task_channel_select_read (HevTaskChannelSelect *self,
                                               int timeout);
 
+/**
+ * hev_task_channel_select_write:
+ * @self: A #HevTaskChannelSelect
+ * @timeout: (milliseconds): wait timeout
+ *
+ * The select write function shall attempt to select a writable channel.
+ * The function will wait until at least one channel is ready or timeout.
+ *
+ * Returns: A #HevTaskChannel
+ *
+ * Since: 5.1.0
+ */
+HevTaskChannel *hev_task_channel_select_write (HevTaskChannelSelect *self,
+                                               int timeout);
+
 #ifdef __cplusplus
 }
 #endif

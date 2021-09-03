@@ -38,20 +38,23 @@ hev_task_channel_select_add (HevTaskChannelSelect *self, HevTaskChannel *chan)
     hev_list_add_tail (&self->chan_list, &chan->chan_node);
     if (hev_task_channel_is_readable (chan))
         hev_task_channel_select_add_read (self, chan);
+    if (chan->peer && hev_task_channel_is_select_writable (chan->peer))
+        hev_task_channel_select_add_write (self, chan);
 }
 
 EXPORT_SYMBOL void
 hev_task_channel_select_del (HevTaskChannelSelect *self, HevTaskChannel *chan)
 {
     hev_task_channel_select_del_read (self, chan);
+    hev_task_channel_select_del_write (self, chan);
     hev_list_del (&self->chan_list, &chan->chan_node);
 
     chan->task = NULL;
     chan->select = NULL;
 }
 
-EXPORT_SYMBOL HevTaskChannel *
-hev_task_channel_select_read (HevTaskChannelSelect *self, int timeout)
+static HevListNode *
+hev_task_channel_select (HevTaskChannelSelect *self, HevList *list, int timeout)
 {
     HevListNode *node;
     unsigned int milliseconds = timeout;
@@ -59,7 +62,7 @@ hev_task_channel_select_read (HevTaskChannelSelect *self, int timeout)
     if (!hev_list_first (&self->chan_list))
         return NULL;
 
-    while (!(node = hev_list_first (&self->read_list)) && milliseconds) {
+    while (!(node = hev_list_first (list)) && milliseconds) {
         barrier ();
         if (timeout < 0)
             hev_task_yield (HEV_TASK_WAITIO);
@@ -68,8 +71,29 @@ hev_task_channel_select_read (HevTaskChannelSelect *self, int timeout)
         barrier ();
     }
 
+    return node;
+}
+
+EXPORT_SYMBOL HevTaskChannel *
+hev_task_channel_select_read (HevTaskChannelSelect *self, int timeout)
+{
+    HevListNode *node;
+
+    node = hev_task_channel_select (self, &self->read_list, timeout);
     if (!node)
         return NULL;
 
     return container_of (node, HevTaskChannel, read.node);
+}
+
+EXPORT_SYMBOL HevTaskChannel *
+hev_task_channel_select_write (HevTaskChannelSelect *self, int timeout)
+{
+    HevListNode *node;
+
+    node = hev_task_channel_select (self, &self->write_list, timeout);
+    if (!node)
+        return NULL;
+
+    return container_of (node, HevTaskChannel, write.node);
 }

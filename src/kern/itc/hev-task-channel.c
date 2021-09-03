@@ -164,8 +164,12 @@ hev_task_channel_read (HevTaskChannel *self, void *buffer, size_t count)
     if (self->use_count == self->max_count) {
         HevTaskChannel *peer = self->peer;
 
-        if (peer && peer->task)
-            hev_task_wakeup (peer->task);
+        if (peer) {
+            if (peer->select)
+                hev_task_channel_select_add_write (peer->select, peer);
+            if (peer->task)
+                hev_task_wakeup (peer->task);
+        }
     }
 
     self->use_count--;
@@ -220,6 +224,8 @@ hev_task_channel_write (HevTaskChannel *self, const void *buffer, size_t count)
     }
 
     peer->use_count++;
+    if (self->select && !hev_task_channel_is_select_writable (peer))
+        hev_task_channel_select_del_write (self->select, self);
 
     /* sync */
     while (!hev_task_channel_is_writable (peer)) {

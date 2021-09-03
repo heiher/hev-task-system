@@ -45,6 +45,11 @@ struct _HevTaskChannel
         HevListNode node;
         int used;
     } read;
+    struct
+    {
+        HevListNode node;
+        int used;
+    } write;
     HevListNode chan_node;
 
     HevTask *task;
@@ -76,6 +81,12 @@ static inline int
 hev_task_channel_is_writable (HevTaskChannel *peer)
 {
     return READ_ONCE (peer->use_count) < READ_ONCE (peer->max_count);
+}
+
+static inline int
+hev_task_channel_is_select_writable (HevTaskChannel *peer)
+{
+    return READ_ONCE (peer->use_count) < (READ_ONCE (peer->max_count) - 1);
 }
 
 #ifdef __cplusplus

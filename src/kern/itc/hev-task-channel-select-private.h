@@ -27,6 +27,7 @@ struct _HevTaskChannelSelect
     HevTask *task;
     HevList chan_list;
     HevList read_list;
+    HevList write_list;
 };
 
 static inline void
@@ -49,6 +50,28 @@ hev_task_channel_select_del_read (HevTaskChannelSelect *self,
 
     chan->read.used = 0;
     hev_list_del (&self->read_list, &chan->read.node);
+}
+
+static inline void
+hev_task_channel_select_add_write (HevTaskChannelSelect *self,
+                                   HevTaskChannel *chan)
+{
+    if (chan->write.used)
+        return;
+
+    chan->write.used = 1;
+    hev_list_add_tail (&self->write_list, &chan->write.node);
+}
+
+static inline void
+hev_task_channel_select_del_write (HevTaskChannelSelect *self,
+                                   HevTaskChannel *chan)
+{
+    if (!chan->write.used)
+        return;
+
+    chan->write.used = 0;
+    hev_list_del (&self->write_list, &chan->write.node);
 }
 
 #ifdef __cplusplus
