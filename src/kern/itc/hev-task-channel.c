@@ -19,12 +19,13 @@
 EXPORT_SYMBOL int
 hev_task_channel_new (HevTaskChannel **chan1, HevTaskChannel **chan2)
 {
-    return hev_task_channel_new_with_buffers (chan1, chan2, 0);
+    return hev_task_channel_new_with_buffers (chan1, chan2, 0, 0);
 }
 
 EXPORT_SYMBOL int
 hev_task_channel_new_with_buffers (HevTaskChannel **chan1,
-                                   HevTaskChannel **chan2, unsigned int buffers)
+                                   HevTaskChannel **chan2, unsigned int size,
+                                   unsigned int buffers)
 {
     HevTaskChannel *c1, *c2;
     unsigned int buffers_size;
@@ -32,7 +33,7 @@ hev_task_channel_new_with_buffers (HevTaskChannel **chan1,
 
     buffers += 1;
     if (buffers > 1)
-        data_size = sizeof (HevTaskChannelData) * buffers;
+        data_size = size * buffers;
     buffers_size = sizeof (HevTaskChannelBuffer) * buffers;
 
     c1 = hev_malloc (sizeof (HevTaskChannel) + buffers_size + data_size);
@@ -45,24 +46,22 @@ hev_task_channel_new_with_buffers (HevTaskChannel **chan1,
 
     __builtin_bzero (c1, sizeof (HevTaskChannel));
     c1->peer = c2;
+    c1->max_size = size;
     c1->max_count = buffers;
     c1->ref_count = 1;
 
     __builtin_bzero (c2, sizeof (HevTaskChannel));
     c2->peer = c1;
+    c2->max_size = size;
     c2->max_count = buffers;
     c2->ref_count = 1;
 
     if (buffers > 1) {
         unsigned int i;
-        HevTaskChannelData *c1_data, *c2_data;
-
-        c1_data = (void *)c1->buffers + buffers_size;
-        c2_data = (void *)c2->buffers + buffers_size;
 
         for (i = 0; i < buffers; i++) {
-            c1->buffers[i].data = &c1_data[i];
-            c2->buffers[i].data = &c2_data[i];
+            c1->buffers[i].data = (void *)c1->buffers + buffers_size + size * i;
+            c2->buffers[i].data = (void *)c2->buffers + buffers_size + size * i;
         }
     }
 
@@ -114,9 +113,6 @@ hev_task_channel_data_copy (void *dst, const void *src, size_t size)
 {
     HevTaskChannelData *d = dst;
     const HevTaskChannelData *s = src;
-
-    if (size > MAX_BUFFER_SIZE)
-        size = MAX_BUFFER_SIZE;
 
     switch (size) {
     case 0:
@@ -207,11 +203,14 @@ hev_task_channel_write (HevTaskChannel *self, const void *buffer, size_t count)
     peer->wr_idx = (peer->wr_idx + 1) % peer->max_count;
 
     size = count;
-    cbuf->size = size;
-    if (peer->max_count == 1)
+    if (peer->max_count == 1) {
         cbuf->data = (HevTaskChannelData *)buffer;
-    else
+    } else {
+        if (size > self->max_size)
+            size = self->max_size;
         size = hev_task_channel_data_copy (cbuf->data, buffer, size);
+    }
+    cbuf->size = size;
 
     if (peer->use_count == 0) {
         if (peer->select)

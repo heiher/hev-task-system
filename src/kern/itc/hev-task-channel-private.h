@@ -19,14 +19,12 @@
 extern "C" {
 #endif
 
-#define MAX_BUFFER_SIZE (16384)
-
 typedef union _HevTaskChannelData HevTaskChannelData;
 typedef struct _HevTaskChannelBuffer HevTaskChannelBuffer;
 
 union _HevTaskChannelData
 {
-    char b[MAX_BUFFER_SIZE];
+    char b[0];
     short h[0];
     int w[0];
     long long d[0];
@@ -54,6 +52,7 @@ struct _HevTaskChannel
 
     unsigned int rd_idx;
     unsigned int wr_idx;
+    unsigned int max_size;
     unsigned int use_count;
     unsigned int max_count;
     unsigned int ref_count;
