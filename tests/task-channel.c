@@ -99,7 +99,7 @@ main (int argc, char *argv[])
         HevTask *task;
         HevTaskChannel *chan1, *chan2;
 
-        assert (hev_task_channel_new_with_buffers (&chan1, &chan2, i) == 0);
+        assert (hev_task_channel_new_with_buffers (&chan1, &chan2, 16, i) == 0);
 
         task = hev_task_new (-1);
         assert (task);
@@ -111,7 +111,7 @@ main (int argc, char *argv[])
         hev_task_set_priority (task, 2);
         hev_task_run (task, task2_entry, chan2);
 
-        assert (hev_task_channel_new_with_buffers (&chan1, &chan2, i) == 0);
+        assert (hev_task_channel_new_with_buffers (&chan1, &chan2, 16, i) == 0);
 
         task = hev_task_new (-1);
         assert (task);
