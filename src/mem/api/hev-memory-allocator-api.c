@@ -37,6 +37,23 @@ hev_malloc0 (size_t size)
 }
 
 EXPORT_SYMBOL void *
+hev_calloc (size_t nmemb, size_t size)
+{
+    HevMemoryAllocator *allocator;
+    void *data;
+
+    if (!nmemb || !size)
+        return NULL;
+
+    size *= nmemb;
+    allocator = hev_memory_allocator_default ();
+    data = hev_memory_allocator_alloc (allocator, size);
+    if (data)
+        memset (data, 0, size);
+    return data;
+}
+
+EXPORT_SYMBOL void *
 hev_realloc (void *ptr, size_t size)
 {
     HevMemoryAllocator *allocator;

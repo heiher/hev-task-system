@@ -42,6 +42,20 @@ void *hev_malloc (size_t size);
 void *hev_malloc0 (size_t size);
 
 /**
+ * hev_calloc:
+ * @nmemb: bytes
+ * @size: bytes
+ *
+ * Allocate memory for an array of @nmemb elements of @size bytes each from the
+ * default memory allocator. The memroy content will be cleared to zero.
+ *
+ * Returns: memory address
+ *
+ * Since: 5.1.1
+ */
+void *hev_calloc (size_t nmemb, size_t size);
+
+/**
  * hev_realloc:
  * @ptr: memory address
  * @size: bytes
