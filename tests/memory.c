@@ -31,6 +31,11 @@ main (int argc, char *argv[])
     assert (memcmp (ptr, zero, 64) == 0);
     hev_free (ptr);
 
+    ptr = hev_calloc (2, 64);
+    assert (ptr != NULL);
+    assert (memcmp (ptr, zero, 2 * 64) == 0);
+    hev_free (ptr);
+
     ptr = hev_malloc (128);
     assert (ptr != NULL);
     memset (ptr, 0, 128);
