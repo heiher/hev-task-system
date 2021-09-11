@@ -76,8 +76,8 @@ ndk-build
 1. [gtk](https://gitlab.com/hev/hev-task-system/blob/master/apps/gtk.c)
 1. [curl](https://gitlab.com/hev/hev-task-system/blob/master/apps/curl.c)
 
-## Authors
-* **Heiher** - https://hev.cc
+## Contributors
+* **hev** - https://hev.cc
 
 ## License
 LGPL
