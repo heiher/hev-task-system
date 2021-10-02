@@ -144,9 +144,12 @@ static inline void
 hev_task_system_wakeup_task_with_context (HevTaskSystemContext *ctx,
                                           HevTask *task)
 {
-    /* skip to wakeup task that already in running or stopped */
-    if (task->state == HEV_TASK_RUNNING || task->state == HEV_TASK_STOPPED)
+    /* skip to wake up this task that is already in running */
+    if (task->state == HEV_TASK_RUNNING)
         return;
+
+    if (task->state == HEV_TASK_STOPPED)
+        abort ();
 
     task->sched_key += hev_task_system_get_min_sched_key (ctx);
 
