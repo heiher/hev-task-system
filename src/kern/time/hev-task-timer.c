@@ -29,6 +29,8 @@ struct _HevTaskTimerNode
     HevTask *task;
 };
 
+static HevTask fake_task = { .state = HEV_TASK_RUNNING };
+
 static inline int
 hev_task_timer_node_compare (HevTaskTimerNode *a, HevTaskTimerNode *b)
 {
@@ -139,6 +141,8 @@ hev_task_timer_wait (HevTaskTimer *self, unsigned int microseconds,
             if (hev_task_timer_set_time (self, &node->expire) < 0)
                 abort ();
             self->sched_entity.task = node->task;
+        } else {
+            self->sched_entity.task = &fake_task;
         }
     }
 
