@@ -2,15 +2,14 @@
  ============================================================================
  Name        : hev-task-execute-aarch64.s
  Author      : Heiher <r@hev.cc>
- Copyright   : Copyright (c) 2017 everyone.
+ Copyright   : Copyright (c) 2017 - 2021 everyone.
  Description :
  ============================================================================
  */
 
-    .globl hev_task_execute
-    .type hev_task_execute, %function
+#include "asm.h"
 
-hev_task_execute:
+NESTED(hev_task_execute)
     ldr  x3, [x0]
     mov  x4, sp
     stp  x4, x30, [x3, -0x10]
@@ -21,5 +20,4 @@ hev_task_execute:
     ldp  x4, x30, [sp]
     mov  sp, x4
     ret
-
-    .size hev_task_execute, . - hev_task_execute
+END(hev_task_execute)

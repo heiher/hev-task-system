@@ -2,15 +2,14 @@
  ============================================================================
  Name        : hev-task-execute-arm.s
  Author      : Heiher <r@hev.cc>
- Copyright   : Copyright (c) 2017 everyone.
+ Copyright   : Copyright (c) 2017 - 2021 everyone.
  Description :
  ============================================================================
  */
 
-    .globl hev_task_execute
-    .type hev_task_execute, %function
+#include "asm.h"
 
-hev_task_execute:
+NESTED(hev_task_execute)
     ldr  r3, [r0]
     str  sp, [r3, #-0x4]
     str  lr, [r3, #-0x8]
@@ -21,5 +20,4 @@ hev_task_execute:
     ldr  lr, [sp]
     ldr  sp, [sp, #0x4]
     bx   lr
-
-    .size hev_task_execute, . - hev_task_execute
+END(hev_task_execute)
