@@ -11,6 +11,7 @@
 #include <stddef.h>
 #include <string.h>
 #include <arpa/inet.h>
+#include <netinet/in.h>
 
 #include <hev-task.h>
 #include <hev-task-dns.h>
