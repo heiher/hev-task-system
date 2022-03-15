@@ -182,9 +182,11 @@ hev_task_io_socket_recvfrom (int fd, void *buf, size_t len, int flags,
                              HevTaskIOYielder yielder, void *yielder_data)
 {
     ssize_t s;
+    size_t size = 0;
 
 retry:
-    s = recvfrom (fd, buf, len, flags, addr, addr_len);
+    s = recvfrom (fd, buf + size, len - size, flags & ~MSG_WAITALL, addr,
+                  addr_len);
     if (s < 0 && errno == EAGAIN) {
         if (yielder) {
             if (yielder (HEV_TASK_WAITIO, yielder_data))
@@ -195,7 +197,17 @@ retry:
         goto retry;
     }
 
-    return s;
+    if (!(flags & MSG_WAITALL))
+        return s;
+
+    if (s <= 0)
+        return size;
+
+    size += s;
+    if (size < len)
+        goto retry;
+
+    return size;
 }
 
 EXPORT_SYMBOL ssize_t
@@ -204,9 +216,11 @@ hev_task_io_socket_sendto (int fd, const void *buf, size_t len, int flags,
                            HevTaskIOYielder yielder, void *yielder_data)
 {
     ssize_t s;
+    size_t size = 0;
 
 retry:
-    s = sendto (fd, buf, len, flags, addr, addr_len);
+    s = sendto (fd, buf + size, len - size, flags & ~MSG_WAITALL, addr,
+                addr_len);
     if (s < 0 && errno == EAGAIN) {
         if (yielder) {
             if (yielder (HEV_TASK_WAITIO, yielder_data))
@@ -217,7 +231,17 @@ retry:
         goto retry;
     }
 
-    return s;
+    if (!(flags & MSG_WAITALL))
+        return s;
+
+    if (s <= 0)
+        return size;
+
+    size += s;
+    if (size < len)
+        goto retry;
+
+    return size;
 }
 
 EXPORT_SYMBOL ssize_t
@@ -263,13 +287,13 @@ retry:
     size += s;
     if (size < len) {
         for (i = 0; i < mh.msg_iovlen; i++) {
-            if (s < iov[i].iov_len) {
-                iov[i].iov_base += s;
-                iov[i].iov_len -= s;
+            if (s < mh.msg_iov[i].iov_len) {
+                mh.msg_iov[i].iov_base += s;
+                mh.msg_iov[i].iov_len -= s;
                 break;
             }
 
-            s -= iov[i].iov_len;
+            s -= mh.msg_iov[i].iov_len;
         }
 
         mh.msg_iov += i;
@@ -324,13 +348,13 @@ retry:
     size += s;
     if (size < len) {
         for (i = 0; i < mh.msg_iovlen; i++) {
-            if (s < iov[i].iov_len) {
-                iov[i].iov_base += s;
-                iov[i].iov_len -= s;
+            if (s < mh.msg_iov[i].iov_len) {
+                mh.msg_iov[i].iov_base += s;
+                mh.msg_iov[i].iov_len -= s;
                 break;
             }
 
-            s -= iov[i].iov_len;
+            s -= mh.msg_iov[i].iov_len;
         }
 
         mh.msg_iov += i;
