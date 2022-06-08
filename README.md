@@ -80,5 +80,5 @@ ndk-build
 * **hev** - https://hev.cc
 
 ## License
-LGPL
+MIT
 
