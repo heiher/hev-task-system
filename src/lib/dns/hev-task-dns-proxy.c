@@ -2,7 +2,7 @@
  ============================================================================
  Name        : hev-task-dns-proxy.c
  Author      : Heiher <r@hev.cc>
- Copyright   : Copyright (c) 2021 everyone.
+ Copyright   : Copyright (c) 2021 - 2022 everyone.
  Description : DNS Proxy
  ============================================================================
  */
@@ -11,12 +11,8 @@
 #include <errno.h>
 #include <unistd.h>
 
-#ifdef ENABLE_PTHREAD
-#include <pthread.h>
-#endif
-
+#include "kern/aide/hev-task-aide.h"
 #include "kern/sync/hev-task-mutex.h"
-#include "kern/task/hev-task-private.h"
 #include "kern/core/hev-task-system-private.h"
 #include "lib/io/basic/hev-task-io.h"
 #include "lib/io/socket/hev-task-io-socket.h"
@@ -37,9 +33,9 @@ enum _HevTaskDNSCallType
 
 struct _HevTaskDNSProxy
 {
-    int client_fd;
-    int server_fd;
+    int fd;
     HevTaskMutex mutex;
+    HevTaskAideWork work;
     HevTaskDNSCall *call;
     HevTaskSchedEntity sched_entity;
 };
@@ -74,13 +70,6 @@ struct _HevTaskDNSCallGetNameInfo
     int ret;
 };
 
-static HevTaskIOReactor *server_reactor;
-
-#ifdef ENABLE_PTHREAD
-
-static pthread_t thread;
-static pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
-static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 static HevTask dummy_task = { .state = HEV_TASK_RUNNING };
 
 static void
@@ -102,85 +91,40 @@ hev_task_dns_server_getnameinfo (HevTaskDNSCall *call)
     gni->err = errno;
 }
 
-static void *
-hev_task_dns_server_handler (void *data)
+static void
+hev_task_dns_server_handler (unsigned int revents, void *data)
 {
-    pthread_mutex_lock (&mutex);
-    server_reactor = hev_task_io_reactor_new ();
-    pthread_cond_signal (&cond);
-    pthread_mutex_unlock (&mutex);
+    HevTaskDNSProxy *proxy = data;
 
     for (;;) {
-        HevTaskIOReactorWaitEvent events[256];
-        int i, count;
+        char sync = 's';
+        int res;
 
-        count = hev_task_io_reactor_wait (server_reactor, events, 256, -1);
+        res = read (proxy->work.fd, &sync, sizeof (sync));
+        if (0 >= res)
+            break;
 
-        for (i = 0; i < count; i++) {
-            HevTaskDNSProxy *proxy;
+        switch (proxy->call->type) {
+        case HEV_TASK_DNS_CALL_GETADDRINFO:
+            hev_task_dns_server_getaddrinfo (proxy->call);
+            break;
+        case HEV_TASK_DNS_CALL_GETNAMEINFO:
+            hev_task_dns_server_getnameinfo (proxy->call);
+            break;
+        }
 
-            proxy = hev_task_io_reactor_wait_event_get_data (&events[i]);
+        for (;;) {
+            struct pollfd pfd;
 
-            for (;;) {
-                char sync = 's';
-                int res;
+            res = write (proxy->work.fd, &sync, sizeof (sync));
+            if ((0 <= res) || (EAGAIN != errno))
+                break;
 
-                res = read (proxy->server_fd, &sync, sizeof (sync));
-                if (0 >= res)
-                    break;
-
-                switch (proxy->call->type) {
-                case HEV_TASK_DNS_CALL_GETADDRINFO:
-                    hev_task_dns_server_getaddrinfo (proxy->call);
-                    break;
-                case HEV_TASK_DNS_CALL_GETNAMEINFO:
-                    hev_task_dns_server_getnameinfo (proxy->call);
-                    break;
-                }
-
-                for (;;) {
-                    struct pollfd pfd;
-
-                    res = write (proxy->server_fd, &sync, sizeof (sync));
-                    if ((0 <= res) || (EAGAIN != errno))
-                        break;
-
-                    pfd.fd = proxy->server_fd;
-                    pfd.events = POLLOUT;
-                    poll (&pfd, 1, -1);
-                }
-            }
+            pfd.fd = proxy->work.fd;
+            pfd.events = POLLOUT;
+            poll (&pfd, 1, -1);
         }
     }
-
-    return NULL;
-}
-
-#endif /* !ENABLE_PTHREAD */
-
-static int
-hev_task_dns_server_init (void)
-{
-    int res = -1;
-
-#ifdef ENABLE_PTHREAD
-
-    if (server_reactor)
-        return 0;
-
-    pthread_mutex_lock (&mutex);
-    if (!server_reactor) {
-        res = pthread_create (&thread, NULL, hev_task_dns_server_handler, NULL);
-        if (0 == res) {
-            while (!server_reactor)
-                pthread_cond_wait (&cond, &mutex);
-        }
-    }
-    pthread_mutex_unlock (&mutex);
-
-#endif /* !ENABLE_PTHREAD */
-
-    return res;
 }
 
 HevTaskDNSProxy *
@@ -193,7 +137,7 @@ hev_task_dns_proxy_new (void)
     int count;
     int res;
 
-    res = hev_task_dns_server_init ();
+    res = hev_task_aide_init ();
     if (0 > res)
         return NULL;
 
@@ -214,14 +158,14 @@ hev_task_dns_proxy_new (void)
     if (0 > res)
         goto close;
 
-    count = hev_task_io_reactor_setup_event_gen (
-        revents, fds[1], HEV_TASK_IO_REACTOR_OP_ADD, POLLIN, self);
-    res = hev_task_io_reactor_setup (server_reactor, revents, count);
+    self->fd = fds[0];
+    self->work.fd = fds[1];
+    self->work.events = POLLIN;
+    self->work.handler = hev_task_dns_server_handler;
+    self->work.data = self;
+    res = hev_task_aide_add (&self->work);
     if (0 > res)
         goto close;
-
-    self->client_fd = fds[0];
-    self->server_fd = fds[1];
 
     return self;
 
@@ -237,8 +181,9 @@ exit:
 void
 hev_task_dns_proxy_destroy (HevTaskDNSProxy *self)
 {
-    close (self->client_fd);
-    close (self->server_fd);
+    hev_task_aide_del (&self->work);
+    close (self->work.fd);
+    close (self->fd);
     hev_free (self);
 }
 
@@ -252,7 +197,7 @@ hev_task_dns_proxy_call (HevTaskDNSProxy *self, HevTaskDNSCall *call)
 
     for (;;) {
         char sync = 's';
-        int res = write (self->client_fd, &sync, sizeof (sync));
+        int res = write (self->fd, &sync, sizeof (sync));
         if ((0 <= res) || (EAGAIN != errno))
             break;
 
@@ -261,7 +206,7 @@ hev_task_dns_proxy_call (HevTaskDNSProxy *self, HevTaskDNSCall *call)
 
     for (;;) {
         char sync;
-        int res = read (self->client_fd, &sync, sizeof (sync));
+        int res = read (self->fd, &sync, sizeof (sync));
         if ((0 <= res) || (EAGAIN != errno))
             break;
 
