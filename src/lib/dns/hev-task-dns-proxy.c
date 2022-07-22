@@ -15,8 +15,8 @@
 #include <pthread.h>
 #endif
 
-#include "kern/task/hev-task.h"
 #include "kern/sync/hev-task-mutex.h"
+#include "kern/task/hev-task-private.h"
 #include "kern/core/hev-task-system-private.h"
 #include "lib/io/basic/hev-task-io.h"
 #include "lib/io/socket/hev-task-io-socket.h"
@@ -81,6 +81,7 @@ static HevTaskIOReactor *server_reactor;
 static pthread_t thread;
 static pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+static HevTask dummy_task = { .state = HEV_TASK_RUNNING };
 
 static void
 hev_task_dns_server_getaddrinfo (HevTaskDNSCall *call)
@@ -266,6 +267,8 @@ hev_task_dns_proxy_call (HevTaskDNSProxy *self, HevTaskDNSCall *call)
 
         hev_task_yield (HEV_TASK_WAITIO);
     }
+
+    self->sched_entity.task = &dummy_task;
 
     hev_task_mutex_unlock (&self->mutex);
 }
