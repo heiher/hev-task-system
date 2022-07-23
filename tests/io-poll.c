@@ -31,6 +31,8 @@ task1_entry (void *data)
     val = hev_task_io_poll (pfds, 1, -1);
     assert (val == 1);
     assert (pfds[0].revents & POLLIN);
+
+    close (fds[0]);
 }
 
 static void
@@ -49,6 +51,8 @@ task2_entry (void *data)
     assert (pfds[0].revents & POLLOUT);
 
     assert (write (fds[1], &val, sizeof (val)) == sizeof (val));
+
+    close (fds[1]);
 }
 
 int
@@ -71,9 +75,6 @@ main (int argc, char *argv[])
     hev_task_run (task, task2_entry, NULL);
 
     hev_task_system_run ();
-
-    close (fds[0]);
-    close (fds[1]);
 
     hev_task_system_fini ();
 
