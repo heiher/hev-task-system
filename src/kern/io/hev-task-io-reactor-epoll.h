@@ -2,7 +2,7 @@
  ============================================================================
  Name        : hev-task-io-reactor-epoll.h
  Author      : Heiher <r@hev.cc>
- Copyright   : Copyright (c) 2018 everyone.
+ Copyright   : Copyright (c) 2018 - 2022 everyone.
  Description : I/O Reactor EPoll
  ============================================================================
  */
@@ -39,6 +39,20 @@ struct _HevTaskIOReactorSetupEvent
     int fd;
     struct epoll_event event;
 };
+
+static inline int
+hev_task_io_reactor_open (void)
+{
+    return epoll_create (128);
+}
+
+static inline int
+hev_task_io_reactor_wait (HevTaskIOReactor *self,
+                          HevTaskIOReactorWaitEvent *events, int count,
+                          int timeout)
+{
+    return epoll_wait (self->fd, events, count, timeout);
+}
 
 static inline void
 hev_task_io_reactor_setup_event_set (HevTaskIOReactorSetupEvent *event, int fd,

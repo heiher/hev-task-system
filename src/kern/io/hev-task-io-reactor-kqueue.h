@@ -2,7 +2,7 @@
  ============================================================================
  Name        : hev-task-io-reactor-kqueue.h
  Author      : Heiher <r@hev.cc>
- Copyright   : Copyright (c) 2018 everyone.
+ Copyright   : Copyright (c) 2018 - 2022 everyone.
  Description : I/O Reactor KQueue
  ============================================================================
  */
@@ -43,6 +43,26 @@ enum _HevTaskIOReactorOperation
     HEV_TASK_IO_REACTOR_OP_MOD,
     HEV_TASK_IO_REACTOR_OP_DEL,
 };
+
+static inline int
+hev_task_io_reactor_open (void)
+{
+    return kqueue ();
+}
+
+static inline int
+hev_task_io_reactor_wait (HevTaskIOReactor *reactor,
+                          HevTaskIOReactorWaitEvent *events, int count,
+                          int timeout)
+{
+    struct timespec tsz = { 0 };
+    struct timespec *tsp = NULL;
+
+    if (timeout >= 0)
+        tsp = &tsz;
+
+    return kevent (reactor->fd, NULL, 0, events, count, tsp);
+}
 
 static inline void
 hev_task_io_reactor_setup_event_set (HevTaskIOReactorSetupEvent *event, int fd,
