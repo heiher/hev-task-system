@@ -225,6 +225,10 @@ task_io_splicer_init (HevTaskIOSplicer *self, size_t buf_size)
     if (res < 0)
         goto exit_close;
 
+#ifdef F_GETPIPE_SZ
+    buf_size = fcntl (self->fd[0], F_GETPIPE_SZ);
+#endif
+
     self->wlen = 0;
     self->blen = buf_size;
 
