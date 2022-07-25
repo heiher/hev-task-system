@@ -7,7 +7,7 @@ PP=$(CROSS_PREFIX)cpp
 CC=$(CROSS_PREFIX)gcc
 LD=$(CROSS_PREFIX)ld
 AR=$(CROSS_PREFIX)ar
-CCFLAGS=-O3 -pipe -Werror -Wall -Wno-dangling-pointer $(CFLAGS)
+CCFLAGS=-O3 -pipe -Werror -Wall $(CFLAGS)
 LDFLAGS=
 
 APP_CCFLAGS=$(CCFLAGS) -I include
