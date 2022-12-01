@@ -51,6 +51,14 @@
 #  include "arch/loong/hev-task-execute-la32.s"
 # endif
 
+#elif defined(__powerpc64__)
+
+# include "arch/ppc/hev-task-execute-ppc64.s"
+
+#elif defined(__powerpc__)
+
+# include "arch/ppc/hev-task-execute-ppc32.s"
+
 #else
 
 # error "Unsupported platform!"
