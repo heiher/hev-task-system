@@ -59,6 +59,10 @@
 
 # include "arch/ppc/hev-task-execute-ppc32.s"
 
+#elif defined(__arc__)
+
+# include "arch/arc/hev-task-execute-arc32.s"
+
 #else
 
 # error "Unsupported platform!"
