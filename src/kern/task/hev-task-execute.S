@@ -69,3 +69,8 @@
 
 #endif
 
+#if defined(__ELF__) && defined(__linux__)
+/* An executable stack is *not* required for these functions. */
+    .section .note.GNU-stack,"",%progbits
+    .previous
+#endif
