@@ -194,6 +194,25 @@ hev_task_exit (void)
     hev_task_system_kill_current_task ();
 }
 
+EXPORT_SYMBOL int
+hev_task_join (HevTask *task)
+{
+    if (task->joiner)
+        return -1;
+
+    task->joiner = hev_task_self ();
+
+    for (;;) {
+        if (hev_task_get_state (task) == HEV_TASK_STOPPED)
+            break;
+
+        hev_task_wakeup (task);
+        hev_task_yield (HEV_TASK_WAITIO);
+    }
+
+    return 0;
+}
+
 EXPORT_SYMBOL void *
 hev_task_get_data (HevTask *self)
 {

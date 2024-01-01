@@ -36,6 +36,7 @@ struct _HevTask
     HevTaskSchedEntity sched_entity;
 
     HevTaskStack *stack;
+    HevTask *joiner;
 
     int ref_count;
     int priority;

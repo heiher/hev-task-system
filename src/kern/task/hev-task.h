@@ -257,6 +257,18 @@ void hev_task_run (HevTask *self, HevTaskEntry entry, void *data);
 void hev_task_exit (void);
 
 /**
+ * hev_task_join:
+ * @task: a #HevTask
+ *
+ * Join with a terminated task.
+ *
+ * Returns: When successful, returns zero. When an error occurs, returns -1.
+ *
+ * Since: 5.2.6
+ */
+int hev_task_join (HevTask *task);
+
+/**
  * hev_task_get_data:
  * @self: a #HevTask
  *

@@ -18,5 +18,8 @@ hev_task_executer (HevTask *task)
 
     task->entry (task->data);
 
+    if (task->joiner)
+        hev_task_wakeup (task->joiner);
+
     hev_task_system_kill_current_task ();
 }
