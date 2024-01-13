@@ -134,8 +134,11 @@ retry:
     if (!(flags & MSG_WAITALL))
         return s;
 
-    if (s <= 0)
-        return size;
+    if (s <= 0) {
+        if (size)
+            return size;
+        return s;
+    }
 
     size += s;
     if (size < len)
@@ -166,8 +169,11 @@ retry:
     if (!(flags & MSG_WAITALL))
         return s;
 
-    if (s <= 0)
-        return size;
+    if (s <= 0) {
+        if (size)
+            return size;
+        return s;
+    }
 
     size += s;
     if (size < len)
@@ -200,8 +206,11 @@ retry:
     if (!(flags & MSG_WAITALL))
         return s;
 
-    if (s <= 0)
-        return size;
+    if (s <= 0) {
+        if (size)
+            return size;
+        return s;
+    }
 
     size += s;
     if (size < len)
@@ -234,8 +243,11 @@ retry:
     if (!(flags & MSG_WAITALL))
         return s;
 
-    if (s <= 0)
-        return size;
+    if (s <= 0) {
+        if (size)
+            return size;
+        return s;
+    }
 
     size += s;
     if (size < len)
@@ -281,8 +293,11 @@ retry:
     if (!(flags & MSG_WAITALL))
         return s;
 
-    if (s <= 0)
-        return size;
+    if (s <= 0) {
+        if (size)
+            return size;
+        return s;
+    }
 
     size += s;
     if (size < len) {
@@ -342,8 +357,11 @@ retry:
     if (!(flags & MSG_WAITALL))
         return s;
 
-    if (s <= 0)
-        return size;
+    if (s <= 0) {
+        if (size)
+            return size;
+        return s;
+    }
 
     size += s;
     if (size < len) {
