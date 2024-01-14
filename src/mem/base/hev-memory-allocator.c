@@ -2,51 +2,43 @@
  ============================================================================
  Name        : hev-memory-allocator.c
  Author      : Heiher <r@hev.cc>
- Copyright   : Copyright (c) 2013 everyone.
+ Copyright   : Copyright (c) 2013 - 2024 everyone.
  Description : Memory allocator
  ============================================================================
  */
 
 #include <stdlib.h>
 #include <string.h>
-
-#ifdef ENABLE_PTHREAD
 #include <pthread.h>
-#endif
 
 #include "lib/misc/hev-compiler.h"
 #include "mem/simple/hev-memory-allocator-simple.h"
 
 #include "hev-memory-allocator.h"
 
-#ifdef ENABLE_PTHREAD
 static pthread_key_t key;
 static pthread_once_t key_once = PTHREAD_ONCE_INIT;
 
-static void pthread_key_creator (void);
-#else
-static HevMemoryAllocator *default_allocator;
-#endif
+static void
+pthread_key_creator (void)
+{
+    pthread_key_create (&key, NULL);
+}
 
 EXPORT_SYMBOL HevMemoryAllocator *
 hev_memory_allocator_default (void)
 {
-#ifdef ENABLE_PTHREAD
-    HevMemoryAllocator *default_allocator;
+    HevMemoryAllocator *allocator;
 
     pthread_once (&key_once, pthread_key_creator);
 
-    default_allocator = pthread_getspecific (key);
-    if (!default_allocator) {
-        default_allocator = hev_memory_allocator_simple_new ();
-        pthread_setspecific (key, default_allocator);
+    allocator = pthread_getspecific (key);
+    if (!allocator) {
+        allocator = hev_memory_allocator_simple_new ();
+        pthread_setspecific (key, allocator);
     }
-#else
-    if (!default_allocator)
-        default_allocator = hev_memory_allocator_simple_new ();
-#endif
 
-    return default_allocator;
+    return allocator;
 }
 
 EXPORT_SYMBOL HevMemoryAllocator *
@@ -54,15 +46,10 @@ hev_memory_allocator_set_default (HevMemoryAllocator *allocator)
 {
     HevMemoryAllocator *old_allocator;
 
-#ifdef ENABLE_PTHREAD
     pthread_once (&key_once, pthread_key_creator);
 
     old_allocator = pthread_getspecific (key);
     pthread_setspecific (key, allocator);
-#else
-    old_allocator = default_allocator;
-    default_allocator = allocator;
-#endif
 
     return old_allocator;
 }
@@ -85,14 +72,6 @@ hev_memory_allocator_unref (HevMemoryAllocator *self)
         self->destroy (self);
     free (self);
 }
-
-#ifdef ENABLE_PTHREAD
-static void
-pthread_key_creator (void)
-{
-    pthread_key_create (&key, NULL);
-}
-#endif
 
 EXPORT_SYMBOL void *
 hev_memory_allocator_alloc (HevMemoryAllocator *self, size_t size)

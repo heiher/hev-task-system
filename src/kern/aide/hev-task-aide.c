@@ -2,7 +2,7 @@
  ============================================================================
  Name        : hev-task-aide.c
  Author      : Heiher <r@hev.cc>
- Copyright   : Copyright (c) 2022 everyone.
+ Copyright   : Copyright (c) 2022 - 2024 everyone.
  Description : Aide
  ============================================================================
  */
@@ -10,10 +10,7 @@
 #include <poll.h>
 #include <errno.h>
 #include <unistd.h>
-
-#ifdef ENABLE_PTHREAD
 #include <pthread.h>
-#endif
 
 #include "kern/task/hev-task-private.h"
 #include "kern/io/hev-task-io-reactor.h"
@@ -21,13 +18,10 @@
 
 #include "hev-task-aide.h"
 
-static HevTaskIOReactor *reactor;
-
-#ifdef ENABLE_PTHREAD
-
 static pthread_t thread;
 static pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+static HevTaskIOReactor *reactor;
 
 static void *
 hev_task_aide_entry (void *data)
@@ -57,14 +51,10 @@ hev_task_aide_entry (void *data)
     return NULL;
 }
 
-#endif /* !ENABLE_PTHREAD */
-
 int
 hev_task_aide_init (void)
 {
     int res = -1;
-
-#ifdef ENABLE_PTHREAD
 
     if (reactor)
         return 0;
@@ -78,8 +68,6 @@ hev_task_aide_init (void)
         }
     }
     pthread_mutex_unlock (&mutex);
-
-#endif /* !ENABLE_PTHREAD */
 
     return res;
 }

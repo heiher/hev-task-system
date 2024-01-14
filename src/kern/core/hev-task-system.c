@@ -2,12 +2,13 @@
  ============================================================================
  Name        : hev-task-system.c
  Author      : Heiher <r@hev.cc>
- Copyright   : Copyright (c) 2017 - 2020 everyone.
+ Copyright   : Copyright (c) 2017 - 2024 everyone.
  Description :
  ============================================================================
  */
 
 #include <stdlib.h>
+#include <pthread.h>
 
 #include "lib/misc/hev-compiler.h"
 #include "mem/api/hev-memory-allocator-api.h"
@@ -16,10 +17,6 @@
 #include "hev-task-system-private.h"
 
 #include "hev-task-system.h"
-
-#ifdef ENABLE_PTHREAD
-
-#include <pthread.h>
 
 static pthread_key_t key;
 static pthread_once_t key_once = PTHREAD_ONCE_INIT;
@@ -42,25 +39,6 @@ hev_task_system_set_context (HevTaskSystemContext *context)
     return pthread_setspecific (key, context);
 }
 
-#else /* !ENABLE_PTHREAD */
-
-static HevTaskSystemContext *default_context;
-
-HevTaskSystemContext *
-hev_task_system_get_context (void)
-{
-    return default_context;
-}
-
-static inline int
-hev_task_system_set_context (HevTaskSystemContext *context)
-{
-    default_context = context;
-    return 0;
-}
-
-#endif /* !ENABLE_PTHREAD */
-
 EXPORT_SYMBOL int
 hev_task_system_init (void)
 {
@@ -74,9 +52,7 @@ hev_task_system_init (void)
     if (allocator)
         hev_memory_allocator_unref (allocator);
 
-#ifdef ENABLE_PTHREAD
     pthread_once (&key_once, pthread_key_creator);
-#endif
 
     if (hev_task_system_get_context ())
         goto exit;

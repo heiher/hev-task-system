@@ -36,9 +36,6 @@ make
 # Link with librt (only for glibc versions before 2.17)
 make LDFLAGS=-lrt
 
-# Disable multi-thread support
-make ENABLE_PTHREAD=0
-
 # Disable stack overflow detection
 make ENABLE_STACK_OVERFLOW_DETECTION=0
 
