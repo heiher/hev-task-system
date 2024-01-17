@@ -4,15 +4,15 @@
 
 HevTaskSystem is a simple, lightweight multi-task system (coroutines) for Unix.
 
-The task system is executed by a Unix process/thread. In task system, you can
-creates many tasks and attachs to task system. When a task yield or blocked by
-I/O, the scheduler will pick a suitable task from running list and switch to.
-The memory space, file descriptors and other resources are shared for all tasks
-in task system. Every task has a private, standalone task structure (#HevTask)
-and stack in heap of the process.
+The task system is executed within a Unix process/thread. In task system, you
+can create many tasks and attach them to the task system. When a task yields or
+is blocked by I/O, the scheduler will pick a suitable task from running list and
+switch to it. Memory space, file descriptors, and other resources are shared among
+all tasks in the task system. Each task has its private, standalone task structure
+(#HevTask) and stack in heap of the process.
 
-In task, you can allocate memory from heap, read and write data from to stack,
-and do I/O operations in synchronized mode.
+Within a task, you can allocate memory from heap, read and write data to the stack,
+and perform I/O operations in synchronized mode.
 
 ## Features
 
