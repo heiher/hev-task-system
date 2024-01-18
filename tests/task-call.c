@@ -8,7 +8,7 @@
  */
 
 #include <assert.h>
-#include <stddef.h>
+#include <stdlib.h>
 
 #include <hev-task.h>
 #include <hev-task-call.h>
@@ -19,7 +19,8 @@ call_entry1 (HevTaskCall *call)
 {
     void *ptr;
 
-    hev_task_call_set_retval (call, &ptr);
+    ptr = alloca (1);
+    hev_task_call_set_retval (call, ptr);
 }
 
 static void
