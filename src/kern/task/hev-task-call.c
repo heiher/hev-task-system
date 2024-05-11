@@ -24,7 +24,7 @@ hev_task_call_new (int base_size, int stack_size)
     self = hev_malloc (base_size + stack_size);
     if (self) {
         uintptr_t stack_addr;
-        stack_addr = (uintptr_t) ((void *)self + base_size + stack_size);
+        stack_addr = (uintptr_t)((void *)self + base_size + stack_size);
         self->stack_top = (void *)ALIGN_DOWN (stack_addr, 16);
     }
 
