@@ -63,6 +63,10 @@
 
 # include "arch/arc/hev-task-execute-arc32.s"
 
+#elif defined(__m68k__)
+
+# include "arch/m68k/hev-task-execute-m68k.s"
+
 #else
 
 # error "Unsupported platform!"
