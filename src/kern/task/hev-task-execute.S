@@ -67,6 +67,10 @@
 
 # include "arch/m68k/hev-task-execute-m68k.s"
 
+#elif defined(__microblaze__)
+
+# include "arch/microblaze/hev-task-execute-microblaze.s"
+
 #else
 
 # error "Unsupported platform!"
