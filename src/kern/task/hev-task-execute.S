@@ -75,6 +75,10 @@
 
 # include "arch/s390/hev-task-execute-s390x.s"
 
+#elif defined(__sh__)
+
+# include "arch/sh/hev-task-execute-sh.s"
+
 #else
 
 # error "Unsupported platform!"
