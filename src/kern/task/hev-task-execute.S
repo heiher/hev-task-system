@@ -71,6 +71,10 @@
 
 # include "arch/microblaze/hev-task-execute-microblaze.s"
 
+#elif defined(__s390x__)
+
+# include "arch/s390/hev-task-execute-s390x.s"
+
 #else
 
 # error "Unsupported platform!"
