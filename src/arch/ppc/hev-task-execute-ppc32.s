@@ -13,14 +13,14 @@
 hev_task_execute:
     lwz   5, 0(3)
     mflr  0
-    stw   1, -0x0c(5)
-    stw   0, -0x10(5)
+    stw   1, -0x04(5)
+    stw   0, -0x08(5)
     addi  1, 5, -0x10
 
     mtctr 4
     bctrl
 
-    lwz   0, 0x00(1)
+    lwz   0, 0x08(1)
     lwz   1, 0x0c(1)
     mtlr  0
     blr

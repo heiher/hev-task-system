@@ -15,13 +15,13 @@ hev_task_execute:
     mflr  0
     std   1, -0x08(5)
     std   0, -0x10(5)
-    addi  1, 5, -0x10
+    addi  1, 5, -0x40
 
     mtctr 4
     bctrl
 
-    ld    0, 0x00(1)
-    ld    1, 0x08(1)
+    ld    0, 0x30(1)
+    ld    1, 0x38(1)
     mtlr  0
     blr
 
