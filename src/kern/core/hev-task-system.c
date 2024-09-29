@@ -11,6 +11,7 @@
 #include <pthread.h>
 
 #include "lib/misc/hev-compiler.h"
+#include "lib/misc/hev-task-stack-detector.h"
 #include "mem/api/hev-memory-allocator-api.h"
 #include "mem/slice/hev-memory-allocator-slice.h"
 
@@ -72,8 +73,14 @@ hev_task_system_init (void)
     if (!context->timer)
         goto free_reactor;
 
+    context->stack_detector = hev_task_stack_detector_new ();
+    if (!context->stack_detector)
+        goto free_timer;
+
     return 0;
 
+free_timer:
+    hev_task_timer_destroy (context->timer);
 free_reactor:
     hev_task_io_reactor_destroy (context->reactor);
 rest_context:
@@ -92,6 +99,7 @@ hev_task_system_fini (void)
 
     if (context->dns_proxy)
         hev_task_dns_proxy_destroy (context->dns_proxy);
+    hev_task_stack_detector_destroy (context->stack_detector);
     hev_task_timer_destroy (context->timer);
     hev_task_io_reactor_destroy (context->reactor);
     hev_free (context);

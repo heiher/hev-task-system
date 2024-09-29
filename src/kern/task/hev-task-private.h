@@ -45,9 +45,7 @@ struct _HevTask
 
     jmp_buf context;
 
-#ifdef ENABLE_DEBUG
     HevListNode list_node;
-#endif
 };
 
 extern void hev_task_execute (HevTask *self, void *executer);

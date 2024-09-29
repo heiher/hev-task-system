@@ -21,6 +21,7 @@
 #include "lib/list/hev-list.h"
 #include "lib/dns/hev-task-dns-proxy.h"
 #include "lib/rbtree/hev-rbtree-cached.h"
+#include "lib/misc/hev-task-stack-detector.h"
 
 #define CLOCK_NONE (-1)
 #define HEV_TASK_RUN_SCHEDULER HEV_TASK_YIELD_COUNT
@@ -43,6 +44,7 @@ struct _HevTaskSystemContext
     HevTaskTimer *timer;
     HevTaskIOReactor *reactor;
     HevTaskDNSProxy *dns_proxy;
+    HevTaskStackDetector *stack_detector;
 
     HevTask *current_task;
     HevRBTreeCached running_tasks;
@@ -51,9 +53,7 @@ struct _HevTaskSystemContext
 
     jmp_buf kernel_context;
 
-#ifdef ENABLE_DEBUG
     HevList all_tasks;
-#endif
 };
 
 void hev_task_system_schedule (HevTaskYieldType type);
