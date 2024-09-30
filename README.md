@@ -27,7 +27,8 @@ and perform I/O operations in synchronized mode.
 
 ## How to Build
 
-**Unix**:
+### Unix
+
 ```bash
 git clone https://gitlab.com/hev/hev-task-system
 cd hev-task-system
@@ -55,7 +56,8 @@ make apps
 make tests
 ```
 
-**Android**:
+### Android
+
 ```bash
 mkdir hev-task-system
 cd hev-task-system
@@ -63,7 +65,17 @@ git clone https://gitlab.com/hev/hev-task-system jni
 ndk-build
 ```
 
+### iOS and MacOS
+
+```bash
+git clone https://gitlab.com/hev/hev-task-system
+cd hev-task-system
+# will generate HevTaskSystem.xcframework
+./build-apple.sh
+```
+
 ## Demos
+
 1. [simple](https://gitlab.com/hev/hev-task-system/blob/master/apps/simple.c)
 1. [channel](https://gitlab.com/hev/hev-task-system/blob/master/apps/channel.c)
 1. [timeout](https://gitlab.com/hev/hev-task-system/blob/master/apps/timeout.c)
@@ -74,8 +86,10 @@ ndk-build
 1. [curl](https://gitlab.com/hev/hev-task-system/blob/master/apps/curl.c)
 
 ## Contributors
+
 * **hev** - https://hev.cc
 
 ## License
+
 MIT
 
