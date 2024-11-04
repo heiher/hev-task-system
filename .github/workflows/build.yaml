@@ -5,6 +5,7 @@ on:
     branches:
       - '**'
   pull_request:
+  workflow_dispatch:
 
 jobs:
   linux:
@@ -77,6 +78,7 @@ jobs:
           wget https://github.com/musl-cross/musl-cross/releases/download/20241103/${{ matrix.tool }}.tar.xz
           sudo tar xf ${{ matrix.tool }}.tar.xz -C /opt/x-tools
           make CROSS_PREFIX=/opt/x-tools/${{ matrix.tool }}/bin/${{ matrix.tool }}- CFLAGS=${{ matrix.env.CFLAGS }} ENABLE_STATIC=1 -j`nproc`
+
   macos:
     name: macOS
     runs-on: macos-14
@@ -93,6 +95,7 @@ jobs:
       - name: Build cross
         run: |
           ./build-apple.sh
+
   llvm:
     name: LLVM
     runs-on: ubuntu-22.04
@@ -110,6 +113,7 @@ jobs:
       - name: Build
         run: |
           make CC=clang ENABLE_STATIC=1 -j`nproc`
+
   android:
     name: Android
     runs-on: ubuntu-22.04
