@@ -54,7 +54,7 @@ hev_task_aide_entry (void *data)
 int
 hev_task_aide_init (void)
 {
-    int res = -1;
+    int res = 0;
 
     if (reactor)
         return 0;
