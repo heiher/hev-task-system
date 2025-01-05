@@ -19,18 +19,12 @@
 #include "hev-task-aide.h"
 
 static pthread_t thread;
-static pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 static HevTaskIOReactor *reactor;
 
 static void *
 hev_task_aide_entry (void *data)
 {
-    pthread_mutex_lock (&mutex);
-    reactor = hev_task_io_reactor_new ();
-    pthread_cond_signal (&cond);
-    pthread_mutex_unlock (&mutex);
-
     for (;;) {
         HevTaskIOReactorWaitEvent events[256];
         int i, count;
@@ -61,11 +55,11 @@ hev_task_aide_init (void)
 
     pthread_mutex_lock (&mutex);
     if (!reactor) {
-        res = pthread_create (&thread, NULL, hev_task_aide_entry, NULL);
-        if (0 == res) {
-            while (!reactor)
-                pthread_cond_wait (&cond, &mutex);
-        }
+        reactor = hev_task_io_reactor_new ();
+        if (!reactor)
+            res = -1;
+        else
+            res = pthread_create (&thread, NULL, hev_task_aide_entry, NULL);
     }
     pthread_mutex_unlock (&mutex);
 
