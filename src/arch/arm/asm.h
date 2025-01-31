@@ -9,10 +9,17 @@
 
 #if defined(__APPLE__) || defined(__MACH__)
 
+#ifdef __arm__
+# define NESTED(symbol) \
+    .globl _##symbol; \
+    .p2align 2; \
+_##symbol:
+#else
 # define NESTED(symbol) \
     .globl _##symbol%% \
     .p2align 2%% \
 _##symbol:
+#endif
 
 # define END(symbol)
 
