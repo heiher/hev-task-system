@@ -2,7 +2,7 @@
  ============================================================================
  Name        : task-sleep.c
  Author      : Heiher <r@hev.cc>
- Copyright   : Copyright (c) 2018 - 2019 everyone.
+ Copyright   : Copyright (c) 2018 - 2025 everyone.
  Description : Task Sleep Test
  ============================================================================
  */
@@ -29,7 +29,7 @@ time_diff (struct timespec *sp1, struct timespec *sp2)
         nsec += 1000000000L;
     }
 
-    return sec * 1000000 + nsec / 1000;
+    return (sec * 1000) + ((nsec + 999999) / 1000000);
 }
 
 static void
@@ -40,9 +40,9 @@ task_entry11 (void *data)
     assert (counter == 2);
     counter++;
     clock_gettime (CLOCK_MONOTONIC, &sp1);
-    assert (hev_task_usleep (300) == 0);
+    assert (hev_task_sleep (30) == 0);
     clock_gettime (CLOCK_MONOTONIC, &sp2);
-    assert (time_diff (&sp1, &sp2) >= 300);
+    assert (time_diff (&sp1, &sp2) >= 30);
 }
 
 static void
@@ -53,9 +53,9 @@ task_entry10 (void *data)
     assert (counter == 1);
     counter++;
     clock_gettime (CLOCK_MONOTONIC, &sp1);
-    assert (hev_task_usleep (200) == 0);
+    assert (hev_task_sleep (20) == 0);
     clock_gettime (CLOCK_MONOTONIC, &sp2);
-    assert (time_diff (&sp1, &sp2) >= 200);
+    assert (time_diff (&sp1, &sp2) >= 20);
 }
 
 static void
@@ -65,9 +65,9 @@ task_entry9 (void *data)
 
     counter++;
     clock_gettime (CLOCK_MONOTONIC, &sp1);
-    assert (hev_task_usleep (100) == 0);
+    assert (hev_task_sleep (10) == 0);
     clock_gettime (CLOCK_MONOTONIC, &sp2);
-    assert (time_diff (&sp1, &sp2) >= 100);
+    assert (time_diff (&sp1, &sp2) >= 10);
 }
 
 static void
@@ -94,12 +94,12 @@ task_entry7 (void *data)
     assert (counter == 1);
     counter++;
     clock_gettime (CLOCK_MONOTONIC, &sp1);
-    remaining = hev_task_usleep (200);
+    remaining = hev_task_sleep (20);
     assert (remaining >= 0);
-    assert (remaining <= 200);
-    assert (hev_task_usleep (remaining) == 0);
+    assert (remaining <= 20);
+    assert (hev_task_sleep (remaining) == 0);
     clock_gettime (CLOCK_MONOTONIC, &sp2);
-    assert (time_diff (&sp1, &sp2) >= 200);
+    assert (time_diff (&sp1, &sp2) >= 20);
 }
 
 static void
@@ -109,9 +109,9 @@ task_entry6 (void *data)
 
     counter++;
     clock_gettime (CLOCK_MONOTONIC, &sp1);
-    assert (hev_task_usleep (100) == 0);
+    assert (hev_task_sleep (10) == 0);
     clock_gettime (CLOCK_MONOTONIC, &sp2);
-    assert (time_diff (&sp1, &sp2) >= 100);
+    assert (time_diff (&sp1, &sp2) >= 10);
 }
 
 static void
@@ -121,9 +121,9 @@ task_entry5 (void *data)
 
     counter++;
     clock_gettime (CLOCK_MONOTONIC, &sp1);
-    assert (hev_task_usleep (200) == 0);
+    assert (hev_task_sleep (20) == 0);
     clock_gettime (CLOCK_MONOTONIC, &sp2);
-    assert (time_diff (&sp1, &sp2) >= 200);
+    assert (time_diff (&sp1, &sp2) >= 20);
 }
 
 static void
@@ -133,9 +133,9 @@ task_entry4 (void *data)
 
     assert (counter == 1);
     clock_gettime (CLOCK_MONOTONIC, &sp1);
-    assert (hev_task_usleep (100) == 0);
+    assert (hev_task_sleep (10) == 0);
     clock_gettime (CLOCK_MONOTONIC, &sp2);
-    assert (time_diff (&sp1, &sp2) >= 100);
+    assert (time_diff (&sp1, &sp2) >= 10);
 }
 
 static void
@@ -145,9 +145,9 @@ task_entry3 (void *data)
 
     assert (counter == 1);
     clock_gettime (CLOCK_MONOTONIC, &sp1);
-    assert (hev_task_usleep (200) == 0);
+    assert (hev_task_sleep (20) == 0);
     clock_gettime (CLOCK_MONOTONIC, &sp2);
-    assert (time_diff (&sp1, &sp2) >= 200);
+    assert (time_diff (&sp1, &sp2) >= 20);
 }
 
 static void
@@ -157,9 +157,9 @@ task_entry2 (void *data)
 
     counter++;
     clock_gettime (CLOCK_MONOTONIC, &sp1);
-    assert (hev_task_usleep (100) == 0);
+    assert (hev_task_sleep (10) == 0);
     clock_gettime (CLOCK_MONOTONIC, &sp2);
-    assert (time_diff (&sp1, &sp2) >= 100);
+    assert (time_diff (&sp1, &sp2) >= 10);
 }
 
 static void
@@ -168,14 +168,14 @@ task_entry1 (void *data)
     struct timespec sp1, sp2;
 
     clock_gettime (CLOCK_MONOTONIC, &sp1);
-    assert (hev_task_usleep (100) == 0);
+    assert (hev_task_sleep (10) == 0);
     clock_gettime (CLOCK_MONOTONIC, &sp2);
-    assert (time_diff (&sp1, &sp2) >= 100);
+    assert (time_diff (&sp1, &sp2) >= 10);
 
     clock_gettime (CLOCK_MONOTONIC, &sp1);
     assert (hev_task_sleep (100) == 0);
     clock_gettime (CLOCK_MONOTONIC, &sp2);
-    assert (time_diff (&sp1, &sp2) >= (100 * 1000));
+    assert (time_diff (&sp1, &sp2) >= 100);
 }
 
 int

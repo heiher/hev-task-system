@@ -2,7 +2,7 @@
  ============================================================================
  Name        : hev-task.h
  Author      : Heiher <r@hev.cc>
- Copyright   : Copyright (c) 2017 everyone.
+ Copyright   : Copyright (c) 2017 - 2025 everyone.
  Description :
  ============================================================================
  */
@@ -230,7 +230,7 @@ unsigned int hev_task_sleep (unsigned int milliseconds);
  * Returns: Zero if the requested time has elapsed, or
  * the number of microseconds left to sleep.
  *
- * Since: 1.5.3
+ * Deprecated: 5.4.0
  */
 unsigned int hev_task_usleep (unsigned int microseconds);
 

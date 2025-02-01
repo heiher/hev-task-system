@@ -2,7 +2,7 @@
  ============================================================================
  Name        : hev-task-system.c
  Author      : Heiher <r@hev.cc>
- Copyright   : Copyright (c) 2017 - 2024 everyone.
+ Copyright   : Copyright (c) 2017 - 2025 everyone.
  Description :
  ============================================================================
  */
@@ -69,7 +69,7 @@ hev_task_system_init (void)
     if (!context->reactor)
         goto rest_context;
 
-    context->timer = hev_task_timer_new ();
+    context->timer = hev_task_timer_new (context);
     if (!context->timer)
         goto free_reactor;
 

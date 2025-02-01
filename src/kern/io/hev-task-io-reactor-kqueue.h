@@ -2,7 +2,7 @@
  ============================================================================
  Name        : hev-task-io-reactor-kqueue.h
  Author      : Heiher <r@hev.cc>
- Copyright   : Copyright (c) 2018 - 2022 everyone.
+ Copyright   : Copyright (c) 2018 - 2025 everyone.
  Description : I/O Reactor KQueue
  ============================================================================
  */
@@ -55,11 +55,14 @@ hev_task_io_reactor_wait (HevTaskIOReactor *reactor,
                           HevTaskIOReactorWaitEvent *events, int count,
                           int timeout)
 {
-    struct timespec tsz = { 0 };
     struct timespec *tsp = NULL;
+    struct timespec ts;
 
-    if (timeout >= 0)
-        tsp = &tsz;
+    if (timeout >= 0) {
+        ts.tv_sec = timeout / 1000;
+        ts.tv_nsec = (timeout % 1000) * 1000000;
+        tsp = &ts;
+    }
 
     return kevent (reactor->fd, NULL, 0, events, count, tsp);
 }

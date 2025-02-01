@@ -2,7 +2,7 @@
  ============================================================================
  Name        : hev-task-system-schedule.c
  Author      : Heiher <r@hev.cc>
- Copyright   : Copyright (c) 2017 - 2020 everyone.
+ Copyright   : Copyright (c) 2017 - 2025 everyone.
  Description :
  ============================================================================
  */
@@ -140,7 +140,7 @@ hev_task_system_remove_current_task (HevTaskSystemContext *ctx,
     }
 }
 
-static inline void
+void
 hev_task_system_wakeup_task_with_context (HevTaskSystemContext *ctx,
                                           HevTask *task)
 {
@@ -162,6 +162,9 @@ hev_task_system_io_poll (HevTaskSystemContext *ctx, int timeout)
     int i, count;
     HevTaskIOReactorWaitEvent events[1024];
 
+    if (timeout < 0)
+        timeout = hev_task_timer_get_timeout (ctx->timer);
+
     count = hev_task_io_reactor_wait (ctx->reactor, events, 1024, timeout);
     for (i = 0; i < count; i++) {
         HevTaskSchedEntity *sched_entity;
@@ -169,6 +172,8 @@ hev_task_system_io_poll (HevTaskSystemContext *ctx, int timeout)
         sched_entity = hev_task_io_reactor_wait_event_get_data (&events[i]);
         hev_task_system_wakeup_task_with_context (ctx, sched_entity->task);
     }
+
+    hev_task_timer_wake (ctx->timer);
 }
 
 static inline void

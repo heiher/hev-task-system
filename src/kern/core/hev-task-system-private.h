@@ -2,7 +2,7 @@
  ============================================================================
  Name        : hev-task-system-private.h
  Author      : Heiher <r@hev.cc>
- Copyright   : Copyright (c) 2017 - 2020 everyone.
+ Copyright   : Copyright (c) 2017 - 2025 everyone.
  Description :
  ============================================================================
  */
@@ -60,6 +60,9 @@ void hev_task_system_schedule (HevTaskYieldType type);
 void hev_task_system_wakeup_task (HevTask *task);
 void hev_task_system_run_new_task (HevTask *task);
 void hev_task_system_kill_current_task (void);
+
+void hev_task_system_wakeup_task_with_context (HevTaskSystemContext *ctx,
+                                               HevTask *task);
 
 HevTaskSystemContext *hev_task_system_get_context (void);
 

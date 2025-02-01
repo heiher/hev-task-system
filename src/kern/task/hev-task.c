@@ -2,7 +2,7 @@
  ============================================================================
  Name        : hev-task.c
  Author      : Heiher <r@hev.cc>
- Copyright   : Copyright (c) 2017 - 2020 everyone.
+ Copyright   : Copyright (c) 2017 - 2025 everyone.
  Description :
  ============================================================================
  */
@@ -154,19 +154,13 @@ hev_task_yield (HevTaskYieldType type)
 EXPORT_SYMBOL unsigned int
 hev_task_sleep (unsigned int milliseconds)
 {
-    return hev_task_usleep (milliseconds * 1000) / 1000;
-}
-
-EXPORT_SYMBOL unsigned int
-hev_task_usleep (unsigned int microseconds)
-{
     HevTaskSystemContext *ctx;
 
-    if (microseconds == 0)
+    if (milliseconds == 0)
         return 0;
 
     ctx = hev_task_system_get_context ();
-    return hev_task_timer_wait (ctx->timer, microseconds, ctx->current_task);
+    return hev_task_timer_wait (ctx->timer, milliseconds, ctx->current_task);
 }
 
 EXPORT_SYMBOL void
