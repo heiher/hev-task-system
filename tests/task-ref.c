@@ -10,11 +10,14 @@
 #include <assert.h>
 
 #include <hev-task.h>
+#include <hev-task-system.h>
 
 int
 main (int argc, char *argv[])
 {
     HevTask *task;
+
+    hev_task_system_init ();
 
     task = hev_task_new (-1);
     assert (task);
@@ -22,6 +25,8 @@ main (int argc, char *argv[])
 
     hev_task_unref (task);
     hev_task_unref (task);
+
+    hev_task_system_fini ();
 
     return 0;
 }
