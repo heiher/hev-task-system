@@ -7,6 +7,7 @@
  ============================================================================
  */
 
+#define _GNU_SOURCE
 #include <errno.h>
 #include <unistd.h>
 #include <sys/socket.h>
@@ -88,10 +89,14 @@ EXPORT_SYMBOL int
 hev_task_io_socket_accept (int fd, struct sockaddr *addr, socklen_t *addr_len,
                            HevTaskIOYielder yielder, void *yielder_data)
 {
-    int new_fd, nonblock = 1;
+    int new_fd;
 
 retry:
+#if !defined(__linux__)
     new_fd = accept (fd, addr, addr_len);
+#else
+    new_fd = accept4 (fd, addr, addr_len, SOCK_NONBLOCK);
+#endif
     if (new_fd < 0 && errno == EAGAIN) {
         if (yielder) {
             if (yielder (HEV_TASK_WAITIO, yielder_data))
@@ -102,12 +107,16 @@ retry:
         goto retry;
     }
 
+#if !defined(__linux__)
     if (new_fd >= 0) {
+        int nonblock = 1;
+
         if (ioctl (new_fd, FIONBIO, (char *)&nonblock) < 0) {
             close (new_fd);
             return -3;
         }
     }
+#endif
 
     return new_fd;
 }
