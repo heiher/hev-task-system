@@ -7,6 +7,7 @@
  ============================================================================
  */
 
+#define _GNU_SOURCE
 #include <errno.h>
 #include <unistd.h>
 #include <sys/socket.h>
@@ -21,16 +22,24 @@
 EXPORT_SYMBOL int
 hev_task_io_socket_socket (int domain, int type, int protocol)
 {
-    int fd, nonblock = 1;
+    int fd;
+
+#ifdef SOCK_NONBLOCK
+    type |= SOCK_NONBLOCK;
+#endif
 
     fd = socket (domain, type, protocol);
-    if (0 > fd)
-        return fd;
 
-    if (0 > ioctl (fd, FIONBIO, (char *)&nonblock)) {
-        close (fd);
-        return -2;
+#ifndef SOCK_NONBLOCK
+    if (fd >= 0) {
+        int nonblock = 1;
+
+        if (ioctl (fd, FIONBIO, (char *)&nonblock) < 0) {
+            close (fd);
+            return -2;
+        }
     }
+#endif
 
     return fd;
 }
@@ -39,24 +48,33 @@ EXPORT_SYMBOL int
 hev_task_io_socket_socketpair (int domain, int type, int protocol,
                                int socket_vector[2])
 {
-    int nonblock = 1;
+    int res;
 
-    if (0 > socketpair (domain, type, protocol, socket_vector))
-        return -1;
+#ifdef SOCK_NONBLOCK
+    type |= SOCK_NONBLOCK;
+#endif
 
-    if (0 > ioctl (socket_vector[0], FIONBIO, (char *)&nonblock)) {
-        close (socket_vector[0]);
-        close (socket_vector[1]);
-        return -2;
+    res = socketpair (domain, type, protocol, socket_vector);
+
+#ifndef SOCK_NONBLOCK
+    if (res >= 0) {
+        int nonblock = 1;
+
+        if (ioctl (socket_vector[0], FIONBIO, (char *)&nonblock) < 0) {
+            close (socket_vector[0]);
+            close (socket_vector[1]);
+            return -2;
+        }
+
+        if (ioctl (socket_vector[1], FIONBIO, (char *)&nonblock) < 0) {
+            close (socket_vector[0]);
+            close (socket_vector[1]);
+            return -3;
+        }
     }
+#endif
 
-    if (0 > ioctl (socket_vector[1], FIONBIO, (char *)&nonblock)) {
-        close (socket_vector[0]);
-        close (socket_vector[1]);
-        return -3;
-    }
-
-    return 0;
+    return res;
 }
 
 EXPORT_SYMBOL int
@@ -88,10 +106,14 @@ EXPORT_SYMBOL int
 hev_task_io_socket_accept (int fd, struct sockaddr *addr, socklen_t *addr_len,
                            HevTaskIOYielder yielder, void *yielder_data)
 {
-    int new_fd, nonblock = 1;
+    int new_fd;
 
 retry:
+#ifndef SOCK_NONBLOCK
     new_fd = accept (fd, addr, addr_len);
+#else
+    new_fd = accept4 (fd, addr, addr_len, SOCK_NONBLOCK);
+#endif
     if (new_fd < 0 && errno == EAGAIN) {
         if (yielder) {
             if (yielder (HEV_TASK_WAITIO, yielder_data))
@@ -102,12 +124,16 @@ retry:
         goto retry;
     }
 
+#ifndef SOCK_NONBLOCK
     if (new_fd >= 0) {
+        int nonblock = 1;
+
         if (ioctl (new_fd, FIONBIO, (char *)&nonblock) < 0) {
             close (new_fd);
             return -3;
         }
     }
+#endif
 
     return new_fd;
 }
