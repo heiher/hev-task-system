@@ -54,6 +54,7 @@ task_server_entry (void *data)
     /* accept */
     cfd = hev_task_io_socket_accept (fd, NULL, NULL, NULL, NULL);
     assert (cfd >= 0);
+    assert ((fcntl (cfd, F_GETFL) & O_NONBLOCK) == O_NONBLOCK);
 
     assert (hev_task_add_fd (task, cfd, POLLIN | POLLOUT) == 0);
 
