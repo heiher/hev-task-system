@@ -15,6 +15,14 @@
 #include <sys/event.h>
 #include <sys/time.h>
 
+#if defined(__MSYS__)
+#include <io.h>
+#endif
+
+#ifndef get_osfhandle
+#define get_osfhandle
+#endif
+
 #ifndef EVFILT_EXCEPT
 #define EVFILT_EXCEPT (0)
 #endif
@@ -83,7 +91,7 @@ hev_task_io_reactor_setup_event_set (HevTaskIOReactorSetupEvent *event, int fd,
         action = EV_DELETE;
     }
 
-    EV_SET (event, fd, events, action | EV_CLEAR, 0, 0, data);
+    EV_SET (event, get_osfhandle (fd), events, action | EV_CLEAR, 0, 0, data);
 }
 
 static inline int

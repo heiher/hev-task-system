@@ -2,7 +2,7 @@
  ============================================================================
  Name        : hev-task-stack-mmap.c
  Author      : Heiher <r@hev.cc>
- Copyright   : Copyright (c) 2021 everyone.
+ Copyright   : Copyright (c) 2021 - 2025 everyone.
  Description :
  ============================================================================
  */
@@ -17,7 +17,7 @@
 
 #if CONFIG_STACK_BACKEND == STACK_MMAP
 
-#if defined(__APPLE__) && !defined(MAP_STACK)
+#ifndef MAP_STACK
 #define MAP_STACK (0)
 #endif
 
