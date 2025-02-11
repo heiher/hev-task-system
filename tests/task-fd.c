@@ -2,7 +2,7 @@
  ============================================================================
  Name        : task-fd.c
  Author      : Heiher <r@hev.cc>
- Copyright   : Copyright (c) 2018 everyone.
+ Copyright   : Copyright (c) 2018 - 2025 everyone.
  Description : Task FD Test
  ============================================================================
  */
@@ -13,9 +13,9 @@
 #include <assert.h>
 
 #include <hev-task.h>
-#include <hev-task-io.h>
-#include <hev-task-io-pipe.h>
 #include <hev-task-system.h>
+#include <hev-task-io.h>
+#include <hev-task-io-socket.h>
 
 static int fds[2];
 
@@ -55,7 +55,7 @@ main (int argc, char *argv[])
 
     assert (hev_task_system_init () == 0);
 
-    assert (hev_task_io_pipe_pipe (fds) == 0);
+    assert (hev_task_io_socket_socketpair (PF_LOCAL, SOCK_STREAM, 0, fds) == 0);
 
     task = hev_task_new (-1);
     assert (task);

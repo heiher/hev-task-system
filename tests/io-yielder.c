@@ -2,7 +2,7 @@
  ============================================================================
  Name        : io-yielder.c
  Author      : Heiher <r@hev.cc>
- Copyright   : Copyright (c) 2018 everyone.
+ Copyright   : Copyright (c) 2018 - 2025 everyone.
  Description : IO Yielder Test
  ============================================================================
  */
@@ -18,7 +18,7 @@
 #include <hev-task.h>
 #include <hev-task-system.h>
 #include <hev-task-io.h>
-#include <hev-task-io-pipe.h>
+#include <hev-task-io-socket.h>
 
 static int
 task_io_yielder (HevTaskYieldType type, void *data)
@@ -36,7 +36,7 @@ task_entry (void *data)
     char buf[16];
     ssize_t size;
 
-    assert (hev_task_io_pipe_pipe (fds) == 0);
+    assert (hev_task_io_socket_socketpair (PF_LOCAL, SOCK_STREAM, 0, fds) == 0);
     assert (fds[0] >= 0);
     assert (fds[1] >= 0);
 
@@ -45,6 +45,7 @@ task_entry (void *data)
     size = hev_task_io_read (fds[0], buf, 16, task_io_yielder, NULL);
     assert (size == -2);
 
+    assert (hev_task_del_fd (task, fds[0]) == 0);
     close (fds[0]);
     close (fds[1]);
 }

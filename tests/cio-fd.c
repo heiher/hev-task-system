@@ -2,7 +2,7 @@
  ============================================================================
  Name        : cio-fd.c
  Author      : hev <r@hev.cc>
- Copyright   : Copyright (c) 2024 hev.
+ Copyright   : Copyright (c) 2024 - 2025 hev.
  Description : CIO Fd Test
  ============================================================================
  */
@@ -12,7 +12,7 @@
 
 #include <hev-task.h>
 #include <hev-task-io.h>
-#include <hev-task-io-pipe.h>
+#include <hev-task-io-socket.h>
 #include <hev-task-cio-fd.h>
 #include <hev-task-system.h>
 
@@ -57,13 +57,13 @@ task_entry (void *data)
     ssize_t size;
     int res;
 
-    res = hev_task_io_pipe_pipe (&fds1[0]);
+    res = hev_task_io_socket_socketpair (PF_LOCAL, SOCK_STREAM, 0, &fds1[0]);
     assert (res == 0);
-    res = hev_task_io_pipe_pipe (&fds1[2]);
+    res = hev_task_io_socket_socketpair (PF_LOCAL, SOCK_STREAM, 0, &fds1[2]);
     assert (res == 0);
-    res = hev_task_io_pipe_pipe (&fds2[0]);
+    res = hev_task_io_socket_socketpair (PF_LOCAL, SOCK_STREAM, 0, &fds2[0]);
     assert (res == 0);
-    res = hev_task_io_pipe_pipe (&fds2[2]);
+    res = hev_task_io_socket_socketpair (PF_LOCAL, SOCK_STREAM, 0, &fds2[2]);
     assert (res == 0);
 
     assert (hev_task_add_fd (task, fds1[3], POLLOUT) == 0);
@@ -104,6 +104,11 @@ task_entry (void *data)
     assert (hev_task_cio_readv_dgram (a, &iov, 1, NULL, NULL, NULL) == -1);
     assert (hev_task_cio_write_dgram (a, buf1, 64, NULL, NULL, NULL) == -1);
     assert (hev_task_cio_writev_dgram (a, &iov, 1, NULL, NULL, NULL) == -1);
+
+    assert (hev_task_del_fd (task, fds1[3]) == 0);
+    assert (hev_task_del_fd (task, fds2[3]) == 0);
+    assert (hev_task_del_fd (task, fds1[0]) == 0);
+    assert (hev_task_del_fd (task, fds2[0]) == 0);
 
     hev_object_unref (HEV_OBJECT (a));
     hev_object_unref (HEV_OBJECT (b));

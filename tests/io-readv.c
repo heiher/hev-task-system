@@ -2,7 +2,7 @@
  ============================================================================
  Name        : io-readv.c
  Author      : Heiher <r@hev.cc>
- Copyright   : Copyright (c) 2018 everyone.
+ Copyright   : Copyright (c) 2018 - 2025 everyone.
  Description : IO ReadV Test
  ============================================================================
  */
@@ -14,7 +14,7 @@
 #include <hev-task.h>
 #include <hev-task-system.h>
 #include <hev-task-io.h>
-#include <hev-task-io-pipe.h>
+#include <hev-task-io-socket.h>
 
 static void
 task_entry (void *data)
@@ -27,7 +27,7 @@ task_entry (void *data)
     ssize_t size;
     struct iovec iov[2];
 
-    assert (hev_task_io_pipe_pipe (fds) == 0);
+    assert (hev_task_io_socket_socketpair (PF_LOCAL, SOCK_STREAM, 0, fds) == 0);
 
     flags = fcntl (fds[1], F_GETFL);
     assert (flags >= 0);
@@ -43,6 +43,7 @@ task_entry (void *data)
     size = hev_task_io_readv (fds[0], iov, 2, NULL, NULL);
     assert (size >= 0);
 
+    assert (hev_task_del_fd (task, fds[0]) == 0);
     close (fds[0]);
     close (fds[1]);
 }
