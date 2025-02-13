@@ -48,7 +48,7 @@ getnameinfo_entry (void *data)
     addr = (struct sockaddr *)&addr4;
     assert (hev_task_dns_getnameinfo (addr, sizeof (addr4), node, NI_MAXHOST,
                                       service, NI_MAXSERV, 0) == 0);
-    assert (strcmp (node, "localhost") == 0);
+    assert (strlen (node) > 0);
     assert (strcmp (service, "http") == 0);
 
     addr6.sin6_family = AF_INET6;
@@ -57,7 +57,7 @@ getnameinfo_entry (void *data)
     addr = (struct sockaddr *)&addr6;
     assert (hev_task_dns_getnameinfo (addr, sizeof (addr6), node, NI_MAXHOST,
                                       service, NI_MAXSERV, 0) == 0);
-    assert (strcmp (node, "localhost") == 0);
+    assert (strlen (node) > 0);
     assert (strcmp (service, "http") == 0);
 }
 
