@@ -42,6 +42,11 @@ task_splice_entry (void *data)
 
     hev_task_cio_splice (a, b, 2048, NULL, NULL);
 
+    assert (hev_task_del_fd (task, fds1[1]) == 0);
+    assert (hev_task_del_fd (task, fds2[1]) == 0);
+    assert (hev_task_del_fd (task, fds1[2]) == 0);
+    assert (hev_task_del_fd (task, fds2[2]) == 0);
+
     hev_object_unref (HEV_OBJECT (a));
     hev_object_unref (HEV_OBJECT (b));
 }

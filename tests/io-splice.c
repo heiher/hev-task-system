@@ -2,7 +2,7 @@
  ============================================================================
  Name        : io-splice.c
  Author      : Heiher <r@hev.cc>
- Copyright   : Copyright (c) 2018 everyone.
+ Copyright   : Copyright (c) 2018 - 2025 everyone.
  Description : IO Splice Test
  ============================================================================
  */
@@ -32,6 +32,9 @@ task_splice_entry (void *data)
     assert (hev_task_add_fd (task, fds2[0], POLLIN | POLLOUT) == 0);
 
     hev_task_io_splice (fds1[1], fds1[1], fds2[0], fds2[0], 2048, NULL, NULL);
+
+    assert (hev_task_del_fd (task, fds1[1]) == 0);
+    assert (hev_task_del_fd (task, fds2[0]) == 0);
 
     close (fds1[1]);
     close (fds2[0]);
@@ -63,6 +66,9 @@ task_entry (void *data)
     assert (size == 64);
 
     assert (memcmp (buf1, buf2, 64) == 0);
+
+    assert (hev_task_del_fd (task, fds1[0]) == 0);
+    assert (hev_task_del_fd (task, fds2[1]) == 0);
 
     close (fds1[0]);
     close (fds2[1]);

@@ -2,7 +2,7 @@
  ============================================================================
  Name        : cio-socket.c
  Author      : hev <r@hev.cc>
- Copyright   : Copyright (c) 2024 hev.
+ Copyright   : Copyright (c) 2024 - 2025 hev.
  Description : CIO Socket Test
  ============================================================================
  */
@@ -40,6 +40,9 @@ task_splice_entry (void *data)
 
     hev_task_cio_splice (a, b, 2048, NULL, NULL);
 
+    assert (hev_task_del_fd (task, fds1[1]) == 0);
+    assert (hev_task_del_fd (task, fds2[0]) == 0);
+
     hev_object_unref (HEV_OBJECT (a));
     hev_object_unref (HEV_OBJECT (b));
 }
@@ -53,6 +56,7 @@ task_entry (void *data)
     char buf1[64];
     char buf2[64];
     ssize_t size;
+    int fds3[2];
     int res;
 
     res = hev_task_io_socket_socketpair (PF_LOCAL, SOCK_STREAM, 0, fds1);
@@ -92,18 +96,21 @@ task_entry (void *data)
     assert (size == 64);
     assert (memcmp (buf1, buf2, 64) == 0);
 
+    assert (hev_task_del_fd (task, fds1[0]) == 0);
+    assert (hev_task_del_fd (task, fds2[1]) == 0);
+
     hev_object_unref (HEV_OBJECT (a));
     hev_object_unref (HEV_OBJECT (b));
 
-    res = hev_task_io_socket_socketpair (PF_LOCAL, SOCK_DGRAM, 0, fds1);
+    res = hev_task_io_socket_socketpair (PF_LOCAL, SOCK_DGRAM, 0, fds3);
     assert (res == 0);
 
-    assert (hev_task_add_fd (task, fds1[0], POLLIN) == 0);
-    assert (hev_task_add_fd (task, fds1[1], POLLOUT) == 0);
+    assert (hev_task_add_fd (task, fds3[0], POLLIN) == 0);
+    assert (hev_task_add_fd (task, fds3[1], POLLOUT) == 0);
 
-    a = HEV_TASK_CIO (hev_task_cio_socket_new (PF_LOCAL, fds1[0]));
+    a = HEV_TASK_CIO (hev_task_cio_socket_new (PF_LOCAL, fds3[0]));
     assert (a != NULL);
-    b = HEV_TASK_CIO (hev_task_cio_socket_new (PF_LOCAL, fds1[1]));
+    b = HEV_TASK_CIO (hev_task_cio_socket_new (PF_LOCAL, fds3[1]));
     assert (b != NULL);
 
     size = hev_task_cio_write_dgram (a, buf1, 64, NULL, NULL, NULL);
@@ -121,6 +128,9 @@ task_entry (void *data)
     size = hev_task_cio_readv_dgram (b, &iov, 1, NULL, NULL, NULL);
     assert (size == 64);
     assert (memcmp (buf1, buf2, 64) == 0);
+
+    assert (hev_task_del_fd (task, fds3[0]) == 0);
+    assert (hev_task_del_fd (task, fds3[1]) == 0);
 
     hev_object_unref (HEV_OBJECT (a));
     hev_object_unref (HEV_OBJECT (b));

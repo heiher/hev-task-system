@@ -2,7 +2,7 @@
  ============================================================================
  Name        : io-socket.c
  Author      : Heiher <r@hev.cc>
- Copyright   : Copyright (c) 2018 everyone.
+ Copyright   : Copyright (c) 2018 - 2025 everyone.
  Description : IO Socket Test
  ============================================================================
  */
@@ -80,6 +80,9 @@ task_server_entry (void *data)
     /* recv */
     hev_task_io_socket_recv (cfd, buf, strlen (msg), 0, NULL, NULL);
 
+    assert (hev_task_del_fd (task, cfd) == 0);
+    assert (hev_task_del_fd (task, fd) == 0);
+
     close (cfd);
     close (fd);
 }
@@ -131,6 +134,8 @@ task_client_entry (void *data)
 
     /* send */
     hev_task_io_socket_send (fd, msg, strlen (msg), 0, NULL, NULL);
+
+    assert (hev_task_del_fd (task, fd) == 0);
 
     close (fd);
 }
