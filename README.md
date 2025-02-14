@@ -2,9 +2,9 @@
 
 [![status](https://github.com/heiher/hev-task-system/actions/workflows/build.yaml/badge.svg?branch=master&event=push)](https://github.com/heiher/hev-task-system)
 
-HevTaskSystem is a simple, lightweight multi-task system (coroutines) for Unix.
+HevTaskSystem is a simple, lightweight multi-task system (coroutines).
 
-The task system is executed within a Unix process/thread. In task system, you
+The task system is executed within a native process/thread. In task system, you
 can create many tasks and attach them to the task system. When a task yields or
 is blocked by I/O, the scheduler will pick a suitable task from running list and
 switch to it. Memory space, file descriptors, and other resources are shared among
@@ -23,7 +23,7 @@ and perform I/O operations in synchronized mode.
 * Slice-based memory allocator.
 * Call on new stack.
 * Multi-thread support.
-* Multi-platform support. (Linux/BSD/macOS)
+* Multi-platform support. (Linux/BSD/macOS/Windows)
 
 ## How to Build
 
@@ -72,6 +72,16 @@ git clone https://gitlab.com/hev/hev-task-system
 cd hev-task-system
 # will generate HevTaskSystem.xcframework
 ./build-apple.sh
+```
+
+### Windows (MSYS2)
+
+```bash
+export MSYS=winsymlinks:native
+git clone https://gitlab.com/hev/hev-task-system
+cd hev-task-system
+# depends on mingw-w64-clang-x86_64-libkqueue
+make CFLAGS="-I/clang64/include/kqueue" LFLAGS="-L/clang64/lib -lkqueue"
 ```
 
 ## Demos
