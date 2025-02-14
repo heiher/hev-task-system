@@ -88,6 +88,7 @@ cd hev-task-system
 ## Contributors
 
 * **hev** - https://hev.cc
+* **Mike Wang** - https://github.com/MikeWang000000
 
 ## License
 
