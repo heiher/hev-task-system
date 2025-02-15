@@ -47,12 +47,6 @@ enum _HevTaskIOReactorOperation
 };
 
 static inline int
-hev_task_io_reactor_open (void)
-{
-    return kqueue ();
-}
-
-static inline int
 hev_task_io_reactor_wait (HevTaskIOReactor *reactor,
                           HevTaskIOReactorWaitEvent *events, int count,
                           int timeout)

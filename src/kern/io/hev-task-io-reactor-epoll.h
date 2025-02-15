@@ -41,12 +41,6 @@ struct _HevTaskIOReactorSetupEvent
 };
 
 static inline int
-hev_task_io_reactor_open (void)
-{
-    return epoll_create (128);
-}
-
-static inline int
 hev_task_io_reactor_wait (HevTaskIOReactor *self,
                           HevTaskIOReactorWaitEvent *events, int count,
                           int timeout)
