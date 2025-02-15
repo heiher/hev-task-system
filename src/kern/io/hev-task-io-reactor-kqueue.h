@@ -137,7 +137,15 @@ hev_task_io_reactor_setup_event_gen (HevTaskIOReactorSetupEvent *events, int fd,
 static inline unsigned int
 hev_task_io_reactor_wait_event_get_events (HevTaskIOReactorWaitEvent *event)
 {
-    return event->filter;
+    switch (event->filter) {
+    case HEV_TASK_IO_REACTOR_EV_RO:
+        return POLLIN;
+    case HEV_TASK_IO_REACTOR_EV_WO:
+        return POLLOUT;
+    case HEV_TASK_IO_REACTOR_EV_ER:
+    default:
+        return POLLERR;
+    }
 }
 
 static inline void *
