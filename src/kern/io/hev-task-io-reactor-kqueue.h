@@ -15,14 +15,6 @@
 #include <sys/event.h>
 #include <sys/time.h>
 
-#if defined(__MSYS__)
-#include <io.h>
-#endif
-
-#ifndef get_osfhandle
-#define get_osfhandle
-#endif
-
 #ifndef EVFILT_EXCEPT
 #define EVFILT_EXCEPT (0)
 #endif
@@ -47,7 +39,7 @@ enum _HevTaskIOReactorOperation
 };
 
 static inline int
-hev_task_io_reactor_wait (HevTaskIOReactor *reactor,
+hev_task_io_reactor_wait (HevTaskIOReactor *self,
                           HevTaskIOReactorWaitEvent *events, int count,
                           int timeout)
 {
@@ -60,7 +52,7 @@ hev_task_io_reactor_wait (HevTaskIOReactor *reactor,
         tsp = &ts;
     }
 
-    return kevent (reactor->fd, NULL, 0, events, count, tsp);
+    return kevent (self->fd, NULL, 0, events, count, tsp);
 }
 
 static inline void
@@ -79,7 +71,7 @@ hev_task_io_reactor_setup_event_set (HevTaskIOReactorSetupEvent *event, int fd,
         action = EV_DELETE;
     }
 
-    EV_SET (event, get_osfhandle (fd), events, action | EV_CLEAR, 0, 0, data);
+    EV_SET (event, fd, events, action | EV_CLEAR, 0, 0, data);
 }
 
 static inline int

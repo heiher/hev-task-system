@@ -80,8 +80,7 @@ cd hev-task-system
 export MSYS=winsymlinks:native
 git clone https://gitlab.com/hev/hev-task-system
 cd hev-task-system
-# depends on mingw-w64-clang-x86_64-libkqueue
-make CFLAGS="-I/clang64/include/kqueue" LFLAGS="-L/clang64/lib -lkqueue"
+make LFLAGS="-lmsys-2.0 -lws2_32"
 ```
 
 ## Demos

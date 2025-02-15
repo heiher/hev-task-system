@@ -16,10 +16,16 @@ typedef enum _HevTaskIOReactorOperation HevTaskIOReactorOperation;
 
 struct _HevTaskIOReactor
 {
-    int fd;
+    union
+    {
+        int fd;
+        void *handle;
+    };
 };
 
-#if defined(__linux__)
+#if defined(__MSYS__)
+#include "kern/io/hev-task-io-reactor-wsa.h"
+#elif defined(__linux__)
 #include "kern/io/hev-task-io-reactor-epoll.h"
 #else
 #include "kern/io/hev-task-io-reactor-kqueue.h"

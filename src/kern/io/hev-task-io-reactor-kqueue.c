@@ -7,7 +7,7 @@
  ============================================================================
  */
 
-#if !defined(__linux__)
+#if !defined(__linux__) && !defined(__MSYS__)
 
 #include <fcntl.h>
 #include <unistd.h>
@@ -55,20 +55,20 @@ hev_task_io_reactor_destroy (HevTaskIOReactor *self)
 }
 
 int
-hev_task_io_reactor_setup (HevTaskIOReactor *reactor,
+hev_task_io_reactor_setup (HevTaskIOReactor *self,
                            HevTaskIOReactorSetupEvent *events, int count)
 {
     int i, res = -1;
 
     for (i = 0; i < count; i++) {
         if (!(events[i].flags & EV_DELETE)) {
-            res = kevent (reactor->fd, &events[i], count - i, NULL, 0, NULL);
+            res = kevent (self->fd, &events[i], count - i, NULL, 0, NULL);
             break;
         }
-        res &= kevent (reactor->fd, &events[i], 1, NULL, 0, NULL);
+        res &= kevent (self->fd, &events[i], 1, NULL, 0, NULL);
     }
 
     return res;
 }
 
-#endif /* !defined(__linux__) */
+#endif /* !defined(__linux__) && !defined(__MSYS__) */
