@@ -29,14 +29,8 @@
 
 #define HEV_TASK_IO_REACTOR_EVENT_GEN_MAX (6)
 
-typedef struct _HevTaskIOReactorKQueue HevTaskIOReactorKQueue;
 typedef struct kevent HevTaskIOReactorSetupEvent;
 typedef struct kevent HevTaskIOReactorWaitEvent;
-
-struct _HevTaskIOReactorKQueue
-{
-    HevTaskIOReactor base;
-};
 
 enum _HevTaskIOReactorEvents
 {
