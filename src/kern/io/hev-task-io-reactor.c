@@ -2,7 +2,7 @@
  ============================================================================
  Name        : hev-task-io-reactor.c
  Author      : Heiher <r@hev.cc>
- Copyright   : Copyright (c) 2018 - 2022 everyone.
+ Copyright   : Copyright (c) 2018 - 2025 everyone.
  Description : I/O Reactor
  ============================================================================
  */
@@ -50,10 +50,4 @@ hev_task_io_reactor_destroy (HevTaskIOReactor *self)
 {
     close (self->fd);
     hev_free (self);
-}
-
-int
-hev_task_io_reactor_get_fd (HevTaskIOReactor *self)
-{
-    return self->fd;
 }

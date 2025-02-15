@@ -2,7 +2,7 @@
  ============================================================================
  Name        : hev-task-io-reactor.h
  Author      : Heiher <r@hev.cc>
- Copyright   : Copyright (c) 2018 - 2022 everyone.
+ Copyright   : Copyright (c) 2018 - 2025 everyone.
  Description : I/O Reactor
  ============================================================================
  */
@@ -27,8 +27,6 @@ struct _HevTaskIOReactor
 
 HevTaskIOReactor *hev_task_io_reactor_new (void);
 void hev_task_io_reactor_destroy (HevTaskIOReactor *self);
-
-int hev_task_io_reactor_get_fd (HevTaskIOReactor *self);
 
 int hev_task_io_reactor_setup (HevTaskIOReactor *self,
                                HevTaskIOReactorSetupEvent *events, int count);
