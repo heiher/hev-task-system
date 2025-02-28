@@ -363,17 +363,12 @@ hev_task_io_splice (int fd_a_i, int fd_a_o, int fd_b_i, int fd_b_o,
         if (res_b >= 0)
             res_b = task_io_splice (&splicer_b, fd_b_i, fd_a_o);
 
-        if (fd_a_i == fd_a_o || fd_b_i == fd_b_o) {
-            if (res_f < 0 || res_b < 0)
-                break;
-        } else {
-            if (res_f < 0 && res_b < 0)
-                break;
-        }
         if (res_f > 0 || res_b > 0)
             type = HEV_TASK_YIELD;
-        else
+        else if ((res_f | res_b) == 0)
             type = HEV_TASK_WAITIO;
+        else
+            break;
 
         if (yielder) {
             if (yielder (type, yielder_data))
