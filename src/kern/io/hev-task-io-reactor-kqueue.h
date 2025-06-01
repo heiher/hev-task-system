@@ -122,7 +122,6 @@ hev_task_io_reactor_wait_event_get_events (HevTaskIOReactorWaitEvent *event)
         return POLLIN;
     case HEV_TASK_IO_REACTOR_EV_WO:
         return POLLOUT;
-    case HEV_TASK_IO_REACTOR_EV_ER:
     default:
         return POLLERR;
     }
