@@ -165,6 +165,15 @@ _hev_task_cio_socket_ctrl (HevTaskCIO *base, int ctrl, long larg, void *parg)
         return 0;
     case HEV_TASK_CIO_CTRL_GET_FD:
         return self->fd;
+    case HEV_TASK_CIO_CTRL_SHUTDOWN:
+        switch (larg) {
+        case 0:
+            return shutdown (self->fd, SHUT_RD);
+        case 1:
+            return shutdown (self->fd, SHUT_WR);
+        default:
+            return shutdown (self->fd, SHUT_RDWR);
+        }
     }
 
     return -1;
