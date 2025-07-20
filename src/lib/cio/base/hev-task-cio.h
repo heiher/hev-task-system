@@ -54,6 +54,7 @@ enum _HevTaskCIOCtrl
 {
     HEV_TASK_CIO_CTRL_FLUSH,
     HEV_TASK_CIO_CTRL_GET_FD,
+    HEV_TASK_CIO_CTRL_SHUTDOWN,
 };
 
 /**

@@ -457,6 +457,9 @@ task_cio_splice (HevCircularBuffer *buf, HevTaskCIO *i, HevTaskCIO *o)
             kptr->ctrl (o, HEV_TASK_CIO_CTRL_FLUSH, 0, NULL);
             res = 1;
         }
+    } else if (res < 0) {
+        HevTaskCIOClass *kptr = HEV_OBJECT_GET_CLASS (o);
+        kptr->ctrl (o, HEV_TASK_CIO_CTRL_SHUTDOWN, 1, NULL);
     }
 
     return res;
