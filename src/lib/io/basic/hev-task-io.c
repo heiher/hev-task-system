@@ -22,6 +22,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
+#include <sys/socket.h>
 
 #include "kern/task/hev-task.h"
 #include "lib/io/buffer/hev-circular-buffer.h"
@@ -278,6 +279,8 @@ task_io_splice (HevTaskIOSplicer *self, int fd_in, int fd_out)
             res = 1;
             self->wlen -= s;
         }
+    } else if (res < 0) {
+        shutdown (fd_out, SHUT_WR);
     }
 
     return res;
@@ -333,6 +336,8 @@ task_io_splice (HevTaskIOSplicer *self, int fd_in, int fd_out)
             res = 1;
             hev_circular_buffer_read_finish (self->buf, s);
         }
+    } else if (res < 0) {
+        shutdown (fd_out, SHUT_WR);
     }
 
     return res;
