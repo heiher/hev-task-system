@@ -365,7 +365,7 @@ hev_task_io_splice (int fd_a_i, int fd_a_o, int fd_b_i, int fd_b_o,
 
         if (res_f > 0 || res_b > 0)
             type = HEV_TASK_YIELD;
-        else if ((res_f | res_b) == 0)
+        else if ((res_f & res_b) == 0)
             type = HEV_TASK_WAITIO;
         else
             break;
