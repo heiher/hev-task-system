@@ -497,12 +497,12 @@ hev_task_cio_splice (HevTaskCIO *a, HevTaskCIO *b, size_t buf_size,
         if (res_b >= 0)
             res_b = task_cio_splice (buf_b, b, a);
 
-        if (res_f < 0 || res_b < 0)
-            break;
         if (res_f > 0 || res_b > 0)
             type = HEV_TASK_YIELD;
-        else
+        else if ((res_f & res_b) == 0)
             type = HEV_TASK_WAITIO;
+        else
+            break;
 
         if (yielder) {
             if (yielder (type, data))
