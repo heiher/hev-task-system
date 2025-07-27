@@ -80,7 +80,7 @@ cd hev-task-system
 export MSYS=winsymlinks:native
 git clone https://gitlab.com/hev/hev-task-system
 cd hev-task-system
-make LFLAGS="-lmsys-2.0 -lws2_32"
+make
 ```
 
 ## Demos
