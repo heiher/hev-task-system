@@ -139,6 +139,36 @@ hev_task_del_fd (HevTask *self, int fd)
     return hev_task_io_reactor_setup (reactor, revents, count);
 }
 
+EXPORT_SYMBOL int
+hev_task_add_whandle (HevTask *self, void *handle)
+{
+    HevTaskIOReactor *reactor;
+    HevTaskIOReactorSetupEvent revents[HEV_TASK_IO_REACTOR_EVENT_GEN_MAX];
+    int count;
+
+    reactor = hev_task_system_get_context ()->reactor;
+    count = hev_task_io_reactor_setup_event_whandle_gen (
+        revents, handle, HEV_TASK_IO_REACTOR_OP_ADD, &self->sched_entity);
+    if (count < 0)
+        return -1;
+    return hev_task_io_reactor_setup (reactor, revents, count);
+}
+
+EXPORT_SYMBOL int
+hev_task_del_whandle (HevTask *self, void *handle)
+{
+    HevTaskIOReactor *reactor;
+    HevTaskIOReactorSetupEvent revents[HEV_TASK_IO_REACTOR_EVENT_GEN_MAX];
+    int count;
+
+    reactor = hev_task_system_get_context ()->reactor;
+    count = hev_task_io_reactor_setup_event_whandle_gen (
+        revents, handle, HEV_TASK_IO_REACTOR_OP_DEL, NULL);
+    if (count < 0)
+        return -1;
+    return hev_task_io_reactor_setup (reactor, revents, count);
+}
+
 EXPORT_SYMBOL void
 hev_task_wakeup (HevTask *task)
 {

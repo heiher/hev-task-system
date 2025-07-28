@@ -185,6 +185,33 @@ int hev_task_mod_fd (HevTask *self, int fd, unsigned int events);
 int hev_task_del_fd (HevTask *self, int fd);
 
 /**
+ * hev_task_add_whandle:
+ * @self: a #HevTask
+ * @handle: a waitable handle
+ *
+ * Add a waitable handle to I/O reactor of task system. The task system will
+ * wake up the task when signaled.
+ *
+ * Returns: When successful, returns zero. When an error occurs, returns -1.
+ *
+ * Since: 5.8
+ */
+int hev_task_add_whandle (HevTask *self, void *handle);
+
+/**
+ * hev_task_del_whandle:
+ * @self: a #HevTask
+ * @handle: a waitable handle
+ *
+ * Remove a waitable handle from I/O reactor of task system.
+ *
+ * Returns: When successful, returns zero. When an error occurs, returns -1.
+ *
+ * Since: 5.8
+ */
+int hev_task_del_whandle (HevTask *self, void *handle);
+
+/**
  * hev_task_wakeup:
  * @self: a #HevTask
  *
