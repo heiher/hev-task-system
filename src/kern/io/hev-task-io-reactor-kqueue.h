@@ -114,6 +114,15 @@ hev_task_io_reactor_setup_event_fd_gen (HevTaskIOReactorSetupEvent *events,
     return count;
 }
 
+static inline int
+hev_task_io_reactor_setup_event_whandle_gen (HevTaskIOReactorSetupEvent *events,
+                                             void *handle,
+                                             HevTaskIOReactorOperation op,
+                                             void *data)
+{
+    return -1;
+}
+
 static inline unsigned int
 hev_task_io_reactor_wait_event_get_events (HevTaskIOReactorWaitEvent *event)
 {
