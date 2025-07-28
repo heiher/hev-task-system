@@ -1,9 +1,9 @@
 /*
  ============================================================================
- Name        : hev-task-io-reactor-wsa.c
+ Name        : hev-task-io-reactor-iocp.c
  Author      : hev <r@hev.cc>
  Copyright   : Copyright (c) 2025 hev
- Description : I/O Reactor WSA
+ Description : I/O Reactor IOCP
  ============================================================================
  */
 
@@ -18,9 +18,9 @@
 
 #include "kern/io/hev-task-io-reactor.h"
 
-typedef struct _HevTaskIOReactorWSANode HevTaskIOReactorWSANode;
+typedef struct _HevTaskIOReactorIOCPNode HevTaskIOReactorIOCPNode;
 
-struct _HevTaskIOReactorWSANode
+struct _HevTaskIOReactorIOCPNode
 {
     HevRBTreeNode base;
 
@@ -35,13 +35,13 @@ struct _HevTaskIOReactorWSANode
     void *whandle;
 };
 
-static HevTaskIOReactorWSANode *
-hev_task_io_reactor_wsa_node_new (void)
+static HevTaskIOReactorIOCPNode *
+hev_task_io_reactor_iocp_node_new (void)
 {
-    HevTaskIOReactorWSANode *node;
+    HevTaskIOReactorIOCPNode *node;
     atomic_int *rcp;
 
-    node = calloc (1, sizeof (HevTaskIOReactorWSANode));
+    node = calloc (1, sizeof (HevTaskIOReactorIOCPNode));
     if (!node)
         return NULL;
 
@@ -52,7 +52,7 @@ hev_task_io_reactor_wsa_node_new (void)
 }
 
 static void
-hev_task_io_reactor_wsa_node_ref (HevTaskIOReactorWSANode *node)
+hev_task_io_reactor_iocp_node_ref (HevTaskIOReactorIOCPNode *node)
 {
     atomic_int *rcp = (atomic_int *)&node->ref_count;
 
@@ -60,7 +60,7 @@ hev_task_io_reactor_wsa_node_ref (HevTaskIOReactorWSANode *node)
 }
 
 static void
-hev_task_io_reactor_wsa_node_unref (HevTaskIOReactorWSANode *node)
+hev_task_io_reactor_iocp_node_unref (HevTaskIOReactorIOCPNode *node)
 {
     atomic_int *rcp = (atomic_int *)&node->ref_count;
     int rc;
@@ -74,15 +74,15 @@ hev_task_io_reactor_wsa_node_unref (HevTaskIOReactorWSANode *node)
 }
 
 static int
-hev_task_io_reactor_wsa_insert (HevTaskIOReactorWSA *self,
-                                HevTaskIOReactorWSANode *node)
+hev_task_io_reactor_iocp_insert (HevTaskIOReactorIOCP *self,
+                                 HevTaskIOReactorIOCPNode *node)
 {
     HevRBTreeNode **new = &self->tree.root, *parent = NULL;
 
     while (*new) {
-        HevTaskIOReactorWSANode *this;
+        HevTaskIOReactorIOCPNode *this;
 
-        this = container_of (*new, HevTaskIOReactorWSANode, base);
+        this = container_of (*new, HevTaskIOReactorIOCPNode, base);
         parent = *new;
 
         if (this->handle < node->handle)
@@ -99,15 +99,15 @@ hev_task_io_reactor_wsa_insert (HevTaskIOReactorWSA *self,
     return 0;
 }
 
-static HevTaskIOReactorWSANode *
-hev_task_io_reactor_wsa_lookup (HevTaskIOReactorWSA *self, long handle)
+static HevTaskIOReactorIOCPNode *
+hev_task_io_reactor_iocp_lookup (HevTaskIOReactorIOCP *self, long handle)
 {
     HevRBTreeNode *node = self->tree.root;
 
     while (node) {
-        HevTaskIOReactorWSANode *this;
+        HevTaskIOReactorIOCPNode *this;
 
-        this = container_of (node, HevTaskIOReactorWSANode, base);
+        this = container_of (node, HevTaskIOReactorIOCPNode, base);
 
         if (this->handle < handle)
             node = node->left;
@@ -121,113 +121,123 @@ hev_task_io_reactor_wsa_lookup (HevTaskIOReactorWSA *self, long handle)
 }
 
 static VOID CALLBACK
-hev_task_io_reactor_wsa_handler (void *data, BOOLEAN fired)
+hev_task_io_reactor_iocp_handler (void *data, BOOLEAN fired)
 {
-    HevTaskIOReactorWSANode *node = data;
-    WSANETWORKEVENTS events;
+    HevTaskIOReactorIOCPNode *node = data;
     int res;
 
     if (fired)
         return;
 
-    res = WSAEnumNetworkEvents (node->handle, node->ehandle, &events);
-    if (res || !events.lNetworkEvents)
-        return;
+    if (node->handle != (long)node->ehandle) {
+        WSANETWORKEVENTS events;
 
-    hev_task_io_reactor_wsa_node_ref (node);
-    node->events = events.lNetworkEvents;
+        res = WSAEnumNetworkEvents (node->handle, node->ehandle, &events);
+        if (res || !events.lNetworkEvents)
+            return;
+        node->events = events.lNetworkEvents;
+    }
 
+    hev_task_io_reactor_iocp_node_ref (node);
     res = PostQueuedCompletionStatus (node->ihandle, 1, 0, (LPOVERLAPPED)node);
     if (!res)
-        hev_task_io_reactor_wsa_node_unref (node);
+        hev_task_io_reactor_iocp_node_unref (node);
 }
 
 static int
-hev_task_io_reactor_wsa_add (HevTaskIOReactorWSA *self,
-                             HevTaskIOReactorSetupEvent *event)
+hev_task_io_reactor_iocp_add (HevTaskIOReactorIOCP *self,
+                              HevTaskIOReactorSetupEvent *event)
 {
-    HevTaskIOReactorWSANode *node;
-    long events;
+    HevTaskIOReactorIOCPNode *node;
     int res;
 
-    node = hev_task_io_reactor_wsa_lookup (self, event->handle);
+    node = hev_task_io_reactor_iocp_lookup (self, event->handle);
     if (node)
         goto exit;
 
-    node = hev_task_io_reactor_wsa_node_new ();
+    node = hev_task_io_reactor_iocp_node_new ();
     if (!node)
         goto exit;
 
-    node->ehandle = CreateEventA (NULL, FALSE, FALSE, NULL);
-    if (!node->ehandle)
-        goto free_node;
+    if (event->events) {
+        long events;
 
-    events = event->events | HEV_TASK_IO_REACTOR_EV_ER;
-    res = WSAEventSelect (event->handle, node->ehandle, events);
-    if (res)
-        goto free_event;
+        node->ehandle = CreateEventA (NULL, FALSE, FALSE, NULL);
+        if (!node->ehandle)
+            goto free_node;
+
+        events = event->events | HEV_TASK_IO_REACTOR_EV_ER;
+        res = WSAEventSelect (event->handle, node->ehandle, events);
+        if (res)
+            goto free_event;
+    } else {
+        node->ehandle = (void *)event->handle;
+    }
+
+    node->data = event->data;
+    node->handle = event->handle;
+    node->ihandle = self->base.handle;
 
     res = RegisterWaitForSingleObject (&node->whandle, node->ehandle,
-                                       hev_task_io_reactor_wsa_handler, node,
+                                       hev_task_io_reactor_iocp_handler, node,
                                        INFINITE, 0);
     if (!res)
         goto free_event;
 
-    node->handle = event->handle;
-    node->data = event->data;
-    node->ihandle = self->base.handle;
-    hev_task_io_reactor_wsa_insert (self, node);
+    hev_task_io_reactor_iocp_insert (self, node);
 
     return 0;
 
 free_event:
-    WSACloseEvent (node->ehandle);
+    if (event->handle != (long)node->ehandle)
+        WSACloseEvent (node->ehandle);
 free_node:
-    hev_task_io_reactor_wsa_node_unref (node);
+    hev_task_io_reactor_iocp_node_unref (node);
 exit:
     return -1;
 }
 
 static int
-hev_task_io_reactor_wsa_mod (HevTaskIOReactorWSA *self,
-                             HevTaskIOReactorSetupEvent *event)
+hev_task_io_reactor_iocp_mod (HevTaskIOReactorIOCP *self,
+                              HevTaskIOReactorSetupEvent *event)
 {
-    HevTaskIOReactorWSANode *node;
-    long events;
-    int res;
+    HevTaskIOReactorIOCPNode *node;
 
-    node = hev_task_io_reactor_wsa_lookup (self, event->handle);
+    node = hev_task_io_reactor_iocp_lookup (self, event->handle);
     if (!node)
         return -1;
 
-    events = event->events | HEV_TASK_IO_REACTOR_EV_ER;
-    res = WSAEventSelect (node->handle, node->ehandle, events);
-    if (res)
-        return -1;
+    if (node->handle != (long)node->ehandle && event->events) {
+        long events = event->events | HEV_TASK_IO_REACTOR_EV_ER;
+        int res = WSAEventSelect (node->handle, node->ehandle, events);
+        if (res)
+            return -1;
+    }
 
     return 0;
 }
 
 static int
-hev_task_io_reactor_wsa_del (HevTaskIOReactorWSA *self,
-                             HevTaskIOReactorSetupEvent *event)
+hev_task_io_reactor_iocp_del (HevTaskIOReactorIOCP *self,
+                              HevTaskIOReactorSetupEvent *event)
 {
-    HevTaskIOReactorWSANode *node;
+    HevTaskIOReactorIOCPNode *node;
     int res;
 
-    node = hev_task_io_reactor_wsa_lookup (self, event->handle);
+    node = hev_task_io_reactor_iocp_lookup (self, event->handle);
     if (!node)
         return -1;
 
     res = UnregisterWaitEx (node->whandle, INVALID_HANDLE_VALUE);
-    res &= WSACloseEvent (node->ehandle);
+    if (node->handle != (long)node->ehandle)
+        res &= WSACloseEvent (node->ehandle);
     if (!res)
         return -1;
 
     node->ehandle = NULL;
     node->whandle = NULL;
     hev_rbtree_erase (&self->tree, &node->base);
-    hev_task_io_reactor_wsa_node_unref (node);
+    hev_task_io_reactor_iocp_node_unref (node);
 
     return 0;
 }
@@ -235,10 +245,10 @@ hev_task_io_reactor_wsa_del (HevTaskIOReactorWSA *self,
 HevTaskIOReactor *
 hev_task_io_reactor_new (void)
 {
-    HevTaskIOReactorWSA *self;
+    HevTaskIOReactorIOCP *self;
     HANDLE handle;
 
-    self = hev_malloc0 (sizeof (HevTaskIOReactorWSA));
+    self = hev_malloc0 (sizeof (HevTaskIOReactorIOCP));
     if (!self)
         return NULL;
 
@@ -257,7 +267,7 @@ hev_task_io_reactor_new (void)
 void
 hev_task_io_reactor_destroy (HevTaskIOReactor *_self)
 {
-    HevTaskIOReactorWSA *self = (HevTaskIOReactorWSA *)_self;
+    HevTaskIOReactorIOCP *self = (HevTaskIOReactorIOCP *)_self;
 
     CloseHandle (_self->handle);
     pthread_mutex_destroy (&self->mutex);
@@ -268,7 +278,7 @@ int
 hev_task_io_reactor_setup (HevTaskIOReactor *_self,
                            HevTaskIOReactorSetupEvent *events, int count)
 {
-    HevTaskIOReactorWSA *self = (HevTaskIOReactorWSA *)_self;
+    HevTaskIOReactorIOCP *self = (HevTaskIOReactorIOCP *)_self;
     int res = -1;
 
     assert (count <= HEV_TASK_IO_REACTOR_EVENT_GEN_MAX);
@@ -280,13 +290,13 @@ hev_task_io_reactor_setup (HevTaskIOReactor *_self,
 
     switch (events->op) {
     case HEV_TASK_IO_REACTOR_OP_ADD:
-        res = hev_task_io_reactor_wsa_add (self, events);
+        res = hev_task_io_reactor_iocp_add (self, events);
         break;
     case HEV_TASK_IO_REACTOR_OP_MOD:
-        res = hev_task_io_reactor_wsa_mod (self, events);
+        res = hev_task_io_reactor_iocp_mod (self, events);
         break;
     case HEV_TASK_IO_REACTOR_OP_DEL:
-        res = hev_task_io_reactor_wsa_del (self, events);
+        res = hev_task_io_reactor_iocp_del (self, events);
     default:
         break;
     }
@@ -301,7 +311,7 @@ hev_task_io_reactor_wait (HevTaskIOReactor *self,
                           HevTaskIOReactorWaitEvent *events, int count,
                           int timeout)
 {
-    HevTaskIOReactorWSANode *node;
+    HevTaskIOReactorIOCPNode *node;
     OVERLAPPED *overlap = NULL;
     ULONG_PTR key = 0;
     DWORD bytes = 0;
@@ -319,11 +329,11 @@ retry:
         return -1;
     }
 
-    node = (HevTaskIOReactorWSANode *)overlap;
+    node = (HevTaskIOReactorIOCPNode *)overlap;
     events->events = node->events;
     events->data = node->data;
     res = node->ehandle && node->whandle;
-    hev_task_io_reactor_wsa_node_unref (node);
+    hev_task_io_reactor_iocp_node_unref (node);
 
     if (!res)
         goto retry;

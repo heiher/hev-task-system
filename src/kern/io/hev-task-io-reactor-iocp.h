@@ -1,14 +1,14 @@
 /*
  ============================================================================
- Name        : hev-task-io-reactor-wsa.h
+ Name        : hev-task-io-reactor-iocp.h
  Author      : hev <r@hev.cc>
  Copyright   : Copyright (c) 2025 hev
- Description : I/O Reactor WSA
+ Description : I/O Reactor IOCP
  ============================================================================
  */
 
-#ifndef __HEV_TASK_IO_REACTOR_WSA_H__
-#define __HEV_TASK_IO_REACTOR_WSA_H__
+#ifndef __HEV_TASK_IO_REACTOR_IOCP_H__
+#define __HEV_TASK_IO_REACTOR_IOCP_H__
 
 #include <io.h>
 #include <poll.h>
@@ -19,11 +19,11 @@
 
 #define HEV_TASK_IO_REACTOR_EVENT_GEN_MAX (1)
 
-typedef struct _HevTaskIOReactorWSA HevTaskIOReactorWSA;
+typedef struct _HevTaskIOReactorIOCP HevTaskIOReactorIOCP;
 typedef struct _HevTaskIOReactorSetupEvent HevTaskIOReactorSetupEvent;
 typedef struct _HevTaskIOReactorWaitEvent HevTaskIOReactorWaitEvent;
 
-struct _HevTaskIOReactorWSA
+struct _HevTaskIOReactorIOCP
 {
     HevTaskIOReactor base;
 
@@ -65,19 +65,19 @@ int hev_task_io_reactor_wait (HevTaskIOReactor *self,
                               int timeout);
 
 static inline void
-hev_task_io_reactor_setup_event_set (HevTaskIOReactorSetupEvent *event, int fd,
-                                     HevTaskIOReactorOperation op,
+hev_task_io_reactor_setup_event_set (HevTaskIOReactorSetupEvent *event,
+                                     long handle, HevTaskIOReactorOperation op,
                                      unsigned int events, void *data)
 {
     event->op = op;
-    event->handle = get_osfhandle (fd);
+    event->handle = handle;
     event->events = events;
     event->data = data;
 }
 
 static inline int
 hev_task_io_reactor_setup_event_fd_gen (HevTaskIOReactorSetupEvent *events,
-                                        int fd, HevTaskIOReactorOperation op,
+                                        long fd, HevTaskIOReactorOperation op,
                                         unsigned int poll_events, void *data)
 {
     HevTaskIOReactorEvents reactor_events = 0;
@@ -89,7 +89,19 @@ hev_task_io_reactor_setup_event_fd_gen (HevTaskIOReactorSetupEvent *events,
     if (poll_events & POLLERR)
         reactor_events |= HEV_TASK_IO_REACTOR_EV_ER;
 
-    hev_task_io_reactor_setup_event_set (events, fd, op, reactor_events, data);
+    hev_task_io_reactor_setup_event_set (events, get_osfhandle (fd), op,
+                                         reactor_events, data);
+
+    return 1;
+}
+
+static inline int
+hev_task_io_reactor_setup_event_whandle_gen (HevTaskIOReactorSetupEvent *events,
+                                             void *handle,
+                                             HevTaskIOReactorOperation op,
+                                             void *data)
+{
+    hev_task_io_reactor_setup_event_set (events, (long)handle, op, 0, data);
 
     return 1;
 }
@@ -115,4 +127,4 @@ hev_task_io_reactor_wait_event_get_data (HevTaskIOReactorWaitEvent *event)
     return event->data;
 }
 
-#endif /* __HEV_TASK_IO_REACTOR_WSA_H__ */
+#endif /* __HEV_TASK_IO_REACTOR_IOCP_H__ */
