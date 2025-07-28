@@ -172,7 +172,7 @@ int hev_task_add_fd (HevTask *self, int fd, unsigned int events);
 int hev_task_mod_fd (HevTask *self, int fd, unsigned int events);
 
 /**
- * hev_task_mod_fd:
+ * hev_task_del_fd:
  * @self: a #HevTask
  * @fd: a file descriptor
  *
