@@ -150,10 +150,10 @@ hev_task_dns_proxy_new (void)
         goto free;
 
     reactor = hev_task_system_get_context ()->reactor;
-    count = hev_task_io_reactor_setup_event_gen (revents, fds[0],
-                                                 HEV_TASK_IO_REACTOR_OP_ADD,
-                                                 POLLIN | POLLOUT,
-                                                 &self->sched_entity);
+    count = hev_task_io_reactor_setup_event_fd_gen (revents, fds[0],
+                                                    HEV_TASK_IO_REACTOR_OP_ADD,
+                                                    POLLIN | POLLOUT,
+                                                    &self->sched_entity);
     res = hev_task_io_reactor_setup (reactor, revents, count);
     if (0 > res)
         goto close;

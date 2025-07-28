@@ -72,7 +72,7 @@ hev_task_aide_add (HevTaskAideWork *work)
     HevTaskIOReactorSetupEvent revents[HEV_TASK_IO_REACTOR_EVENT_GEN_MAX];
     int count;
 
-    count = hev_task_io_reactor_setup_event_gen (
+    count = hev_task_io_reactor_setup_event_fd_gen (
         revents, work->fd, HEV_TASK_IO_REACTOR_OP_ADD, work->events, work);
 
     return hev_task_io_reactor_setup (reactor, revents, count);
@@ -84,7 +84,7 @@ hev_task_aide_del (HevTaskAideWork *work)
     HevTaskIOReactorSetupEvent revents[HEV_TASK_IO_REACTOR_EVENT_GEN_MAX];
     int count;
 
-    count = hev_task_io_reactor_setup_event_gen (
+    count = hev_task_io_reactor_setup_event_fd_gen (
         revents, work->fd, HEV_TASK_IO_REACTOR_OP_DEL, 0, NULL);
 
     return hev_task_io_reactor_setup (reactor, revents, count);

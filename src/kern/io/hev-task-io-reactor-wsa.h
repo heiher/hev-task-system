@@ -76,9 +76,9 @@ hev_task_io_reactor_setup_event_set (HevTaskIOReactorSetupEvent *event, int fd,
 }
 
 static inline int
-hev_task_io_reactor_setup_event_gen (HevTaskIOReactorSetupEvent *events, int fd,
-                                     HevTaskIOReactorOperation op,
-                                     unsigned int poll_events, void *data)
+hev_task_io_reactor_setup_event_fd_gen (HevTaskIOReactorSetupEvent *events,
+                                        int fd, HevTaskIOReactorOperation op,
+                                        unsigned int poll_events, void *data)
 {
     HevTaskIOReactorEvents reactor_events = 0;
 

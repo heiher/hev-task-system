@@ -108,7 +108,7 @@ hev_task_add_fd (HevTask *self, int fd, unsigned int events)
     int count;
 
     reactor = hev_task_system_get_context ()->reactor;
-    count = hev_task_io_reactor_setup_event_gen (
+    count = hev_task_io_reactor_setup_event_fd_gen (
         revents, fd, HEV_TASK_IO_REACTOR_OP_ADD, events, &self->sched_entity);
     return hev_task_io_reactor_setup (reactor, revents, count);
 }
@@ -121,7 +121,7 @@ hev_task_mod_fd (HevTask *self, int fd, unsigned int events)
     int count;
 
     reactor = hev_task_system_get_context ()->reactor;
-    count = hev_task_io_reactor_setup_event_gen (
+    count = hev_task_io_reactor_setup_event_fd_gen (
         revents, fd, HEV_TASK_IO_REACTOR_OP_MOD, events, &self->sched_entity);
     return hev_task_io_reactor_setup (reactor, revents, count);
 }
@@ -134,7 +134,7 @@ hev_task_del_fd (HevTask *self, int fd)
     int count;
 
     reactor = hev_task_system_get_context ()->reactor;
-    count = hev_task_io_reactor_setup_event_gen (
+    count = hev_task_io_reactor_setup_event_fd_gen (
         revents, fd, HEV_TASK_IO_REACTOR_OP_DEL, 0, NULL);
     return hev_task_io_reactor_setup (reactor, revents, count);
 }
