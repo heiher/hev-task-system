@@ -180,7 +180,7 @@ hev_task_io_reactor_iocp_add (HevTaskIOReactorIOCP *self,
 
     res = RegisterWaitForSingleObject (&node->whandle, node->ehandle,
                                        hev_task_io_reactor_iocp_handler, node,
-                                       INFINITE, 0);
+                                       INFINITE, WT_EXECUTEINPERSISTENTTHREAD);
     if (!res)
         goto free_event;
 
