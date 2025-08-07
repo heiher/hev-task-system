@@ -1,6 +1,6 @@
 # HevTaskSystem
 
-[![status](https://github.com/heiher/hev-task-system/actions/workflows/build.yaml/badge.svg?branch=master&event=push)](https://github.com/heiher/hev-task-system)
+[![status](https://github.com/heiher/hev-task-system/actions/workflows/build.yaml/badge.svg?branch=main&event=push)](https://github.com/heiher/hev-task-system)
 
 HevTaskSystem is a simple, lightweight multi-task system (coroutines).
 
@@ -85,14 +85,14 @@ make
 
 ## Demos
 
-1. [simple](https://gitlab.com/hev/hev-task-system/blob/master/apps/simple.c)
-1. [channel](https://gitlab.com/hev/hev-task-system/blob/master/apps/channel.c)
-1. [timeout](https://gitlab.com/hev/hev-task-system/blob/master/apps/timeout.c)
-1. [wakeup](https://gitlab.com/hev/hev-task-system/blob/master/apps/wakeup.c)
-1. [echo-server](https://gitlab.com/hev/hev-task-system/blob/master/apps/echo-server.c)
-1. [call](https://gitlab.com/hev/hev-task-system/blob/master/apps/call.c)
-1. [gtk](https://gitlab.com/hev/hev-task-system/blob/master/apps/gtk.c)
-1. [curl](https://gitlab.com/hev/hev-task-system/blob/master/apps/curl.c)
+1. [simple](https://gitlab.com/hev/hev-task-system/blob/main/apps/simple.c)
+1. [channel](https://gitlab.com/hev/hev-task-system/blob/main/apps/channel.c)
+1. [timeout](https://gitlab.com/hev/hev-task-system/blob/main/apps/timeout.c)
+1. [wakeup](https://gitlab.com/hev/hev-task-system/blob/main/apps/wakeup.c)
+1. [echo-server](https://gitlab.com/hev/hev-task-system/blob/main/apps/echo-server.c)
+1. [call](https://gitlab.com/hev/hev-task-system/blob/main/apps/call.c)
+1. [gtk](https://gitlab.com/hev/hev-task-system/blob/main/apps/gtk.c)
+1. [curl](https://gitlab.com/hev/hev-task-system/blob/main/apps/curl.c)
 
 ## Contributors
 
