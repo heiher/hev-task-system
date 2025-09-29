@@ -79,6 +79,10 @@
 
 # include "arch/sh/hev-task-execute-sh.s"
 
+#elif defined(__or1k__)
+
+# include "arch/openrisc/hev-task-execute-or1k.s"
+
 #else
 
 # error "Unsupported platform!"
