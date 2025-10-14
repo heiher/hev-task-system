@@ -409,3 +409,89 @@ retry:
 
     return size;
 }
+
+EXPORT_SYMBOL int
+hev_task_io_socket_recvmmsg (int fd, void *_msgv, unsigned int n, int flags,
+                             HevTaskIOYielder yielder, void *yielder_data)
+{
+    struct mmsghdr *msgv = _msgv;
+    int r, c = 0;
+
+retry:
+#ifdef MSG_WAITFORONE
+    r = recvmmsg (fd, &msgv[c], n - c, flags & ~MSG_WAITALL, NULL);
+#else
+    r = recvmsg (fd, &msgv[c].msg_hdr, flags & ~MSG_WAITALL);
+    if (r >= 0) {
+        msgv[c].msg_len = r;
+        r = 1;
+    }
+#endif
+    if (r < 0 && errno == EAGAIN) {
+        if (yielder) {
+            if (yielder (HEV_TASK_WAITIO, yielder_data))
+                return -2;
+        } else {
+            hev_task_yield (HEV_TASK_WAITIO);
+        }
+        goto retry;
+    }
+
+    if (!(flags & MSG_WAITALL))
+        return r;
+
+    if (r <= 0) {
+        if (c)
+            return c;
+        return r;
+    }
+
+    c += r;
+    if (c < n)
+        goto retry;
+
+    return c;
+}
+
+EXPORT_SYMBOL int
+hev_task_io_socket_sendmmsg (int fd, void *_msgv, unsigned int n, int flags,
+                             HevTaskIOYielder yielder, void *yielder_data)
+{
+    struct mmsghdr *msgv = _msgv;
+    int r, c = 0;
+
+retry:
+#ifdef MSG_WAITFORONE
+    r = sendmmsg (fd, &msgv[c], n - c, flags & ~MSG_WAITALL);
+#else
+    r = sendmsg (fd, &msgv[c].msg_hdr, flags & ~MSG_WAITALL);
+    if (r >= 0) {
+        msgv[c].msg_len = r;
+        r = 1;
+    }
+#endif
+    if (r < 0 && errno == EAGAIN) {
+        if (yielder) {
+            if (yielder (HEV_TASK_WAITIO, yielder_data))
+                return -2;
+        } else {
+            hev_task_yield (HEV_TASK_WAITIO);
+        }
+        goto retry;
+    }
+
+    if (!(flags & MSG_WAITALL))
+        return r;
+
+    if (r <= 0) {
+        if (c)
+            return c;
+        return r;
+    }
+
+    c += r;
+    if (c < n)
+        goto retry;
+
+    return c;
+}

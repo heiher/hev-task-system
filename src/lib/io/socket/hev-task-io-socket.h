@@ -16,6 +16,14 @@
 extern "C" {
 #endif
 
+#ifndef MSG_WAITFORONE
+struct mmsghdr
+{
+    struct msghdr msg_hdr;
+    unsigned int msg_len;
+};
+#endif
+
 /**
  * hev_task_io_socket_socket:
  * @domain: the communications domain
@@ -223,6 +231,48 @@ ssize_t hev_task_io_socket_recvmsg (int fd, struct msghdr *msg, int flags,
 ssize_t hev_task_io_socket_sendmsg (int fd, const struct msghdr *msg, int flags,
                                     HevTaskIOYielder yielder,
                                     void *yielder_data);
+
+/**
+ * hev_task_io_socket_recvmmsg:
+ * @fd: a file descriptor
+ * @msgv: an array of mmsghdr structures
+ * @n: size of mmsghdr array
+ * @flags: flags
+ * @yielder: a #HevTaskIOYielder
+ * @yielder_data: user data
+ *
+ * The recvmmsg function that allows the caller to receive multiple messages
+ * from a socket using a single system call.
+ *
+ * The recvmmsg is not supported for stream sockets.
+ *
+ * Returns: the number of messages received in msgv
+ *
+ * Since: 5.10
+ */
+int hev_task_io_socket_recvmmsg (int fd, void *msgv, unsigned int n, int flags,
+                                 HevTaskIOYielder yielder, void *yielder_data);
+
+/**
+ * hev_task_io_socket_sendmmsg:
+ * @fd: a file descriptor
+ * @msgv: an array of mmsghdr structures
+ * @n: size of mmsghdr array
+ * @flags: flags
+ * @yielder: a #HevTaskIOYielder
+ * @yielder_data: user data
+ *
+ * The sendmmsg  that allows the caller to transmit multiple messages on a
+ * socket using a single system call.
+ *
+ * The sendmmsg is not supported for stream sockets.
+ *
+ * Returns: the number of messages sent from msgv
+ *
+ * Since: 5.10
+ */
+int hev_task_io_socket_sendmmsg (int fd, void *msgv, unsigned int n, int flags,
+                                 HevTaskIOYielder yielder, void *yielder_data);
 
 #ifdef __cplusplus
 }

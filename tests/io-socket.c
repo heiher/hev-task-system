@@ -7,6 +7,7 @@
  ============================================================================
  */
 
+#define _GNU_SOURCE
 #include <stddef.h>
 #include <assert.h>
 #include <unistd.h>
@@ -21,10 +22,11 @@
 #include <hev-task-io-socket.h>
 
 static int port;
+static int fds[2];
 static const char *msg = "Hello!";
 
 static void
-task_server_entry (void *data)
+task_tcp_server_entry (void *data)
 {
     HevTask *task = hev_task_self ();
     int fd, cfd;
@@ -88,7 +90,7 @@ task_server_entry (void *data)
 }
 
 static void
-task_client_entry (void *data)
+task_tcp_client_entry (void *data)
 {
     HevTask *task = hev_task_self ();
     int fd;
@@ -140,6 +142,80 @@ task_client_entry (void *data)
     close (fd);
 }
 
+static void
+task_udp_server_entry (void *data)
+{
+    HevTask *task = hev_task_self ();
+    struct mmsghdr msgv[10];
+    struct iovec iov[10];
+    char bufs[128][10];
+    int i;
+
+    for (i = 0; i < 10; i++) {
+        msgv[i].msg_hdr.msg_name = NULL;
+        msgv[i].msg_hdr.msg_namelen = 0;
+        msgv[i].msg_hdr.msg_control = NULL;
+        msgv[i].msg_hdr.msg_controllen = 0;
+        msgv[i].msg_hdr.msg_flags = 0;
+        msgv[i].msg_hdr.msg_iov = &iov[i];
+        msgv[i].msg_hdr.msg_iovlen = 1;
+        msgv[i].msg_len = 0;
+
+        iov[i].iov_base = bufs[i];
+        iov[i].iov_len = 128;
+    }
+
+    assert (hev_task_add_fd (task, fds[0], POLLIN) == 0);
+
+    i = hev_task_io_socket_recvmmsg (fds[0], msgv, 10, MSG_WAITALL, NULL, NULL);
+    assert (i == 10);
+
+    for (i = 0; i < 10; i++) {
+        int res;
+
+        assert (msgv[i].msg_len == strlen (msg));
+        res = memcmp (msgv[i].msg_hdr.msg_iov[0].iov_base, msg, strlen (msg));
+        assert (res == 0);
+    }
+
+    assert (hev_task_del_fd (task, fds[0]) == 0);
+    close (fds[0]);
+}
+
+static void
+task_udp_client_entry (void *data)
+{
+    HevTask *task = hev_task_self ();
+    struct mmsghdr msgv[10];
+    struct iovec iov[10];
+    int i;
+
+    for (i = 0; i < 10; i++) {
+        msgv[i].msg_hdr.msg_name = NULL;
+        msgv[i].msg_hdr.msg_namelen = 0;
+        msgv[i].msg_hdr.msg_control = NULL;
+        msgv[i].msg_hdr.msg_controllen = 0;
+        msgv[i].msg_hdr.msg_flags = 0;
+        msgv[i].msg_hdr.msg_iov = &iov[i];
+        msgv[i].msg_hdr.msg_iovlen = 1;
+        msgv[i].msg_len = 0;
+
+        iov[i].iov_base = (void *)msg;
+        iov[i].iov_len = strlen (msg);
+    }
+
+    assert (hev_task_add_fd (task, fds[1], POLLOUT) == 0);
+
+    i = hev_task_io_socket_sendmmsg (fds[1], msgv, 10, MSG_WAITALL, NULL, NULL);
+    assert (i == 10);
+
+    for (i = 0; i < 10; i++)
+        assert (msgv[i].msg_len == strlen (msg));
+
+    assert (hev_task_del_fd (task, fds[1]) == 0);
+    close (fds[1]);
+}
+
 int
 main (int argc, char *argv[])
 {
@@ -150,12 +226,24 @@ main (int argc, char *argv[])
     task = hev_task_new (-1);
     assert (task);
     hev_task_set_priority (task, 1);
-    hev_task_run (task, task_server_entry, NULL);
+    hev_task_run (task, task_tcp_server_entry, NULL);
 
     task = hev_task_new (-1);
     assert (task);
     hev_task_set_priority (task, 2);
-    hev_task_run (task, task_client_entry, NULL);
+    hev_task_run (task, task_tcp_client_entry, NULL);
+
+    assert (hev_task_io_socket_socketpair (PF_LOCAL, SOCK_DGRAM, 0, fds) == 0);
+
+    task = hev_task_new (-1);
+    assert (task);
+    hev_task_set_priority (task, 1);
+    hev_task_run (task, task_udp_server_entry, NULL);
+
+    task = hev_task_new (-1);
+    assert (task);
+    hev_task_set_priority (task, 2);
+    hev_task_run (task, task_udp_client_entry, NULL);
 
     hev_task_system_run ();
 
