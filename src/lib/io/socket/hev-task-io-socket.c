@@ -147,7 +147,7 @@ hev_task_io_socket_recv (int fd, void *buf, size_t len, int flags,
 
 retry:
     s = recv (fd, buf + size, len - size, flags & ~MSG_WAITALL);
-    if (s < 0 && errno == EAGAIN) {
+    if (s < 0 && errno == EAGAIN && !(flags & MSG_DONTWAIT)) {
         if (yielder) {
             if (yielder (HEV_TASK_WAITIO, yielder_data))
                 return -2;
@@ -182,7 +182,7 @@ hev_task_io_socket_send (int fd, const void *buf, size_t len, int flags,
 
 retry:
     s = send (fd, buf + size, len - size, flags & ~MSG_WAITALL);
-    if (s < 0 && errno == EAGAIN) {
+    if (s < 0 && errno == EAGAIN && !(flags & MSG_DONTWAIT)) {
         if (yielder) {
             if (yielder (HEV_TASK_WAITIO, yielder_data))
                 return -2;
@@ -219,7 +219,7 @@ hev_task_io_socket_recvfrom (int fd, void *buf, size_t len, int flags,
 retry:
     s = recvfrom (fd, buf + size, len - size, flags & ~MSG_WAITALL, addr,
                   addr_len);
-    if (s < 0 && errno == EAGAIN) {
+    if (s < 0 && errno == EAGAIN && !(flags & MSG_DONTWAIT)) {
         if (yielder) {
             if (yielder (HEV_TASK_WAITIO, yielder_data))
                 return -2;
@@ -256,7 +256,7 @@ hev_task_io_socket_sendto (int fd, const void *buf, size_t len, int flags,
 retry:
     s = sendto (fd, buf + size, len - size, flags & ~MSG_WAITALL, addr,
                 addr_len);
-    if (s < 0 && errno == EAGAIN) {
+    if (s < 0 && errno == EAGAIN && !(flags & MSG_DONTWAIT)) {
         if (yielder) {
             if (yielder (HEV_TASK_WAITIO, yielder_data))
                 return -2;
@@ -306,7 +306,7 @@ hev_task_io_socket_recvmsg (int fd, struct msghdr *msg, int flags,
 
 retry:
     s = recvmsg (fd, &mh, flags & ~MSG_WAITALL);
-    if (s < 0 && errno == EAGAIN) {
+    if (s < 0 && errno == EAGAIN && !(flags & MSG_DONTWAIT)) {
         if (yielder) {
             if (yielder (HEV_TASK_WAITIO, yielder_data))
                 return -2;
@@ -370,7 +370,7 @@ hev_task_io_socket_sendmsg (int fd, const struct msghdr *msg, int flags,
 
 retry:
     s = sendmsg (fd, &mh, flags & ~MSG_WAITALL);
-    if (s < 0 && errno == EAGAIN) {
+    if (s < 0 && errno == EAGAIN && !(flags & MSG_DONTWAIT)) {
         if (yielder) {
             if (yielder (HEV_TASK_WAITIO, yielder_data))
                 return -2;
@@ -427,7 +427,7 @@ retry:
         r = 1;
     }
 #endif
-    if (r < 0 && errno == EAGAIN) {
+    if (r < 0 && errno == EAGAIN && !(flags & MSG_DONTWAIT)) {
         if (yielder) {
             if (yielder (HEV_TASK_WAITIO, yielder_data))
                 return -2;
@@ -470,7 +470,7 @@ retry:
         r = 1;
     }
 #endif
-    if (r < 0 && errno == EAGAIN) {
+    if (r < 0 && errno == EAGAIN && !(flags & MSG_DONTWAIT)) {
         if (yielder) {
             if (yielder (HEV_TASK_WAITIO, yielder_data))
                 return -2;
