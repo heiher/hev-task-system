@@ -61,7 +61,7 @@ main (int argc, char *argv[])
 {
     HevTask *task;
 
-#if defined(__MSYS__)
+#if defined(__MSYS__) || defined(ENABLE_IO_RING)
     return 0;
 #endif
 

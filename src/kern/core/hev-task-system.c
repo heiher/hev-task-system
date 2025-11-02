@@ -77,6 +77,12 @@ hev_task_system_init (void)
     if (!context->stack_detector)
         goto free_timer;
 
+#if defined(__linux__) && defined(ENABLE_IO_RING)
+    context->uring = hev_task_io_uring_new (context);
+    if (!context->uring)
+        goto free_timer;
+#endif
+
     return 0;
 
 free_timer:
@@ -96,6 +102,10 @@ hev_task_system_fini (void)
 {
     HevMemoryAllocator *allocator;
     HevTaskSystemContext *context = hev_task_system_get_context ();
+
+#if defined(__linux__) && defined(ENABLE_IO_RING)
+    hev_task_io_uring_destroy (context->uring);
+#endif
 
     if (context->dns_proxy)
         hev_task_dns_proxy_destroy (context->dns_proxy);

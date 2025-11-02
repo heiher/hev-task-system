@@ -103,6 +103,9 @@ hev_task_get_priority (HevTask *self)
 EXPORT_SYMBOL int
 hev_task_add_fd (HevTask *self, int fd, unsigned int events)
 {
+#if defined(__linux__) && defined(ENABLE_IO_RING)
+    return 0;
+#else
     HevTaskIOReactor *reactor;
     HevTaskIOReactorSetupEvent revents[HEV_TASK_IO_REACTOR_EVENT_GEN_MAX];
     int count;
@@ -111,11 +114,15 @@ hev_task_add_fd (HevTask *self, int fd, unsigned int events)
     count = hev_task_io_reactor_setup_event_fd_gen (
         revents, fd, HEV_TASK_IO_REACTOR_OP_ADD, events, &self->sched_entity);
     return hev_task_io_reactor_setup (reactor, revents, count);
+#endif /* !defined(__linux__) || !defined(ENABLE_IO_RING) */
 }
 
 EXPORT_SYMBOL int
 hev_task_mod_fd (HevTask *self, int fd, unsigned int events)
 {
+#if defined(__linux__) && defined(ENABLE_IO_RING)
+    return 0;
+#else
     HevTaskIOReactor *reactor;
     HevTaskIOReactorSetupEvent revents[HEV_TASK_IO_REACTOR_EVENT_GEN_MAX];
     int count;
@@ -124,11 +131,15 @@ hev_task_mod_fd (HevTask *self, int fd, unsigned int events)
     count = hev_task_io_reactor_setup_event_fd_gen (
         revents, fd, HEV_TASK_IO_REACTOR_OP_MOD, events, &self->sched_entity);
     return hev_task_io_reactor_setup (reactor, revents, count);
+#endif /* !defined(__linux__) || !defined(ENABLE_IO_RING) */
 }
 
 EXPORT_SYMBOL int
 hev_task_del_fd (HevTask *self, int fd)
 {
+#if defined(__linux__) && defined(ENABLE_IO_RING)
+    return 0;
+#else
     HevTaskIOReactor *reactor;
     HevTaskIOReactorSetupEvent revents[HEV_TASK_IO_REACTOR_EVENT_GEN_MAX];
     int count;
@@ -137,6 +148,7 @@ hev_task_del_fd (HevTask *self, int fd)
     count = hev_task_io_reactor_setup_event_fd_gen (
         revents, fd, HEV_TASK_IO_REACTOR_OP_DEL, 0, NULL);
     return hev_task_io_reactor_setup (reactor, revents, count);
+#endif /* !defined(__linux__) || !defined(ENABLE_IO_RING) */
 }
 
 EXPORT_SYMBOL int

@@ -159,19 +159,28 @@ hev_task_system_wakeup_task_with_context (HevTaskSystemContext *ctx,
 static inline void
 hev_task_system_io_poll (HevTaskSystemContext *ctx, int timeout)
 {
-    int i, count;
     HevTaskIOReactorWaitEvent events[1024];
+    int i, count = 0;
 
-    if (timeout < 0)
+    if (timeout < 0) {
         timeout = hev_task_timer_get_timeout (ctx->timer);
+        count = hev_task_io_reactor_wait (ctx->reactor, events, 1024, timeout);
+#if !defined(__linux__) || !defined(ENABLE_IO_RING)
+    } else {
+        count = hev_task_io_reactor_wait (ctx->reactor, events, 1024, timeout);
+#endif
+    }
 
-    count = hev_task_io_reactor_wait (ctx->reactor, events, 1024, timeout);
     for (i = 0; i < count; i++) {
         HevTaskSchedEntity *sched_entity;
 
         sched_entity = hev_task_io_reactor_wait_event_get_data (&events[i]);
         hev_task_system_wakeup_task_with_context (ctx, sched_entity->task);
     }
+
+#if defined(__linux__) && defined(ENABLE_IO_RING)
+    hev_task_io_uring_reap (ctx->uring);
+#endif
 
     hev_task_timer_wake (ctx->timer);
 }

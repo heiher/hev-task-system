@@ -13,8 +13,13 @@
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 
+#if defined(__linux__) && defined(ENABLE_IO_RING)
+#include <linux/io_uring.h>
+#endif
+
 #include "kern/task/hev-task.h"
 #include "lib/io/basic/hev-task-io.h"
+#include "lib/io/ring/hev-task-io-ring.h"
 #include "lib/misc/hev-compiler.h"
 
 #include "hev-task-io-socket.h"
@@ -82,6 +87,37 @@ hev_task_io_socket_connect (int fd, const struct sockaddr *addr,
                             socklen_t addr_len, HevTaskIOYielder yielder,
                             void *yielder_data)
 {
+#if defined(__linux__) && defined(ENABLE_IO_RING)
+    struct io_uring_sqe *sqe;
+    struct io_uring_cqe cqe;
+
+    sqe = hev_task_io_ring_get_sqe ();
+    sqe->opcode = IORING_OP_CONNECT;
+    sqe->fd = fd;
+    sqe->off = addr_len;
+    sqe->addr = (intptr_t)addr;
+    sqe->len = 0;
+    hev_task_io_ring_submit (sqe, &cqe);
+
+retry:
+    if (yielder) {
+        if (yielder (HEV_TASK_WAITIO, yielder_data)) {
+            hev_task_io_ring_cancel (&cqe);
+            return -2;
+        }
+    } else {
+        hev_task_yield (HEV_TASK_WAITIO);
+    }
+    if (cqe.user_data)
+        goto retry;
+
+    if (cqe.res < 0) {
+        errno = -cqe.res;
+        return -1;
+    }
+
+    return cqe.res;
+#else
     int res;
 
 retry:
@@ -101,12 +137,45 @@ retry:
     }
 
     return res;
+#endif /* !defined(__linux__) || !defined(ENABLE_IO_RING) */
 }
 
 EXPORT_SYMBOL int
 hev_task_io_socket_accept (int fd, struct sockaddr *addr, socklen_t *addr_len,
                            HevTaskIOYielder yielder, void *yielder_data)
 {
+#if defined(__linux__) && defined(ENABLE_IO_RING)
+    struct io_uring_sqe *sqe;
+    struct io_uring_cqe cqe;
+
+    sqe = hev_task_io_ring_get_sqe ();
+    sqe->opcode = IORING_OP_ACCEPT;
+    sqe->fd = fd;
+    sqe->off = (intptr_t)addr_len;
+    sqe->addr = (intptr_t)addr;
+    sqe->len = 0;
+    sqe->accept_flags = SOCK_NONBLOCK;
+    hev_task_io_ring_submit (sqe, &cqe);
+
+retry:
+    if (yielder) {
+        if (yielder (HEV_TASK_WAITIO, yielder_data)) {
+            hev_task_io_ring_cancel (&cqe);
+            return -2;
+        }
+    } else {
+        hev_task_yield (HEV_TASK_WAITIO);
+    }
+    if (cqe.user_data)
+        goto retry;
+
+    if (cqe.res < 0) {
+        errno = -cqe.res;
+        return -1;
+    }
+
+    return cqe.res;
+#else
     int new_fd;
 
 retry:
@@ -137,12 +206,45 @@ retry:
 #endif
 
     return new_fd;
+#endif /* !defined(__linux__) || !defined(ENABLE_IO_RING) */
 }
 
 EXPORT_SYMBOL ssize_t
 hev_task_io_socket_recv (int fd, void *buf, size_t len, int flags,
                          HevTaskIOYielder yielder, void *yielder_data)
 {
+#if defined(__linux__) && defined(ENABLE_IO_RING)
+    struct io_uring_sqe *sqe;
+    struct io_uring_cqe cqe;
+
+    sqe = hev_task_io_ring_get_sqe ();
+    sqe->opcode = IORING_OP_RECV;
+    sqe->fd = fd;
+    sqe->off = 0;
+    sqe->addr = (intptr_t)buf;
+    sqe->len = len;
+    sqe->msg_flags = flags;
+    hev_task_io_ring_submit (sqe, &cqe);
+
+retry:
+    if (yielder) {
+        if (yielder (HEV_TASK_WAITIO, yielder_data)) {
+            hev_task_io_ring_cancel (&cqe);
+            return -2;
+        }
+    } else {
+        hev_task_yield (HEV_TASK_WAITIO);
+    }
+    if (cqe.user_data)
+        goto retry;
+
+    if (cqe.res < 0) {
+        errno = -cqe.res;
+        return -1;
+    }
+
+    return cqe.res;
+#else
     size_t size = 0;
     ssize_t s;
 
@@ -169,12 +271,45 @@ retry:
         goto retry;
 
     return size;
+#endif /* !defined(__linux__) || !defined(ENABLE_IO_RING) */
 }
 
 EXPORT_SYMBOL ssize_t
 hev_task_io_socket_send (int fd, const void *buf, size_t len, int flags,
                          HevTaskIOYielder yielder, void *yielder_data)
 {
+#if defined(__linux__) && defined(ENABLE_IO_RING)
+    struct io_uring_sqe *sqe;
+    struct io_uring_cqe cqe;
+
+    sqe = hev_task_io_ring_get_sqe ();
+    sqe->opcode = IORING_OP_SEND;
+    sqe->fd = fd;
+    sqe->off = 0;
+    sqe->addr = (intptr_t)buf;
+    sqe->len = len;
+    sqe->msg_flags = flags;
+    hev_task_io_ring_submit (sqe, &cqe);
+
+retry:
+    if (yielder) {
+        if (yielder (HEV_TASK_WAITIO, yielder_data)) {
+            hev_task_io_ring_cancel (&cqe);
+            return -2;
+        }
+    } else {
+        hev_task_yield (HEV_TASK_WAITIO);
+    }
+    if (cqe.user_data)
+        goto retry;
+
+    if (cqe.res < 0) {
+        errno = -cqe.res;
+        return -1;
+    }
+
+    return cqe.res;
+#else
     size_t size = 0;
     ssize_t s;
 
@@ -201,6 +336,7 @@ retry:
         goto retry;
 
     return size;
+#endif /* !defined(__linux__) || !defined(ENABLE_IO_RING) */
 }
 
 EXPORT_SYMBOL ssize_t
@@ -208,6 +344,51 @@ hev_task_io_socket_recvfrom (int fd, void *buf, size_t len, int flags,
                              struct sockaddr *addr, socklen_t *addr_len,
                              HevTaskIOYielder yielder, void *yielder_data)
 {
+#if defined(__linux__) && defined(ENABLE_IO_RING)
+    struct io_uring_sqe *sqe;
+    struct io_uring_cqe cqe;
+    struct msghdr mhdr;
+    struct iovec iov;
+
+    mhdr.msg_name = addr;
+    mhdr.msg_namelen = addr_len ? *addr_len : 0;
+    mhdr.msg_controllen = 0;
+    mhdr.msg_iov = &iov;
+    mhdr.msg_iovlen = 1;
+    iov.iov_base = buf;
+    iov.iov_len = len;
+
+    sqe = hev_task_io_ring_get_sqe ();
+    sqe->opcode = IORING_OP_RECVMSG;
+    sqe->fd = fd;
+    sqe->off = 0;
+    sqe->addr = (intptr_t)&mhdr;
+    sqe->len = 1;
+    sqe->msg_flags = flags;
+    hev_task_io_ring_submit (sqe, &cqe);
+
+retry:
+    if (yielder) {
+        if (yielder (HEV_TASK_WAITIO, yielder_data)) {
+            hev_task_io_ring_cancel (&cqe);
+            return -2;
+        }
+    } else {
+        hev_task_yield (HEV_TASK_WAITIO);
+    }
+    if (cqe.user_data)
+        goto retry;
+
+    if (cqe.res < 0) {
+        errno = -cqe.res;
+        return -1;
+    }
+
+    if (addr_len)
+        *addr_len = mhdr.msg_namelen;
+
+    return cqe.res;
+#else
     size_t size = 0;
     ssize_t s;
 
@@ -235,6 +416,7 @@ retry:
         goto retry;
 
     return size;
+#endif /* !defined(__linux__) || !defined(ENABLE_IO_RING) */
 }
 
 EXPORT_SYMBOL ssize_t
@@ -242,6 +424,48 @@ hev_task_io_socket_sendto (int fd, const void *buf, size_t len, int flags,
                            const struct sockaddr *addr, socklen_t addr_len,
                            HevTaskIOYielder yielder, void *yielder_data)
 {
+#if defined(__linux__) && defined(ENABLE_IO_RING)
+    struct io_uring_sqe *sqe;
+    struct io_uring_cqe cqe;
+    struct msghdr mhdr;
+    struct iovec iov;
+
+    mhdr.msg_name = (void *)addr;
+    mhdr.msg_namelen = addr_len;
+    mhdr.msg_controllen = 0;
+    mhdr.msg_iov = &iov;
+    mhdr.msg_iovlen = 1;
+    iov.iov_base = (void *)buf;
+    iov.iov_len = len;
+
+    sqe = hev_task_io_ring_get_sqe ();
+    sqe->opcode = IORING_OP_SENDMSG;
+    sqe->fd = fd;
+    sqe->off = 0;
+    sqe->addr = (intptr_t)&mhdr;
+    sqe->len = 1;
+    sqe->msg_flags = flags;
+    hev_task_io_ring_submit (sqe, &cqe);
+
+retry:
+    if (yielder) {
+        if (yielder (HEV_TASK_WAITIO, yielder_data)) {
+            hev_task_io_ring_cancel (&cqe);
+            return -2;
+        }
+    } else {
+        hev_task_yield (HEV_TASK_WAITIO);
+    }
+    if (cqe.user_data)
+        goto retry;
+
+    if (cqe.res < 0) {
+        errno = -cqe.res;
+        return -1;
+    }
+
+    return cqe.res;
+#else
     size_t size = 0;
     ssize_t s;
 
@@ -269,12 +493,45 @@ retry:
         goto retry;
 
     return size;
+#endif /* !defined(__linux__) || !defined(ENABLE_IO_RING) */
 }
 
 EXPORT_SYMBOL ssize_t
 hev_task_io_socket_recvmsg (int fd, struct msghdr *msg, int flags,
                             HevTaskIOYielder yielder, void *yielder_data)
 {
+#if defined(__linux__) && defined(ENABLE_IO_RING)
+    struct io_uring_sqe *sqe;
+    struct io_uring_cqe cqe;
+
+    sqe = hev_task_io_ring_get_sqe ();
+    sqe->opcode = IORING_OP_RECVMSG;
+    sqe->fd = fd;
+    sqe->off = 0;
+    sqe->addr = (intptr_t)msg;
+    sqe->len = 1;
+    sqe->msg_flags = flags;
+    hev_task_io_ring_submit (sqe, &cqe);
+
+retry:
+    if (yielder) {
+        if (yielder (HEV_TASK_WAITIO, yielder_data)) {
+            hev_task_io_ring_cancel (&cqe);
+            return -2;
+        }
+    } else {
+        hev_task_yield (HEV_TASK_WAITIO);
+    }
+    if (cqe.user_data)
+        goto retry;
+
+    if (cqe.res < 0) {
+        errno = -cqe.res;
+        return -1;
+    }
+
+    return cqe.res;
+#else
     struct iovec iov[msg->msg_iovlen];
     size_t i, size = 0, len = 0;
     struct msghdr mh;
@@ -330,12 +587,45 @@ retry:
     }
 
     return size;
+#endif /* !defined(__linux__) || !defined(ENABLE_IO_RING) */
 }
 
 EXPORT_SYMBOL ssize_t
 hev_task_io_socket_sendmsg (int fd, const struct msghdr *msg, int flags,
                             HevTaskIOYielder yielder, void *yielder_data)
 {
+#if defined(__linux__) && defined(ENABLE_IO_RING)
+    struct io_uring_sqe *sqe;
+    struct io_uring_cqe cqe;
+
+    sqe = hev_task_io_ring_get_sqe ();
+    sqe->opcode = IORING_OP_SENDMSG;
+    sqe->fd = fd;
+    sqe->off = 0;
+    sqe->addr = (intptr_t)msg;
+    sqe->len = 1;
+    sqe->msg_flags = flags;
+    hev_task_io_ring_submit (sqe, &cqe);
+
+retry:
+    if (yielder) {
+        if (yielder (HEV_TASK_WAITIO, yielder_data)) {
+            hev_task_io_ring_cancel (&cqe);
+            return -2;
+        }
+    } else {
+        hev_task_yield (HEV_TASK_WAITIO);
+    }
+    if (cqe.user_data)
+        goto retry;
+
+    if (cqe.res < 0) {
+        errno = -cqe.res;
+        return -1;
+    }
+
+    return cqe.res;
+#else
     struct iovec iov[msg->msg_iovlen];
     size_t i, size = 0, len = 0;
     struct msghdr mh;
@@ -391,12 +681,37 @@ retry:
     }
 
     return size;
+#endif /* !defined(__linux__) || !defined(ENABLE_IO_RING) */
 }
 
 EXPORT_SYMBOL int
 hev_task_io_socket_recvmmsg (int fd, void *_msgv, unsigned int n, int flags,
                              HevTaskIOYielder yielder, void *yielder_data)
 {
+#if defined(__linux__) && defined(ENABLE_IO_RING)
+    struct mmsghdr *msgv = _msgv;
+    int r, c = 0;
+
+retry:
+    r = hev_task_io_socket_recvmsg (fd, &msgv[c].msg_hdr, flags & ~MSG_WAITALL,
+                                    yielder, yielder_data);
+    if (r >= 0) {
+        msgv[c].msg_len = r;
+        r = 1;
+    }
+
+    if (!(flags & MSG_WAITALL))
+        return r;
+
+    if (r <= 0)
+        return c ? c : r;
+
+    c += r;
+    if (c < n)
+        goto retry;
+
+    return c;
+#else
     struct mmsghdr *msgv = _msgv;
     int r, c = 0;
 
@@ -431,12 +746,37 @@ retry:
         goto retry;
 
     return c;
+#endif /* !defined(__linux__) || !defined(ENABLE_IO_RING) */
 }
 
 EXPORT_SYMBOL int
 hev_task_io_socket_sendmmsg (int fd, void *_msgv, unsigned int n, int flags,
                              HevTaskIOYielder yielder, void *yielder_data)
 {
+#if defined(__linux__) && defined(ENABLE_IO_RING)
+    struct mmsghdr *msgv = _msgv;
+    int r, c = 0;
+
+retry:
+    r = hev_task_io_socket_sendmsg (fd, &msgv[c].msg_hdr, flags & ~MSG_WAITALL,
+                                    yielder, yielder_data);
+    if (r >= 0) {
+        msgv[c].msg_len = r;
+        r = 1;
+    }
+
+    if (!(flags & MSG_WAITALL))
+        return r;
+
+    if (r <= 0)
+        return c ? c : r;
+
+    c += r;
+    if (c < n)
+        goto retry;
+
+    return c;
+#else
     struct mmsghdr *msgv = _msgv;
     int r, c = 0;
 
@@ -471,4 +811,5 @@ retry:
         goto retry;
 
     return c;
+#endif /* !defined(__linux__) || !defined(ENABLE_IO_RING) */
 }
