@@ -24,8 +24,13 @@
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 
+#if defined(__linux__) && defined(ENABLE_IO_RING)
+#include <linux/io_uring.h>
+#endif
+
 #include "kern/task/hev-task.h"
 #include "lib/io/buffer/hev-circular-buffer.h"
+#include "lib/io/ring/hev-task-io-ring.h"
 #include "lib/misc/hev-compiler.h"
 
 #include "hev-task-io.h"
@@ -41,6 +46,12 @@ struct _HevTaskIOSplicer
 #else
     HevCircularBuffer *buf;
 #endif /* !ENABLE_IO_SPLICE_SYSCALL */
+
+#if defined(__linux__) && defined(ENABLE_IO_RING)
+    struct io_uring_cqe cqe[2];
+    struct iovec iov[2][2];
+    int missions[2];
+#endif
 };
 
 EXPORT_SYMBOL int
@@ -126,6 +137,37 @@ EXPORT_SYMBOL ssize_t
 hev_task_io_read (int fd, void *buf, size_t count, HevTaskIOYielder yielder,
                   void *yielder_data)
 {
+#if defined(__linux__) && defined(ENABLE_IO_RING)
+    struct io_uring_sqe *sqe;
+    struct io_uring_cqe cqe;
+
+    sqe = hev_task_io_ring_get_sqe ();
+    sqe->opcode = IORING_OP_READ;
+    sqe->fd = fd;
+    sqe->off = 0;
+    sqe->addr = (intptr_t)buf;
+    sqe->len = count;
+    hev_task_io_ring_submit (sqe, &cqe);
+
+retry:
+    if (yielder) {
+        if (yielder (HEV_TASK_WAITIO, yielder_data)) {
+            hev_task_io_ring_cancel (&cqe);
+            return -2;
+        }
+    } else {
+        hev_task_yield (HEV_TASK_WAITIO);
+    }
+    if (cqe.user_data)
+        goto retry;
+
+    if (cqe.res < 0) {
+        errno = -cqe.res;
+        return -1;
+    }
+
+    return cqe.res;
+#else
     ssize_t s;
 
 retry:
@@ -141,12 +183,44 @@ retry:
     }
 
     return s;
+#endif /* !defined(__linux__) || !defined(ENABLE_IO_RING) */
 }
 
 EXPORT_SYMBOL ssize_t
 hev_task_io_readv (int fd, const struct iovec *iov, int iovcnt,
                    HevTaskIOYielder yielder, void *yielder_data)
 {
+#if defined(__linux__) && defined(ENABLE_IO_RING)
+    struct io_uring_sqe *sqe;
+    struct io_uring_cqe cqe;
+
+    sqe = hev_task_io_ring_get_sqe ();
+    sqe->opcode = IORING_OP_READV;
+    sqe->fd = fd;
+    sqe->off = 0;
+    sqe->addr = (intptr_t)iov;
+    sqe->len = iovcnt;
+    hev_task_io_ring_submit (sqe, &cqe);
+
+retry:
+    if (yielder) {
+        if (yielder (HEV_TASK_WAITIO, yielder_data)) {
+            hev_task_io_ring_cancel (&cqe);
+            return -2;
+        }
+    } else {
+        hev_task_yield (HEV_TASK_WAITIO);
+    }
+    if (cqe.user_data)
+        goto retry;
+
+    if (cqe.res < 0) {
+        errno = -cqe.res;
+        return -1;
+    }
+
+    return cqe.res;
+#else
     ssize_t s;
 
 retry:
@@ -162,12 +236,44 @@ retry:
     }
 
     return s;
+#endif /* !defined(__linux__) || !defined(ENABLE_IO_RING) */
 }
 
 EXPORT_SYMBOL ssize_t
 hev_task_io_write (int fd, const void *buf, size_t count,
                    HevTaskIOYielder yielder, void *yielder_data)
 {
+#if defined(__linux__) && defined(ENABLE_IO_RING)
+    struct io_uring_sqe *sqe;
+    struct io_uring_cqe cqe;
+
+    sqe = hev_task_io_ring_get_sqe ();
+    sqe->opcode = IORING_OP_WRITE;
+    sqe->fd = fd;
+    sqe->off = 0;
+    sqe->addr = (intptr_t)buf;
+    sqe->len = count;
+    hev_task_io_ring_submit (sqe, &cqe);
+
+retry:
+    if (yielder) {
+        if (yielder (HEV_TASK_WAITIO, yielder_data)) {
+            hev_task_io_ring_cancel (&cqe);
+            return -2;
+        }
+    } else {
+        hev_task_yield (HEV_TASK_WAITIO);
+    }
+    if (cqe.user_data)
+        goto retry;
+
+    if (cqe.res < 0) {
+        errno = -cqe.res;
+        return -1;
+    }
+
+    return cqe.res;
+#else
     ssize_t s;
 
 retry:
@@ -183,12 +289,44 @@ retry:
     }
 
     return s;
+#endif /* !defined(__linux__) || !defined(ENABLE_IO_RING) */
 }
 
 EXPORT_SYMBOL ssize_t
 hev_task_io_writev (int fd, const struct iovec *iov, int iovcnt,
                     HevTaskIOYielder yielder, void *yielder_data)
 {
+#if defined(__linux__) && defined(ENABLE_IO_RING)
+    struct io_uring_sqe *sqe;
+    struct io_uring_cqe cqe;
+
+    sqe = hev_task_io_ring_get_sqe ();
+    sqe->opcode = IORING_OP_WRITEV;
+    sqe->fd = fd;
+    sqe->off = 0;
+    sqe->addr = (intptr_t)iov;
+    sqe->len = iovcnt;
+    hev_task_io_ring_submit (sqe, &cqe);
+
+retry:
+    if (yielder) {
+        if (yielder (HEV_TASK_WAITIO, yielder_data)) {
+            hev_task_io_ring_cancel (&cqe);
+            return -2;
+        }
+    } else {
+        hev_task_yield (HEV_TASK_WAITIO);
+    }
+    if (cqe.user_data)
+        goto retry;
+
+    if (cqe.res < 0) {
+        errno = -cqe.res;
+        return -1;
+    }
+
+    return cqe.res;
+#else
     ssize_t s;
 
 retry:
@@ -204,6 +342,7 @@ retry:
     }
 
     return s;
+#endif /* !defined(__linux__) || !defined(ENABLE_IO_RING) */
 }
 
 #ifdef ENABLE_IO_SPLICE_SYSCALL
@@ -230,6 +369,11 @@ task_io_splicer_init (HevTaskIOSplicer *self, size_t buf_size)
     buf_size = fcntl (self->fd[0], F_GETPIPE_SZ);
 #endif
 
+#if defined(__linux__) && defined(ENABLE_IO_RING)
+    self->missions[0] = 0;
+    self->missions[1] = 0;
+#endif
+
     self->wlen = 0;
     self->blen = buf_size;
 
@@ -245,6 +389,11 @@ exit:
 static void
 task_io_splicer_fini (HevTaskIOSplicer *self)
 {
+#if defined(__linux__) && defined(ENABLE_IO_RING)
+    hev_task_io_ring_cancel (&self->cqe[0]);
+    hev_task_io_ring_cancel (&self->cqe[1]);
+#endif
+
     close (self->fd[0]);
     close (self->fd[1]);
 }
@@ -252,6 +401,89 @@ task_io_splicer_fini (HevTaskIOSplicer *self)
 static int
 task_io_splice (HevTaskIOSplicer *self, int fd_in, int fd_out)
 {
+#if defined(__linux__) && defined(ENABLE_IO_RING)
+    struct io_uring_sqe *sqe;
+    int res;
+
+    if (self->missions[0] == 0) {
+        sqe = hev_task_io_ring_get_sqe ();
+        sqe->opcode = IORING_OP_SPLICE;
+        sqe->fd = self->fd[1];
+        sqe->off = -1;
+        sqe->addr = 0;
+        sqe->len = self->blen;
+        sqe->splice_off_in = -1;
+        sqe->splice_fd_in = fd_in;
+        sqe->splice_flags = SPLICE_F_MOVE;
+        hev_task_io_ring_submit (sqe, &self->cqe[0]);
+        self->missions[0]++;
+        res = 0;
+    } else {
+        if (self->cqe[0].user_data) {
+            res = 0;
+        } else {
+            if (self->cqe[0].res <= 0) {
+                if (self->cqe[0].res == -EAGAIN) {
+                    res = 0;
+                } else {
+                    res = -1;
+                }
+            } else {
+                self->wlen += self->cqe[0].res;
+                res = 1;
+            }
+            self->missions[0]--;
+        }
+    }
+
+    if (self->missions[1] == 0) {
+        if (self->wlen) {
+            sqe = hev_task_io_ring_get_sqe ();
+            sqe->opcode = IORING_OP_SPLICE;
+            sqe->fd = fd_out;
+            sqe->off = -1;
+            sqe->addr = 0;
+            sqe->len = self->blen;
+            sqe->splice_off_in = -1;
+            sqe->splice_fd_in = self->fd[0];
+            sqe->splice_flags = SPLICE_F_MOVE;
+            hev_task_io_ring_submit (sqe, &self->cqe[1]);
+            self->missions[1]++;
+            res = 0;
+        } else {
+            if (res < 0) {
+                shutdown (fd_out, SHUT_WR);
+                res = -1;
+            } else {
+                res = 0;
+            }
+        }
+    } else {
+        if (self->cqe[1].user_data) {
+            res = 0;
+        } else {
+            if (self->cqe[1].res <= 0) {
+                if (self->cqe[1].res == -EAGAIN) {
+                    res = 0;
+                } else {
+                    res = -1;
+                }
+            } else {
+                self->wlen -= self->cqe[1].res;
+                res = 1;
+            }
+            self->missions[1]--;
+        }
+    }
+
+    if (self->missions[0] || self->missions[1])
+        return 0;
+
+    if (res == 0 && !self->missions[0] && !self->missions[1])
+        return 1;
+
+    return res;
+#else
     int res;
     ssize_t s;
 
@@ -284,6 +516,7 @@ task_io_splice (HevTaskIOSplicer *self, int fd_in, int fd_out)
     }
 
     return res;
+#endif /* !defined(__linux__) || !defined(ENABLE_IO_RING) */
 }
 
 #else
@@ -295,12 +528,22 @@ task_io_splicer_init (HevTaskIOSplicer *self, size_t buf_size)
     if (!self->buf)
         return -1;
 
+#if defined(__linux__) && defined(ENABLE_IO_RING)
+    self->missions[0] = 0;
+    self->missions[1] = 0;
+#endif
+
     return 0;
 }
 
 static void
 task_io_splicer_fini (HevTaskIOSplicer *self)
 {
+#if defined(__linux__) && defined(ENABLE_IO_RING)
+    hev_task_io_ring_cancel (&self->cqe[0]);
+    hev_task_io_ring_cancel (&self->cqe[1]);
+#endif
+
     if (self->buf)
         hev_circular_buffer_unref (self->buf);
 }
@@ -308,6 +551,76 @@ task_io_splicer_fini (HevTaskIOSplicer *self)
 static int
 task_io_splice (HevTaskIOSplicer *self, int fd_in, int fd_out)
 {
+#if defined(__linux__) && defined(ENABLE_IO_RING)
+    struct io_uring_sqe *sqe;
+    int res, iovc;
+
+    if (self->missions[0] == 0) {
+        iovc = hev_circular_buffer_writing (self->buf, self->iov[0]);
+        if (iovc) {
+            sqe = hev_task_io_ring_get_sqe ();
+            sqe->opcode = IORING_OP_READV;
+            sqe->fd = fd_in;
+            sqe->off = 0;
+            sqe->addr = (intptr_t)self->iov[0];
+            sqe->len = iovc;
+            hev_task_io_ring_submit (sqe, &self->cqe[0]);
+            self->missions[0]++;
+        }
+        res = 0;
+    } else {
+        if (self->cqe[0].user_data) {
+            res = 0;
+        } else {
+            if (self->cqe[0].res <= 0) {
+                res = -1;
+            } else {
+                hev_circular_buffer_write_finish (self->buf, self->cqe[0].res);
+                res = 1;
+            }
+            self->missions[0]--;
+        }
+    }
+
+    if (self->missions[1] == 0) {
+        iovc = hev_circular_buffer_reading (self->buf, self->iov[1]);
+        if (iovc) {
+            sqe = hev_task_io_ring_get_sqe ();
+            sqe->opcode = IORING_OP_WRITEV;
+            sqe->fd = fd_out;
+            sqe->off = 0;
+            sqe->addr = (intptr_t)self->iov[1];
+            sqe->len = iovc;
+            hev_task_io_ring_submit (sqe, &self->cqe[1]);
+            self->missions[1]++;
+            res = 0;
+        } else {
+            if (res < 0) {
+                shutdown (fd_out, SHUT_WR);
+                res = -1;
+            } else {
+                res = 0;
+            }
+        }
+    } else {
+        if (self->cqe[1].user_data) {
+            res = 0;
+        } else {
+            if (self->cqe[1].res <= 0) {
+                res = -1;
+            } else {
+                hev_circular_buffer_read_finish (self->buf, self->cqe[1].res);
+                res = 1;
+            }
+            self->missions[1]--;
+        }
+    }
+
+    if (self->missions[0] || self->missions[1])
+        return 0;
+
+    return res;
+#else
     struct iovec iov[2];
     int res = 1, iovc;
 
@@ -341,6 +654,7 @@ task_io_splice (HevTaskIOSplicer *self, int fd_in, int fd_out)
     }
 
     return res;
+#endif /* !defined(__linux__) || !defined(ENABLE_IO_RING) */
 }
 
 #endif /* !ENABLE_IO_SPLICE_SYSCALL */

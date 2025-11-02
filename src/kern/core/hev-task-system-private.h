@@ -18,6 +18,7 @@
 #include "kern/task/hev-task-private.h"
 #include "kern/time/hev-task-timer.h"
 #include "kern/io/hev-task-io-reactor.h"
+#include "kern/io/hev-task-io-uring.h"
 #include "lib/list/hev-list.h"
 #include "lib/dns/hev-task-dns-proxy.h"
 #include "lib/rbtree/hev-rbtree-cached.h"
@@ -45,6 +46,10 @@ struct _HevTaskSystemContext
     HevTaskIOReactor *reactor;
     HevTaskDNSProxy *dns_proxy;
     HevTaskStackDetector *stack_detector;
+
+#if defined(__linux__) && defined(ENABLE_IO_RING)
+    HevTaskIOURing *uring;
+#endif
 
     HevTask *current_task;
     HevRBTreeCached running_tasks;
