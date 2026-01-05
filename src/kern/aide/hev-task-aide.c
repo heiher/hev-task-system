@@ -56,10 +56,13 @@ hev_task_aide_init (void)
     pthread_mutex_lock (&mutex);
     if (!reactor) {
         reactor = hev_task_io_reactor_new ();
-        if (!reactor)
+        if (!reactor) {
             res = -1;
-        else
+        } else {
             res = pthread_create (&thread, NULL, hev_task_aide_entry, NULL);
+            if (res != 0)
+                res = -1;
+        }
     }
     pthread_mutex_unlock (&mutex);
 
