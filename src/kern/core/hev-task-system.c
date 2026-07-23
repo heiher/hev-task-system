@@ -73,14 +73,18 @@ hev_task_system_init (void)
     if (!context->timer)
         goto free_reactor;
 
+#ifdef ENABLE_STACK_OVERFLOW_DETECTOR
     context->stack_detector = hev_task_stack_detector_new ();
     if (!context->stack_detector)
         goto free_timer;
+#endif
 
     return 0;
 
+#ifdef ENABLE_STACK_OVERFLOW_DETECTOR
 free_timer:
     hev_task_timer_destroy (context->timer);
+#endif
 free_reactor:
     hev_task_io_reactor_destroy (context->reactor);
 rest_context:
@@ -99,7 +103,8 @@ hev_task_system_fini (void)
 
     if (context->dns_proxy)
         hev_task_dns_proxy_destroy (context->dns_proxy);
-    hev_task_stack_detector_destroy (context->stack_detector);
+    if (context->stack_detector)
+        hev_task_stack_detector_destroy (context->stack_detector);
     hev_task_timer_destroy (context->timer);
     hev_task_io_reactor_destroy (context->reactor);
     hev_free (context);
