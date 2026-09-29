@@ -16,6 +16,15 @@
 
 typedef struct _HevTaskTimerNode HevTaskTimerNode;
 
+/* Darwin's monotonic clock advances while the system is asleep. */
+/* Use uptime so task timeouts only advance while the system is awake
+ * (matches Linux CLOCK_MONOTONIC semantics that exclude suspend). */
+#if defined(__APPLE__) && defined(CLOCK_UPTIME_RAW)
+#define HEV_TASK_TIMER_CLOCK CLOCK_UPTIME_RAW
+#else
+#define HEV_TASK_TIMER_CLOCK CLOCK_MONOTONIC
+#endif
+
 struct _HevTaskTimer
 {
     HevRBTreeCached sort_tree;
@@ -66,7 +75,7 @@ hev_task_timer_node_cmp (HevTaskTimerNode *a, HevTaskTimerNode *b)
 static inline void
 hev_task_timer_get_curr (struct timespec *curr)
 {
-    if (clock_gettime (CLOCK_MONOTONIC, curr) < 0)
+    if (clock_gettime (HEV_TASK_TIMER_CLOCK, curr) < 0)
         abort ();
 }
 
