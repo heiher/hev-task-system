@@ -14,8 +14,6 @@
 #include "mem/api/hev-memory-allocator-api.h"
 #include "lib/misc/hev-compiler.h"
 
-typedef struct _HevTaskTimerNode HevTaskTimerNode;
-
 /* Darwin's monotonic clock advances while the system is asleep. */
 /* Use uptime so task timeouts only advance while the system is awake
  * (matches Linux CLOCK_MONOTONIC semantics that exclude suspend). */
@@ -24,6 +22,8 @@ typedef struct _HevTaskTimerNode HevTaskTimerNode;
 #else
 #define HEV_TASK_TIMER_CLOCK CLOCK_MONOTONIC
 #endif
+
+typedef struct _HevTaskTimerNode HevTaskTimerNode;
 
 struct _HevTaskTimer
 {
