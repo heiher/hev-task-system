@@ -92,8 +92,11 @@ hev_circular_buffer_reading (HevCircularBuffer *self, struct iovec *iov)
 EXPORT_SYMBOL void
 hev_circular_buffer_read_finish (HevCircularBuffer *self, size_t size)
 {
-    self->rp = (self->rp + size) % self->max_size;
     self->use_size -= size;
+    if (self->use_size)
+        self->rp = (self->rp + size) % self->max_size;
+    else
+        self->rp = 0;
 }
 
 EXPORT_SYMBOL int
