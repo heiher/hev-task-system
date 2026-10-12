@@ -10,6 +10,10 @@
 #include <assert.h>
 #include <stdlib.h>
 
+#if defined(_MSC_VER)
+#include <malloc.h> /* alloca() -> _alloca() */
+#endif
+
 #include <hev-task.h>
 #include <hev-task-call.h>
 #include <hev-task-system.h>
@@ -38,8 +42,8 @@ task_entry (void *data)
     call = hev_task_call_new (sizeof (HevTaskCall), 8192);
 
     retval = hev_task_call_jump (call, call_entry1);
-    assert (retval > (void *)call + sizeof (HevTaskCall));
-    assert (retval < (void *)call + sizeof (HevTaskCall) + 8192);
+    assert (retval > (char *)call + sizeof (HevTaskCall));
+    assert (retval < (char *)call + sizeof (HevTaskCall) + 8192);
 
     retval = hev_task_call_jump (call, call_entry2);
     assert (retval == call_entry1);

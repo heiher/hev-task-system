@@ -39,13 +39,21 @@ hev_rbtree_node_is_black (HevRBTreeNode *node)
 }
 
 static inline int
+#if defined(_MSC_VER)
+_hev_rbtree_node_is_black (uintptr_t pc)
+#else
 _hev_rbtree_node_is_black (unsigned long pc)
+#endif
 {
     return pc & HEV_RBTREE_BLACK;
 }
 
 static inline HevRBTreeNode *
+#if defined(_MSC_VER)
+_hev_rbtree_node_parent (uintptr_t pc)
+#else
 _hev_rbtree_node_parent (unsigned long pc)
+#endif
 {
     return ((HevRBTreeNode *)(pc & ~3));
 }
@@ -65,14 +73,22 @@ hev_rbtree_node_set_black (HevRBTreeNode *node)
 static inline void
 hev_rbtree_node_set_parent (HevRBTreeNode *node, HevRBTreeNode *parent)
 {
+#if defined(_MSC_VER)
+    node->__parent_color = hev_rbtree_node_color (node) | (uintptr_t)parent;
+#else
     node->__parent_color = hev_rbtree_node_color (node) | (unsigned long)parent;
+#endif
 }
 
 static inline void
 hev_rbtree_node_set_parent_color (HevRBTreeNode *node, HevRBTreeNode *parent,
                                   int color)
 {
+#if defined(_MSC_VER)
+    node->__parent_color = (uintptr_t)parent | color;
+#else
     node->__parent_color = (unsigned long)parent | color;
+#endif
 }
 
 static inline void
@@ -354,7 +370,11 @@ _hev_rbtree_erase (HevRBTree *self, HevRBTreeNode *node)
     HevRBTreeNode *child = node->right;
     HevRBTreeNode *tmp = node->left;
     HevRBTreeNode *parent, *rebalance;
+#if defined(_MSC_VER)
+    uintptr_t pc;
+#else
     unsigned long pc;
+#endif
 
     if (!tmp) {
         /*

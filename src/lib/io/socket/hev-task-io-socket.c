@@ -16,6 +16,7 @@
 #include "kern/task/hev-task.h"
 #include "lib/io/basic/hev-task-io.h"
 #include "lib/misc/hev-compiler.h"
+#include "mem/api/hev-memory-allocator-api.h"
 
 #include "hev-task-io-socket.h"
 
@@ -147,7 +148,7 @@ hev_task_io_socket_recv (int fd, void *buf, size_t len, int flags,
     ssize_t s;
 
 retry:
-    s = recv (fd, buf + size, len - size, flags & ~MSG_WAITALL);
+    s = recv (fd, (char *)buf + size, len - size, flags & ~MSG_WAITALL);
     if (s < 0 && errno == EAGAIN && !(flags & MSG_DONTWAIT)) {
         if (yielder) {
             if (yielder (HEV_TASK_WAITIO, yielder_data))
@@ -179,7 +180,7 @@ hev_task_io_socket_send (int fd, const void *buf, size_t len, int flags,
     ssize_t s;
 
 retry:
-    s = send (fd, buf + size, len - size, flags & ~MSG_WAITALL);
+    s = send (fd, (const char *)buf + size, len - size, flags & ~MSG_WAITALL);
     if (s < 0 && errno == EAGAIN && !(flags & MSG_DONTWAIT)) {
         if (yielder) {
             if (yielder (HEV_TASK_WAITIO, yielder_data))
@@ -212,7 +213,7 @@ hev_task_io_socket_recvfrom (int fd, void *buf, size_t len, int flags,
     ssize_t s;
 
 retry:
-    s = recvfrom (fd, buf + size, len - size, flags & ~MSG_WAITALL, addr,
+    s = recvfrom (fd, (char *)buf + size, len - size, flags & ~MSG_WAITALL, addr,
                   addr_len);
     if (s < 0 && errno == EAGAIN && !(flags & MSG_DONTWAIT)) {
         if (yielder) {
@@ -246,8 +247,8 @@ hev_task_io_socket_sendto (int fd, const void *buf, size_t len, int flags,
     ssize_t s;
 
 retry:
-    s = sendto (fd, buf + size, len - size, flags & ~MSG_WAITALL, addr,
-                addr_len);
+    s = sendto (fd, (const char *)buf + size, len - size, flags & ~MSG_WAITALL,
+                addr, addr_len);
     if (s < 0 && errno == EAGAIN && !(flags & MSG_DONTWAIT)) {
         if (yielder) {
             if (yielder (HEV_TASK_WAITIO, yielder_data))
@@ -275,10 +276,21 @@ EXPORT_SYMBOL ssize_t
 hev_task_io_socket_recvmsg (int fd, struct msghdr *msg, int flags,
                             HevTaskIOYielder yielder, void *yielder_data)
 {
-    struct iovec iov[msg->msg_iovlen];
+    struct iovec iov_stack[16];
+    struct iovec *iov;
     size_t i, size = 0, len = 0;
     struct msghdr mh;
-    ssize_t s;
+    ssize_t s, res;
+
+    if (msg->msg_iovlen > 16) {
+        iov = hev_malloc (sizeof (struct iovec) * msg->msg_iovlen);
+        if (!iov) {
+            errno = ENOMEM;
+            return -1;
+        }
+    } else {
+        iov = iov_stack;
+    }
 
     mh.msg_name = msg->msg_name;
     mh.msg_namelen = msg->msg_namelen;
@@ -297,25 +309,31 @@ retry:
     s = recvmsg (fd, &mh, flags & ~MSG_WAITALL);
     if (s < 0 && errno == EAGAIN && !(flags & MSG_DONTWAIT)) {
         if (yielder) {
-            if (yielder (HEV_TASK_WAITIO, yielder_data))
-                return size ? size : -2;
+            if (yielder (HEV_TASK_WAITIO, yielder_data)) {
+                res = size ? size : -2;
+                goto done;
+            }
         } else {
             hev_task_yield (HEV_TASK_WAITIO);
         }
         goto retry;
     }
 
-    if (!(flags & MSG_WAITALL))
-        return s;
+    if (!(flags & MSG_WAITALL)) {
+        res = s;
+        goto done;
+    }
 
-    if (s <= 0)
-        return size ? size : s;
+    if (s <= 0) {
+        res = size ? size : s;
+        goto done;
+    }
 
     size += s;
     if (size < len) {
         for (i = 0; i < mh.msg_iovlen; i++) {
             if (s < mh.msg_iov[i].iov_len) {
-                mh.msg_iov[i].iov_base += s;
+                mh.msg_iov[i].iov_base = (char *)mh.msg_iov[i].iov_base + s;
                 mh.msg_iov[i].iov_len -= s;
                 break;
             }
@@ -329,17 +347,34 @@ retry:
         goto retry;
     }
 
-    return size;
+    res = size;
+
+done:
+    if (iov != iov_stack)
+        hev_free (iov);
+
+    return res;
 }
 
 EXPORT_SYMBOL ssize_t
 hev_task_io_socket_sendmsg (int fd, const struct msghdr *msg, int flags,
                             HevTaskIOYielder yielder, void *yielder_data)
 {
-    struct iovec iov[msg->msg_iovlen];
+    struct iovec iov_stack[16];
+    struct iovec *iov;
     size_t i, size = 0, len = 0;
     struct msghdr mh;
-    ssize_t s;
+    ssize_t s, res;
+
+    if (msg->msg_iovlen > 16) {
+        iov = hev_malloc (sizeof (struct iovec) * msg->msg_iovlen);
+        if (!iov) {
+            errno = ENOMEM;
+            return -1;
+        }
+    } else {
+        iov = iov_stack;
+    }
 
     mh.msg_name = msg->msg_name;
     mh.msg_namelen = msg->msg_namelen;
@@ -358,25 +393,31 @@ retry:
     s = sendmsg (fd, &mh, flags & ~MSG_WAITALL);
     if (s < 0 && errno == EAGAIN && !(flags & MSG_DONTWAIT)) {
         if (yielder) {
-            if (yielder (HEV_TASK_WAITIO, yielder_data))
-                return size ? size : -2;
+            if (yielder (HEV_TASK_WAITIO, yielder_data)) {
+                res = size ? size : -2;
+                goto done;
+            }
         } else {
             hev_task_yield (HEV_TASK_WAITIO);
         }
         goto retry;
     }
 
-    if (!(flags & MSG_WAITALL))
-        return s;
+    if (!(flags & MSG_WAITALL)) {
+        res = s;
+        goto done;
+    }
 
-    if (s <= 0)
-        return size ? size : s;
+    if (s <= 0) {
+        res = size ? size : s;
+        goto done;
+    }
 
     size += s;
     if (size < len) {
         for (i = 0; i < mh.msg_iovlen; i++) {
             if (s < mh.msg_iov[i].iov_len) {
-                mh.msg_iov[i].iov_base += s;
+                mh.msg_iov[i].iov_base = (char *)mh.msg_iov[i].iov_base + s;
                 mh.msg_iov[i].iov_len -= s;
                 break;
             }
@@ -390,7 +431,13 @@ retry:
         goto retry;
     }
 
-    return size;
+    res = size;
+
+done:
+    if (iov != iov_stack)
+        hev_free (iov);
+
+    return res;
 }
 
 EXPORT_SYMBOL int

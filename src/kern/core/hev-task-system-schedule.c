@@ -209,7 +209,7 @@ hev_task_system_schedule (HevTaskYieldType type)
             return; /* resume to task context */
 
         /* resume to kernel context */
-        _longjmp (ctx->kernel_context, type);
+        HEV_TASK_LONGJMP (ctx->kernel_context, type);
     }
 
     /* NOTE: in kernel context */
@@ -242,7 +242,7 @@ hev_task_system_schedule (HevTaskYieldType type)
     hev_task_system_update_sched_time (ctx);
 
     /* switch to task */
-    _longjmp (ctx->current_task->context, 1);
+    HEV_TASK_LONGJMP (ctx->current_task->context, 1);
 }
 
 void
@@ -277,5 +277,5 @@ hev_task_system_kill_current_task (void)
      * NOTE: remove current task in kernel context, because current
      * task stack may be freed.
      */
-    _longjmp (ctx->kernel_context, HEV_TASK_SCHED_REMOVE);
+    HEV_TASK_LONGJMP (ctx->kernel_context, HEV_TASK_SCHED_REMOVE);
 }

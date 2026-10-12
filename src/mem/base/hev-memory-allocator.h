@@ -42,6 +42,11 @@ struct _HevMemoryAllocator
  */
 HevMemoryAllocator *hev_memory_allocator_default (void);
 
+#if defined(_MSC_VER) && defined(_WIN32)
+/* Process-wide FLS index teardown, only safe after ALL threads have stopped. */
+void hev_memory_allocator_thread_key_fini (void);
+#endif
+
 /**
  * hev_memory_allocator_set_default:
  * @allocator: a #HevMemoryAllocator
