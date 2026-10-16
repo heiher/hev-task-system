@@ -44,6 +44,7 @@
 #undef freeaddrinfo
 #undef clock_gettime
 #undef usleep
+#undef fopen
 
 #include <assert.h>
 
@@ -1445,6 +1446,71 @@ hev_win_fcntl (int fd, int cmd, ...)
         errno = EINVAL;
         return -1;
     }
+}
+
+/* ------------------------------------------------------------------ */
+/* UTF-8 path handling                                                 */
+/* ------------------------------------------------------------------ */
+
+wchar_t *
+hev_win_utf8_to_wide (const char *utf8)
+{
+    wchar_t *wide;
+    int len;
+
+    if (!utf8) {
+        errno = EINVAL;
+        return NULL;
+    }
+
+    len = MultiByteToWideChar (CP_UTF8, 0, utf8, -1, NULL, 0);
+    if (len <= 0) {
+        errno = EINVAL;
+        return NULL;
+    }
+
+    wide = (wchar_t *)malloc (sizeof (wchar_t) * (size_t)len);
+    if (!wide) {
+        errno = ENOMEM;
+        return NULL;
+    }
+
+    if (MultiByteToWideChar (CP_UTF8, 0, utf8, -1, wide, len) <= 0) {
+        free (wide);
+        errno = EINVAL;
+        return NULL;
+    }
+
+    return wide;
+}
+
+FILE *
+hev_win_fopen (const char *path, const char *mode)
+{
+    wchar_t wmode[8];
+    FILE *fp;
+    wchar_t *wpath;
+
+    if (!path || !mode) {
+        errno = EINVAL;
+        return NULL;
+    }
+
+    /* The mode string is pure ASCII, but widen it uniformly anyway. */
+    if (MultiByteToWideChar (CP_UTF8, 0, mode, -1, wmode,
+                             (int)(sizeof (wmode) / sizeof (wmode[0]))) <= 0) {
+        errno = EINVAL;
+        return NULL;
+    }
+
+    wpath = hev_win_utf8_to_wide (path);
+    if (!wpath)
+        return NULL;
+
+    fp = _wfopen (wpath, wmode);
+    free (wpath);
+
+    return fp;
 }
 
 /* ------------------------------------------------------------------ */

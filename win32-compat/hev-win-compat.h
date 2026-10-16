@@ -42,6 +42,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <wchar.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -204,6 +205,22 @@ int hev_win_poll (struct pollfd *fds, int nfds, int timeout);
 int hev_win_fcntl (int fd, int cmd, ...);
 
 /* ------------------------------------------------------------------ */
+/* UTF-8 path handling                                                 */
+/* ------------------------------------------------------------------ */
+
+/*
+ * The project treats every path as UTF-8.  The narrow Windows CRT opens
+ * paths in the ANSI code page instead, which corrupts any non-ASCII
+ * character, so paths are widened to UTF-16 and handed to the wide CRT.
+ *
+ * hev_win_utf8_to_wide() returns a heap allocation that the caller must
+ * free(), or NULL with errno set.
+ */
+wchar_t *hev_win_utf8_to_wide (const char *utf8);
+
+FILE *hev_win_fopen (const char *path, const char *mode);
+
+/* ------------------------------------------------------------------ */
 /* POSIX name mapping                                                  */
 /* ------------------------------------------------------------------ */
 
@@ -257,6 +274,9 @@ int hev_win_fcntl (int fd, int cmd, ...);
 #define usleep hev_win_usleep
 #define poll hev_win_poll
 #define fcntl hev_win_fcntl
+
+/* Every path in the project is UTF-8, see hev_win_fopen() above. */
+#define fopen hev_win_fopen
 
 /*
  * MSVC's CRT provides _setjmp but not _longjmp. The UCRT longjmp() also
