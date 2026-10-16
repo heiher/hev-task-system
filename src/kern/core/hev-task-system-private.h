@@ -13,6 +13,28 @@
 #include <time.h>
 #include <setjmp.h>
 
+#if defined(_MSC_VER) && defined(_M_ARM64EC)
+#error "ARM64EC is not supported: it uses the x64-compatible ABI, _JUMP_BUFFER layout and unwind model, which differ from native ARM64 and have not been independently validated. Do not substitute the x64 or ARM64 backend."
+#endif
+
+#if defined(_MSC_VER) && !defined(_M_X64) && !defined(_M_IX86) && \
+    !defined(_M_ARM64)
+#error "Native MSVC coroutine backends exist only for x64, x86 and native ARM64."
+#endif
+
+#if defined(_MSC_VER) && (defined(_M_X64) || defined(_M_IX86) || \
+                          defined(_M_ARM64))
+/* Switching coroutine stacks must not invoke the CRT unwinder.  Each MSVC
+ * target has its own assembler context restore with a guarded jmp_buf layout
+ * (src/arch/x86/hev-task-msvc-x64-abi.c, ...-x86-abi.c and
+ * src/arch/arm/hev-task-msvc-arm64-abi.c). */
+__declspec(noreturn) void hev_task_msvc_longjmp (void *env, int value);
+#define HEV_TASK_LONGJMP(env, value) \
+    hev_task_msvc_longjmp ((void *)(env), (value))
+#else
+#define HEV_TASK_LONGJMP(env, value) _longjmp ((env), (value))
+#endif
+
 #include "hev-task-system.h"
 #include "kern/task/hev-task.h"
 #include "kern/task/hev-task-private.h"

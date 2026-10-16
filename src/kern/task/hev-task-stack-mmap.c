@@ -7,8 +7,10 @@
  ============================================================================
  */
 
+#if CONFIG_STACK_BACKEND == STACK_MMAP
 #include <unistd.h>
 #include <sys/mman.h>
+#endif
 
 #include "lib/misc/hev-compiler.h"
 #include "mem/api/hev-memory-allocator-api.h"

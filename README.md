@@ -74,6 +74,23 @@ cd hev-task-system
 ./build-apple.sh
 ```
 
+### Native Visual C++ / MSVC (Windows x64)
+
+For native MSVC, use the scripts at the project root (PowerShell is required):
+
+```bat
+build-msvc.bat -Target all
+build-msvc.bat -Target run-tests -TestTimeoutSeconds 60
+build-msvc.bat -Target all -Arch arm64
+```
+
+Or `powershell -NoProfile -ExecutionPolicy Bypass -File .\build-msvc.ps1 -Target all`.
+
+Requires **Visual Studio 2022 17.5+** (or newer) and the x64 MSVC/Windows SDK/MASM
+components. MSVC 2017/2019 are **not supported**.
+Use `-VSVersion 2022` to select an installation explicitly. Build artifacts
+are written to `build-msvc/`.
+
 ### Windows (MSYS2)
 
 ```bash
