@@ -48,6 +48,18 @@
 extern "C" {
 #endif
 
+/*
+ * The Windows SDK <inaddr.h> defines s_addr/s_host/s_net/... as macros
+ * pointing into the in_addr union.  These leak into unrelated code
+ * (e.g. lwIP's u32_t s_addr locals), so remove them project-wide.
+ */
+#undef s_addr
+#undef s_host
+#undef s_net
+#undef s_imp
+#undef s_impno
+#undef s_lh
+
 #ifndef EAI_SYSTEM
 #define EAI_SYSTEM 11
 #endif

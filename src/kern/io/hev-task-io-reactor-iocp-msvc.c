@@ -363,38 +363,51 @@ hev_task_io_reactor_setup (HevTaskIOReactor *_self,
     return res;
 }
 
+#define HEV_TASK_IO_REACTOR_IOCP_BATCH (64)
+
 int
 hev_task_io_reactor_wait (HevTaskIOReactor *self,
                           HevTaskIOReactorWaitEvent *events, int count,
                           int timeout)
 {
-    HevTaskIOReactorIOCPNode *node;
-    OVERLAPPED *overlap = NULL;
-    ULONG_PTR key = 0;
-    DWORD bytes = 0;
-    int res;
+    OVERLAPPED_ENTRY entries[HEV_TASK_IO_REACTOR_IOCP_BATCH];
+    ULONG n, i;
+    int num;
 
     if (count <= 0)
         return -1;
+    if (count > HEV_TASK_IO_REACTOR_IOCP_BATCH)
+        count = HEV_TASK_IO_REACTOR_IOCP_BATCH;
 
 retry:
-    res = GetQueuedCompletionStatus ((HANDLE)self->handle, &bytes, &key,
-                                     &overlap, timeout);
-    if (!res) {
+    /* Dequeue up to `count` completions at once; (DWORD)-1 is INFINITE. */
+    if (!GetQueuedCompletionStatusEx ((HANDLE)self->handle, entries,
+                                      (ULONG)count, &n, (DWORD)timeout,
+                                      FALSE)) {
         if (GetLastError () == WAIT_TIMEOUT)
             return 0;
         return -1;
     }
 
-    node = (HevTaskIOReactorIOCPNode *)overlap;
-    events->events = node->events;
-    events->data = node->data;
-    res = node->ehandle && node->whandle;
-    hev_task_io_reactor_iocp_node_unref (node);
+    for (i = 0, num = 0; i < n; i++) {
+        HevTaskIOReactorIOCPNode *node;
 
-    if (!res)
+        node = (HevTaskIOReactorIOCPNode *)entries[i].lpOverlapped;
+        if (!node)
+            continue;
+
+        /* Skip packets of nodes detached while they were queued. */
+        if (node->ehandle && node->whandle) {
+            events[num].events = node->events;
+            events[num].data = node->data;
+            num++;
+        }
+        hev_task_io_reactor_iocp_node_unref (node);
+    }
+
+    if (!num)
         goto retry;
 
-    return 1;
+    return num;
 }
 #endif /* MSVC native IOCP */
