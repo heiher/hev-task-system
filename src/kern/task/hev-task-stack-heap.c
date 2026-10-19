@@ -84,6 +84,15 @@ hev_task_stack_destroy (HevTaskStack *self)
     hev_free (self);
 }
 
+void
+hev_task_stack_release (HevTaskStack *self, void *sp)
+{
+    /* Skip the overflow detection tags. */
+    uintptr_t start = (uintptr_t)(self + 1) + STACK_OVERFLOW_DETECTION_SIZE;
+
+    hev_task_stack_discard (start, sp);
+}
+
 void *
 hev_task_stack_get_base (HevTaskStack *self)
 {

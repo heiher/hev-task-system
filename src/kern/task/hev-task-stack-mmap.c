@@ -72,6 +72,17 @@ hev_task_stack_destroy (HevTaskStack *self)
     hev_free (self);
 }
 
+void
+hev_task_stack_release (HevTaskStack *self, void *sp)
+{
+    uintptr_t start = (uintptr_t)self->stack;
+
+#ifdef ENABLE_STACK_OVERFLOW_DETECTION
+    start += getpagesize ();
+#endif
+    hev_task_stack_discard (start, sp);
+}
+
 void *
 hev_task_stack_get_base (HevTaskStack *self)
 {

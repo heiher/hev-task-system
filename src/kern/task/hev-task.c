@@ -181,6 +181,22 @@ hev_task_yield (HevTaskYieldType type)
     hev_task_system_schedule (type);
 }
 
+EXPORT_SYMBOL __attribute__ ((noinline)) void
+hev_task_release_stack (HevTask *self)
+{
+    HevTaskSystemContext *ctx = hev_task_system_get_context ();
+    void *sp = __builtin_frame_address (0);
+
+    if (self != ctx->current_task)
+        return;
+
+    /* Running on another stack, e.g. in hev_task_call_jump. */
+    if (sp <= hev_task_stack_get_base (self->stack) || sp > self->stack_bottom)
+        return;
+
+    hev_task_stack_release (self->stack, sp);
+}
+
 EXPORT_SYMBOL unsigned int
 hev_task_sleep (unsigned int milliseconds)
 {
