@@ -60,10 +60,8 @@ hev_task_channel_new_with_buffers (HevTaskChannel **chan1,
         unsigned int i;
 
         for (i = 0; i < buffers; i++) {
-            c1->buffers[i].data =
-                (HevTaskChannelData *)((char *)c1->buffers + buffers_size + size * i);
-            c2->buffers[i].data =
-                (HevTaskChannelData *)((char *)c2->buffers + buffers_size + size * i);
+            c1->buffers[i].data = (HevTaskChannelData *)((char *)c1->buffers + buffers_size + size * i);
+            c2->buffers[i].data = (HevTaskChannelData *)((char *)c2->buffers + buffers_size + size * i);
         }
     }
 

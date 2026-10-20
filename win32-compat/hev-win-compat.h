@@ -143,10 +143,8 @@ int hev_win_setsockopt (int s, int level, int optname, const char *optval, int o
 
 ssize_t hev_win_recv (int fd, void *buf, size_t len, int flags);
 ssize_t hev_win_send (int fd, const void *buf, size_t len, int flags);
-ssize_t hev_win_recvfrom (int fd, void *buf, size_t len, int flags,
-                          struct sockaddr *addr, socklen_t *addrlen);
-ssize_t hev_win_sendto (int fd, const void *buf, size_t len, int flags,
-                        const struct sockaddr *addr, socklen_t addrlen);
+ssize_t hev_win_recvfrom (int fd, void *buf, size_t len, int flags, struct sockaddr *addr, socklen_t *addrlen);
+ssize_t hev_win_sendto (int fd, const void *buf, size_t len, int flags, const struct sockaddr *addr, socklen_t addrlen);
 
 ssize_t hev_win_read (int fd, void *buf, size_t count);
 ssize_t hev_win_write (int fd, const void *buf, size_t count);
@@ -155,21 +153,16 @@ ssize_t hev_win_writev (int fd, const struct iovec *iov, int iovcnt);
 
 ssize_t hev_win_recvmsg (int fd, struct msghdr *msg, int flags);
 ssize_t hev_win_sendmsg (int fd, const struct msghdr *msg, int flags);
-ssize_t hev_win_recvmmsg (int fd, struct mmsghdr *msgv, unsigned int vlen,
-                          int flags, void *timeout);
-ssize_t hev_win_sendmmsg (int fd, struct mmsghdr *msgv, unsigned int vlen,
-                          int flags);
+ssize_t hev_win_recvmmsg (int fd, struct mmsghdr *msgv, unsigned int vlen, int flags, void *timeout);
+ssize_t hev_win_sendmmsg (int fd, struct mmsghdr *msgv, unsigned int vlen, int flags);
 
 int hev_win_ioctl (int fd, long request, void *argp);
 int hev_win_dup (int oldfd);
 int hev_win_dup2 (int oldfd, int newfd);
 int hev_win_close (int fd);
 
-int hev_win_getaddrinfo (const char *node, const char *service,
-                         const struct addrinfo *hints, struct addrinfo **res);
-int hev_win_getnameinfo (const struct sockaddr *addr, socklen_t addrlen,
-                         char *node, socklen_t nodelen, char *service,
-                         socklen_t servicelen, int flags);
+int hev_win_getaddrinfo (const char *node, const char *service, const struct addrinfo *hints, struct addrinfo **res);
+int hev_win_getnameinfo (const struct sockaddr *addr, socklen_t addrlen, char *node, socklen_t nodelen, char *service, socklen_t servicelen, int flags);
 void hev_win_freeaddrinfo (struct addrinfo *res);
 
 int hev_win_clock_gettime (int clock_id, struct timespec *ts);

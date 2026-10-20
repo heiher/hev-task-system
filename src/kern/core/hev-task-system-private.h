@@ -28,23 +28,53 @@ __declspec(noreturn) void hev_task_msvc_longjmp (void *env, int value);
 #define MSVC_JB_OFF(field, off) _Static_assert (offsetof (_JUMP_BUFFER, field) == (off), #field " offset changed")
 #if defined(_M_X64)
 _Static_assert (sizeof (void *) == 8, "Win64 pointers must be 64 bits");
-MSVC_JB_OFF (Rbx, 8); MSVC_JB_OFF (Rsp, 16); MSVC_JB_OFF (Rbp, 24); MSVC_JB_OFF (Rsi, 32); MSVC_JB_OFF (Rdi, 40);
-MSVC_JB_OFF (R12, 48); MSVC_JB_OFF (R13, 56); MSVC_JB_OFF (R14, 64); MSVC_JB_OFF (R15, 72); MSVC_JB_OFF (Rip, 80);
-MSVC_JB_OFF (MxCsr, 88); MSVC_JB_OFF (FpCsr, 92); MSVC_JB_OFF (Xmm6, 96); MSVC_JB_OFF (Xmm15, 240);
+MSVC_JB_OFF (Rbx, 8);
+MSVC_JB_OFF (Rsp, 16);
+MSVC_JB_OFF (Rbp, 24);
+MSVC_JB_OFF (Rsi, 32);
+MSVC_JB_OFF (Rdi, 40);
+MSVC_JB_OFF (R12, 48);
+MSVC_JB_OFF (R13, 56);
+MSVC_JB_OFF (R14, 64);
+MSVC_JB_OFF (R15, 72);
+MSVC_JB_OFF (Rip, 80);
+MSVC_JB_OFF (MxCsr, 88);
+MSVC_JB_OFF (FpCsr, 92);
+MSVC_JB_OFF (Xmm6, 96);
+MSVC_JB_OFF (Xmm15, 240);
 #elif defined(_M_IX86)
 _Static_assert (sizeof (void *) == 4, "Win32 pointers must be 32 bits");
 _Static_assert (sizeof (jmp_buf) >= 64, "x86 jmp_buf is unexpectedly short");
-MSVC_JB_OFF (Ebp, 0); MSVC_JB_OFF (Ebx, 4); MSVC_JB_OFF (Edi, 8); MSVC_JB_OFF (Esi, 12);
-MSVC_JB_OFF (Esp, 16); MSVC_JB_OFF (Eip, 20); MSVC_JB_OFF (Registration, 24);
+MSVC_JB_OFF (Ebp, 0);
+MSVC_JB_OFF (Ebx, 4);
+MSVC_JB_OFF (Edi, 8);
+MSVC_JB_OFF (Esi, 12);
+MSVC_JB_OFF (Esp, 16);
+MSVC_JB_OFF (Eip, 20);
+MSVC_JB_OFF (Registration, 24);
 #else /* ARM64 */
 _Static_assert (sizeof (void *) == 8, "ARM64 pointers must be 64 bits");
 _Static_assert (sizeof (_JUMP_BUFFER) == 192, "ARM64 _JUMP_BUFFER size changed");
 _Static_assert (sizeof (jmp_buf) == 192, "ARM64 jmp_buf size changed");
-MSVC_JB_OFF (Frame, 0); MSVC_JB_OFF (Reserved, 8);
-MSVC_JB_OFF (X19, 16); MSVC_JB_OFF (X20, 24); MSVC_JB_OFF (X21, 32); MSVC_JB_OFF (X22, 40); MSVC_JB_OFF (X23, 48);
-MSVC_JB_OFF (X24, 56); MSVC_JB_OFF (X25, 64); MSVC_JB_OFF (X26, 72); MSVC_JB_OFF (X27, 80); MSVC_JB_OFF (X28, 88);
-MSVC_JB_OFF (Fp, 96); MSVC_JB_OFF (Lr, 104); MSVC_JB_OFF (Sp, 112); MSVC_JB_OFF (Fpcr, 120); MSVC_JB_OFF (Fpsr, 124);
-MSVC_JB_OFF (D, 128); _Static_assert (sizeof (((_JUMP_BUFFER *)0)->D) == 64, "ARM64 D8-D15 size changed");
+MSVC_JB_OFF (Frame, 0);
+MSVC_JB_OFF (Reserved, 8);
+MSVC_JB_OFF (X19, 16);
+MSVC_JB_OFF (X20, 24);
+MSVC_JB_OFF (X21, 32);
+MSVC_JB_OFF (X22, 40);
+MSVC_JB_OFF (X23, 48);
+MSVC_JB_OFF (X24, 56);
+MSVC_JB_OFF (X25, 64);
+MSVC_JB_OFF (X26, 72);
+MSVC_JB_OFF (X27, 80);
+MSVC_JB_OFF (X28, 88);
+MSVC_JB_OFF (Fp, 96);
+MSVC_JB_OFF (Lr, 104);
+MSVC_JB_OFF (Sp, 112);
+MSVC_JB_OFF (Fpcr, 120);
+MSVC_JB_OFF (Fpsr, 124);
+MSVC_JB_OFF (D, 128);
+_Static_assert (sizeof (((_JUMP_BUFFER *)0)->D) == 64, "ARM64 D8-D15 size changed");
 #endif
 #else
 #define HEV_TASK_LONGJMP(env, value) _longjmp ((env), (value))

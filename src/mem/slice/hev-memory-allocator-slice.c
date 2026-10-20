@@ -166,8 +166,7 @@ _hev_memory_allocator_realloc (HevMemoryAllocator *allocator, void *ptr,
     } else {
         slice->index = -1;
 #ifdef _DEBUG
-        printf ("[%p] default realloc size: %lu\n", allocator,
-                (unsigned long)size);
+        printf ("[%p] default realloc size: %lu\n", allocator, (unsigned long)size);
 #endif
     }
 
