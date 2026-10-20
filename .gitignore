@@ -1,3 +1,10 @@
 bin
 build
 HevTaskSystem.xcframework
+
+# Native MSVC output directory (scripts live at the project root)
+/build-msvc/
+/*.obj
+/*.exe
+/*.lib
+/build-experiments/

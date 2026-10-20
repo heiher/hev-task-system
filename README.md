@@ -74,6 +74,18 @@ cd hev-task-system
 ./build-apple.sh
 ```
 
+### Native Visual C++ / MSVC (Windows x64)
+
+For native MSVC, use the scripts at the project root (PowerShell is required):
+
+```bat
+build-msvc.bat -Target all
+build-msvc.bat -Target run-tests -TestTimeoutSeconds 60
+build-msvc.bat -Target all -Arch arm64
+```
+
+Requires **Visual Studio 2022 17.5+** (or newer) and **clang-cl** in `PATH` with the MSVC/Windows SDK components.
+
 ### Windows (MSYS2)
 
 ```bash
@@ -104,4 +116,3 @@ make
 ## License
 
 MIT
-

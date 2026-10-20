@@ -7,14 +7,90 @@
  ============================================================================
  */
 
+#include "lib/misc/hev-compiler.h"
+
 #include <stdlib.h>
 #include <string.h>
+#if defined(HEV_MSVC_ABI)
+#include <windows.h>
+#else
 #include <pthread.h>
+#endif
 
-#include "lib/misc/hev-compiler.h"
 #include "mem/simple/hev-memory-allocator-simple.h"
 
 #include "hev-memory-allocator.h"
+
+#if defined(HEV_MSVC_ABI)
+
+static SRWLOCK key_lock = SRWLOCK_INIT;
+static DWORD key = FLS_OUT_OF_INDEXES;
+
+static DWORD
+hev_memory_allocator_get_key (void)
+{
+    DWORD result;
+
+    AcquireSRWLockExclusive (&key_lock);
+    if (key == FLS_OUT_OF_INDEXES)
+        key = FlsAlloc (NULL);
+    result = key;
+    ReleaseSRWLockExclusive (&key_lock);
+
+    return result;
+}
+
+void
+hev_memory_allocator_thread_key_fini (void)
+{
+    AcquireSRWLockExclusive (&key_lock);
+    if (key != FLS_OUT_OF_INDEXES) {
+        FlsFree (key);
+        key = FLS_OUT_OF_INDEXES;
+    }
+    ReleaseSRWLockExclusive (&key_lock);
+}
+
+EXPORT_SYMBOL HevMemoryAllocator *
+hev_memory_allocator_default (void)
+{
+    HevMemoryAllocator *allocator;
+    DWORD tls = hev_memory_allocator_get_key ();
+
+    if (tls == FLS_OUT_OF_INDEXES)
+        return NULL;
+
+    allocator = (HevMemoryAllocator *)FlsGetValue (tls);
+    if (!allocator) {
+        allocator = hev_memory_allocator_simple_new ();
+        if (!allocator)
+            return NULL;
+        if (!FlsSetValue (tls, allocator)) {
+            hev_memory_allocator_unref (allocator);
+            return NULL;
+        }
+    }
+
+    return allocator;
+}
+
+EXPORT_SYMBOL HevMemoryAllocator *
+hev_memory_allocator_set_default (HevMemoryAllocator *allocator)
+{
+    HevMemoryAllocator *old_allocator;
+    DWORD tls = hev_memory_allocator_get_key ();
+
+    if (tls == FLS_OUT_OF_INDEXES)
+        return NULL;
+
+    old_allocator = (HevMemoryAllocator *)FlsGetValue (tls);
+    if (!FlsSetValue (tls, allocator))
+        return NULL;
+
+    return old_allocator;
+}
+
+#else /* POSIX pthread */
 
 static pthread_key_t key;
 static pthread_once_t key_once = PTHREAD_ONCE_INIT;
@@ -53,6 +129,8 @@ hev_memory_allocator_set_default (HevMemoryAllocator *allocator)
 
     return old_allocator;
 }
+
+#endif /* HEV_MSVC_ABI */
 
 EXPORT_SYMBOL HevMemoryAllocator *
 hev_memory_allocator_ref (HevMemoryAllocator *self)
