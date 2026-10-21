@@ -35,7 +35,7 @@ NESTED(hev_task_execute)
 END(hev_task_execute)
 
 #if defined(_WIN32)
-NESTED(hev_task_msvc_longjmp)
+NESTED(hev_task_longjmp)
     testl   %edx, %edx
     jne     1f
     incl    %edx
