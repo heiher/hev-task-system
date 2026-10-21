@@ -40,8 +40,8 @@ NESTED(hev_task_execute)
     ldp  x4, x30, [sp]
     mov  sp, x4
     ret
-END(hev_task_execute)
 #endif
+END(hev_task_execute)
 
 #if defined(_WIN32)
 NESTED(hev_task_msvc_longjmp)
