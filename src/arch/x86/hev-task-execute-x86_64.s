@@ -65,5 +65,5 @@ NESTED(hev_task_longjmp)
     movq    0x18(%rcx), %rbp
     movq    0x10(%rcx), %rsp
     jmpq    *%rdx
-END(hev_task_msvc_longjmp)
+END(hev_task_longjmp)
 #endif
