@@ -9,8 +9,8 @@
 
 #include "asm.h"
 
-#if defined(_WIN32)
 NESTED(hev_task_execute)
+#if defined(_WIN32)
     .seh_proc hev_task_execute
     stp  x29, x30, [sp, #-0x10]!
     .seh_save_fplr_x 16
