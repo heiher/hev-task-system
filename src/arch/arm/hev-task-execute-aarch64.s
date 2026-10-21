@@ -44,7 +44,7 @@ NESTED(hev_task_execute)
 END(hev_task_execute)
 
 #if defined(_WIN32)
-NESTED(hev_task_msvc_longjmp)
+NESTED(hev_task_longjmp)
     mov  x9, x0
     cmp  w1, #0
     csinc w1, w1, wzr, ne
