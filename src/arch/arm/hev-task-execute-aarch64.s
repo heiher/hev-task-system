@@ -29,7 +29,6 @@ NESTED(hev_task_execute)
     ret
     .seh_endproc
 #else
-NESTED(hev_task_execute)
     ldr  x3, [x0]
     mov  x4, sp
     stp  x4, x30, [x3, -0x10]
@@ -78,5 +77,5 @@ NESTED(hev_task_longjmp)
     mov  w0, w1
     mov  sp, x10
     ret
-END(hev_task_msvc_longjmp)
+END(hev_task_longjmp)
 #endif
