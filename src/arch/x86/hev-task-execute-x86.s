@@ -48,5 +48,5 @@ NESTED(hev_task_longjmp)
     movl 0x10(%edx), %esp
     addl $0x4, %esp
     jmpl *0x14(%edx)
-END(hev_task_msvc_longjmp)
+END(hev_task_longjmp)
 #endif
