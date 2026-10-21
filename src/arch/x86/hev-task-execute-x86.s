@@ -32,7 +32,7 @@ END(hev_task_execute)
 .globl @feat.00
 .set @feat.00, 1
 
-NESTED(hev_task_msvc_longjmp)
+NESTED(hev_task_longjmp)
     movl 0x4(%esp), %edx
     movl 0x8(%esp), %eax
     testl %eax, %eax
