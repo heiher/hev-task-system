@@ -28,7 +28,6 @@ NESTED(hev_task_execute)
     .seh_endepilogue
     ret
     .seh_endproc
-END(hev_task_execute)
 #else
 NESTED(hev_task_execute)
     ldr  x3, [x0]
