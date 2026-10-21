@@ -20,6 +20,7 @@
 #include <windows.h>
 #include <wincrypt.h>
 #include <io.h>
+#include <malloc.h>
 #include <fcntl.h>
 #include <process.h>
 #include <basetsd.h>
@@ -89,6 +90,8 @@ typedef unsigned int mode_t;
 #define open _open
 #define openat hev_win_openat
 #define lseek _lseek
+#define alloca _alloca
+#define getpagesize() 4096
 
 struct iovec
 {
