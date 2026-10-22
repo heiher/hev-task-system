@@ -9,34 +9,25 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <pthread.h>
 
 #include "lib/misc/hev-compiler.h"
 #include "mem/simple/hev-memory-allocator-simple.h"
 
 #include "hev-memory-allocator.h"
 
-static pthread_key_t key;
-static pthread_once_t key_once = PTHREAD_ONCE_INIT;
-
-static void
-pthread_key_creator (void)
-{
-    pthread_key_create (&key, NULL);
-}
+static __thread HevMemoryAllocator *tls_default_allocator HEV_TLS_MODEL;
 
 EXPORT_SYMBOL HevMemoryAllocator *
 hev_memory_allocator_default (void)
 {
     HevMemoryAllocator *allocator;
 
-    pthread_once (&key_once, pthread_key_creator);
+    allocator = tls_default_allocator;
+    if (allocator)
+        return allocator;
 
-    allocator = pthread_getspecific (key);
-    if (!allocator) {
-        allocator = hev_memory_allocator_simple_new ();
-        pthread_setspecific (key, allocator);
-    }
+    allocator = hev_memory_allocator_simple_new ();
+    tls_default_allocator = allocator;
 
     return allocator;
 }
@@ -46,10 +37,8 @@ hev_memory_allocator_set_default (HevMemoryAllocator *allocator)
 {
     HevMemoryAllocator *old_allocator;
 
-    pthread_once (&key_once, pthread_key_creator);
-
-    old_allocator = pthread_getspecific (key);
-    pthread_setspecific (key, allocator);
+    old_allocator = tls_default_allocator;
+    tls_default_allocator = allocator;
 
     return old_allocator;
 }

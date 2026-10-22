@@ -29,6 +29,14 @@ extern "C" {
 
 #define barrier() __asm__ __volatile__ ("" : : : "memory")
 
+/* Initial-exec TLS keeps per-thread pointer lookups to a segment-relative
+ * load. Safe for dlopen'ed objects as long as the blocks stay tiny. */
+#if defined(__ELF__)
+#define HEV_TLS_MODEL __attribute__ ((tls_model ("initial-exec")))
+#else
+#define HEV_TLS_MODEL
+#endif
+
 static inline void
 __read_once_size (void *dst, const volatile void *src, int size)
 {

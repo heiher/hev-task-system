@@ -8,7 +8,6 @@
  */
 
 #include <stdlib.h>
-#include <pthread.h>
 
 #include "lib/misc/hev-compiler.h"
 #include "lib/misc/hev-task-stack-detector.h"
@@ -19,25 +18,12 @@
 
 #include "hev-task-system.h"
 
-static pthread_key_t key;
-static pthread_once_t key_once = PTHREAD_ONCE_INIT;
+__thread HevTaskSystemContext *hev_task_system_tls_context HEV_TLS_MODEL;
 
-static void
-pthread_key_creator (void)
-{
-    pthread_key_create (&key, NULL);
-}
-
-HevTaskSystemContext *
-hev_task_system_get_context (void)
-{
-    return pthread_getspecific (key);
-}
-
-static inline int
+static inline void
 hev_task_system_set_context (HevTaskSystemContext *context)
 {
-    return pthread_setspecific (key, context);
+    hev_task_system_tls_context = context;
 }
 
 EXPORT_SYMBOL int
@@ -53,8 +39,6 @@ hev_task_system_init (void)
     if (allocator)
         hev_memory_allocator_unref (allocator);
 
-    pthread_once (&key_once, pthread_key_creator);
-
     if (hev_task_system_get_context ())
         goto exit;
 
@@ -62,12 +46,9 @@ hev_task_system_init (void)
     if (!context)
         goto exit;
 
-    if (hev_task_system_set_context (context) < 0)
-        goto free_context;
-
     context->reactor = hev_task_io_reactor_new ();
     if (!context->reactor)
-        goto rest_context;
+        goto free_context;
 
     context->timer = hev_task_timer_new (context);
     if (!context->timer)
@@ -79,6 +60,8 @@ hev_task_system_init (void)
         goto free_timer;
 #endif
 
+    hev_task_system_set_context (context);
+
     return 0;
 
 #ifdef ENABLE_STACK_OVERFLOW_DETECTOR
@@ -87,8 +70,6 @@ free_timer:
 #endif
 free_reactor:
     hev_task_io_reactor_destroy (context->reactor);
-rest_context:
-    hev_task_system_set_context (NULL);
 free_context:
     hev_free (context);
 exit:
@@ -100,10 +81,6 @@ hev_task_system_fini (void)
 {
     HevMemoryAllocator *allocator;
     HevTaskSystemContext *context;
-
-    /* Ensure the context key exists before reading it, so that fini
-     * is safe even when it is called without a prior init. */
-    pthread_once (&key_once, pthread_key_creator);
 
     context = hev_task_system_get_context ();
     if (!context)
