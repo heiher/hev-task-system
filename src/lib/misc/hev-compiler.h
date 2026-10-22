@@ -34,7 +34,7 @@ extern "C" {
 #endif
 
 #ifndef EXPORT_SYMBOL
-#if defined(HEV_MSVC_ABI) && (defined(HEV_TASK_SYSTEM_BUILD_SHARED) || defined(HEV_SOCKS5_TUNNEL_BUILD))
+#if defined(HEV_MSVC_ABI) && defined(HEV_TASK_SYSTEM_BUILD_SHARED)
 #define EXPORT_SYMBOL __declspec (dllexport)
 #elif defined(HEV_MSVC_ABI)
 /* PE does not export via ELF visibility; symbols stay unexported by default. */
