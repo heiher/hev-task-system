@@ -79,6 +79,12 @@ hev_task_system_init (void)
         goto free_timer;
 #endif
 
+#if defined(__linux__) && defined(ENABLE_IO_RING)
+    /* The I/O ring is an optimization; keep running on the reactor
+     * when it is unsupported by the running kernel. */
+    context->uring = hev_task_io_uring_new (context);
+#endif
+
     return 0;
 
 #ifdef ENABLE_STACK_OVERFLOW_DETECTOR
@@ -108,6 +114,11 @@ hev_task_system_fini (void)
     context = hev_task_system_get_context ();
     if (!context)
         return;
+
+#if defined(__linux__) && defined(ENABLE_IO_RING)
+    if (context->uring)
+        hev_task_io_uring_destroy (context->uring);
+#endif
 
     if (context->dns_proxy)
         hev_task_dns_proxy_destroy (context->dns_proxy);

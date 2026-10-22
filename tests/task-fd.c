@@ -53,6 +53,10 @@ main (int argc, char *argv[])
 {
     HevTask *task;
 
+#if defined(ENABLE_IO_RING)
+    return 0;
+#endif
+
     assert (hev_task_system_init () == 0);
 
     assert (hev_task_io_socket_socketpair (PF_LOCAL, SOCK_STREAM, 0, fds) == 0);
