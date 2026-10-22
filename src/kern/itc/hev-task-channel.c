@@ -70,11 +70,9 @@ hev_task_channel_new_with_buffers (HevTaskChannel **chan1,
 
     return 0;
 
-    hev_free (c2);
 err1:
     hev_free (c1);
 err0:
-
     return -1;
 }
 
