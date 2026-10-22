@@ -23,11 +23,11 @@ $Root = $PSScriptRoot
 # Preserve the established x64 output paths. Use separate folders for x86 and
 # native ARM64 so no architecture ever overwrites another's artifacts.
 $BuildDir = if ($Arch -eq 'x64') {
-    Join-Path $Root 'build-msvc'
+    Join-Path $Root 'build'
 } elseif ($Arch -eq 'x86') {
-    Join-Path $Root 'build-msvc\x86'
+    Join-Path $Root 'build\x86'
 } else {
-    Join-Path $Root 'build-msvc\arm64'
+    Join-Path $Root 'build\arm64'
 }
 $ObjDir = Join-Path $BuildDir 'obj'
 $BinDir = Join-Path $BuildDir 'bin'
