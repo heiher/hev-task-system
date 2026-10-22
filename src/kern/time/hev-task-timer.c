@@ -84,7 +84,7 @@ hev_task_timer_get_expire (struct timespec *expire, unsigned int milliseconds)
 {
     expire->tv_sec += milliseconds / 1000;
     expire->tv_nsec += (milliseconds % 1000) * 1000000;
-    if (expire->tv_nsec > 1000000000L) {
+    if (expire->tv_nsec >= 1000000000L) {
         expire->tv_sec++;
         expire->tv_nsec -= 1000000000L;
     }
