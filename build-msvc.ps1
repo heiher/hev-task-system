@@ -120,6 +120,13 @@ function Assert-Arm64UnwindInfo([string]$ExePath) {
     #     shared epilogue (ldp fp,lr,[sp],#0x10; ret) decoded by dumpbin.
     # Boundaries between table entries are the 'Begin Packed' lines.
     $lines = @(& dumpbin.exe /nologo /unwindinfo $ExePath)
+    # Every record is introduced by a header line holding the RVA pair, and the
+    # [RawPdata=...] line follows it, ahead of the decoded instructions. A
+    # packed record carries its whole encoding on that [RawPdata=...] line, so
+    # a record's block has to start at its header: starting the block at the
+    # first instruction line would drop the encoding from the block and the
+    # packed record could never be recognized.
+    $record = '^(Function Table|\s+[0-9A-Fa-f]{8} [0-9A-Fa-f]{8}\s)'
     $starts = @()
     for ($i = 0; $i -lt $lines.Count; $i++) {
         if ($lines[$i] -match '\+0000 stp\s+fp,lr,\[sp,#-0x10\]!') { $starts += $i }
@@ -130,21 +137,28 @@ function Assert-Arm64UnwindInfo([string]$ExePath) {
     }
     $found = $false
     foreach ($start in $starts) {
+        $begin = $start
+        while ($begin -gt 0 -and $lines[$begin] -notmatch $record) { $begin-- }
         $end = $start + 1
-        while ($end -lt $lines.Count -and $lines[$end] -notmatch '^(Function Table|\s+[0-9A-Fa-f]{8} [0-9A-Fa-f]{8}\s)') { $end++ }
-        $block = $lines[$start..($end - 1)]
+        while ($end -lt $lines.Count -and $lines[$end] -notmatch $record) { $end++ }
+        $block = $lines[$begin..($end - 1)]
         if ($block | Where-Object { $_ -match 'RawXdata=[0-9A-Fa-f]+' }) {
             $found = $true
             if (-not ($block | Where-Object { $_ -match 'mov   sp,fp' })) {
                 throw "hev_task_execute unwind entry in $ExePath lost its epilogue."
             }
-            if ($block | Where-Object { $_ -match '^\*\*\*\*' }) {
+            if ($block | Where-Object { $_ -match '^\s*\*\*\*\*' }) {
                 throw "hev_task_execute unwind entry in $ExePath does not match the encoded instructions."
             }
             return
         }
         if ($block | Where-Object { $_ -match 'RawPdata=\w+ 00E00021' }) {
             $found = $true
+            if (-not ($block | Where-Object { $_ -match 'Flag=1' }) -or
+                -not ($block | Where-Object { $_ -match 'CR=3' }) -or
+                -not ($block | Where-Object { $_ -match 'FrameSize=0x10' })) {
+                throw "hev_task_execute packed unwind entry in $ExePath lost its packed encoding."
+            }
             if (-not ($block | Where-Object { $_ -match 'mov\s+fp,sp' })) {
                 throw "hev_task_execute packed unwind entry in $ExePath lost its frame-chained prologue."
             }
