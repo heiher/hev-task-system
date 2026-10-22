@@ -150,6 +150,7 @@ hev_task_channel_read (HevTaskChannel *self, void *buffer, size_t count)
 
         WRITE_ONCE (self->task, hev_task_self ());
         hev_task_yield (HEV_TASK_WAITIO);
+        WRITE_ONCE (self->task, NULL);
     }
 
     barrier ();
@@ -200,6 +201,7 @@ hev_task_channel_write (HevTaskChannel *self, const void *buffer, size_t count)
 
         WRITE_ONCE (self->task, hev_task_self ());
         hev_task_yield (HEV_TASK_WAITIO);
+        WRITE_ONCE (self->task, NULL);
     }
 
     barrier ();
@@ -237,6 +239,7 @@ hev_task_channel_write (HevTaskChannel *self, const void *buffer, size_t count)
 
         WRITE_ONCE (self->task, hev_task_self ());
         hev_task_yield (HEV_TASK_WAITIO);
+        WRITE_ONCE (self->task, NULL);
     }
 
     barrier ();
