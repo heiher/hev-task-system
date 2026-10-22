@@ -19,7 +19,7 @@ hev_task_execute:
     jalr  a1
 
     lw  ra, (sp)
-    lw  sp, 0x0c(sp)
+    lw  sp, 0x04(sp)
     jr  ra
 
     .size hev_task_execute, . - hev_task_execute
