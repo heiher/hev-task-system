@@ -70,10 +70,11 @@ hev_task_stack_new (int size)
 
     size += STACK_OVERFLOW_DETECTION_SIZE;
     self = hev_malloc (sizeof (HevTaskStack) + size);
-    if (self)
+    if (self) {
         self->size = size;
+        hev_task_stack_detection_mark (self);
+    }
 
-    hev_task_stack_detection_mark (self);
     return self;
 }
 
