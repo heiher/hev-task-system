@@ -109,31 +109,15 @@ main (int argc, char *argv[])
     hev_circular_buffer_read_finish (buffer, (128 - 16 - 16));
 
     /* |------------------------------|
-     *  ^
-     */
-    assert (0 == hev_circular_buffer_get_use_size (buffer));
-    assert (1 == hev_circular_buffer_writing (buffer, iov));
-    assert (iov[0].iov_base);
-    assert (iov[0].iov_len == 128);
-    hev_circular_buffer_write_finish (buffer, 128);
-
-    /* |xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx|
-     *  ^
-     */
-    assert (128 == hev_circular_buffer_get_use_size (buffer));
-    assert (1 == hev_circular_buffer_reading (buffer, iov));
-    assert (iov[0].iov_base);
-    assert (iov[0].iov_len == 128);
-    hev_circular_buffer_read_finish (buffer, (128 - 16));
-
-    /* |--------------------------xxxx|
      *                            ^
      */
-    assert (16 == hev_circular_buffer_get_use_size (buffer));
-    assert (1 == hev_circular_buffer_writing (buffer, iov));
+    assert (0 == hev_circular_buffer_get_use_size (buffer));
+    assert (2 == hev_circular_buffer_writing (buffer, iov));
     assert (iov[0].iov_base);
-    assert (iov[0].iov_len == (128 - 16));
-    hev_circular_buffer_write_finish (buffer, 16);
+    assert (iov[0].iov_len == 16);
+    assert (iov[1].iov_base);
+    assert (iov[1].iov_len == (128 - 16));
+    hev_circular_buffer_write_finish (buffer, 32);
 
     /* |xxxx----------------------xxxx|
      *                            ^
@@ -144,15 +128,9 @@ main (int argc, char *argv[])
     assert (iov[0].iov_len == 16);
     assert (iov[1].iov_base);
     assert (iov[1].iov_len == 16);
-    hev_circular_buffer_read_finish (buffer, 32);
-
-    /* |------------------------------|
-     *  ^
-     */
-    assert (0 == hev_circular_buffer_get_use_size (buffer));
     assert (1 == hev_circular_buffer_writing (buffer, iov));
     assert (iov[0].iov_base);
-    assert (iov[0].iov_len == 128);
+    assert (iov[0].iov_len == (128 - 16 - 16));
 
     hev_circular_buffer_unref (buffer);
 
