@@ -99,7 +99,15 @@ EXPORT_SYMBOL void
 hev_task_system_fini (void)
 {
     HevMemoryAllocator *allocator;
-    HevTaskSystemContext *context = hev_task_system_get_context ();
+    HevTaskSystemContext *context;
+
+    /* Ensure the context key exists before reading it, so that fini
+     * is safe even when it is called without a prior init. */
+    pthread_once (&key_once, pthread_key_creator);
+
+    context = hev_task_system_get_context ();
+    if (!context)
+        return;
 
     if (context->dns_proxy)
         hev_task_dns_proxy_destroy (context->dns_proxy);
