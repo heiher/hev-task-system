@@ -22,8 +22,8 @@
 #endif
 
 #if defined(_MSC_VER) && (defined(_M_X64) || defined(_M_IX86) || defined(_M_ARM64))
-__declspec(noreturn) void hev_task_msvc_longjmp (void *env, int value);
-#define HEV_TASK_LONGJMP(env, value) hev_task_msvc_longjmp ((void *)(env), (value))
+__declspec(noreturn) void hev_task_longjmp (void *env, int value);
+#define HEV_TASK_LONGJMP(env, value) hev_task_longjmp ((void *)(env), (value))
 #include <stddef.h>
 #define MSVC_JB_OFF(field, off) _Static_assert (offsetof (_JUMP_BUFFER, field) == (off), #field " offset changed")
 #if defined(_M_X64)

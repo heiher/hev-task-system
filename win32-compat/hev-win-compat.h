@@ -232,8 +232,8 @@ FILE *hev_win_fopen (const char *path, const char *mode);
 
 #define fopen hev_win_fopen
 
-void hev_task_msvc_longjmp (void *env, int val);
-#define _longjmp(env, val) hev_task_msvc_longjmp ((env), (val))
+void hev_task_longjmp (void *env, int val);
+#define _longjmp(env, val) hev_task_longjmp ((env), (val))
 
 #ifndef strcasecmp
 #define strcasecmp _stricmp
