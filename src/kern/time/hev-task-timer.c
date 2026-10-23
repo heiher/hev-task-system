@@ -29,6 +29,12 @@ struct _HevTaskTimer
 {
     HevRBTreeCached sort_tree;
     HevTaskSystemContext *ctx;
+
+    /* One-shot timestamp recorded by wait() right before it yields. The
+     * blocking poll consumes it for the epoll timeout, saving a clock
+     * read; wake() drops it so it never survives a schedule pass. */
+    struct timespec cached_curr;
+    int cached_curr_valid;
 };
 
 struct _HevTaskTimerNode
@@ -141,7 +147,12 @@ hev_task_timer_get_timeout (HevTaskTimer *self)
     if (!node)
         return -1;
 
-    hev_task_timer_get_curr (&curr);
+    if (self->cached_curr_valid) {
+        curr = self->cached_curr;
+        self->cached_curr_valid = 0;
+    } else {
+        hev_task_timer_get_curr (&curr);
+    }
     this = container_of (node, HevTaskTimerNode, base);
     return hev_task_timer_get_time (&curr, &this->expire);
 }
@@ -169,6 +180,9 @@ hev_task_timer_wake (HevTaskTimer *self)
     HevRBTreeNode *node;
     struct timespec curr;
 
+    /* Ends a schedule pass: the cached timestamp must never outlive it. */
+    self->cached_curr_valid = 0;
+
     node = hev_rbtree_cached_first (&self->sort_tree);
     if (!node)
         return;
@@ -188,6 +202,8 @@ hev_task_timer_wait (HevTaskTimer *self, unsigned int milliseconds,
 
     /* get expire time */
     hev_task_timer_get_curr (&node->expire);
+    self->cached_curr = node->expire;
+    self->cached_curr_valid = 1;
     hev_task_timer_get_expire (&node->expire, milliseconds);
     node->task = task;
 
