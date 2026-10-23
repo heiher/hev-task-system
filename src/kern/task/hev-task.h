@@ -122,7 +122,7 @@ HevTaskState hev_task_get_state (HevTask *self);
  * @self: a #HevTask
  * @priority: priority
  *
- * Set the priority of a task. The value range of priority are [0-1],
+ * Set the priority of a task. The value range of priority is [0-15],
  * with smaller values representing higher priorities.
  *
  * Since: 1.0
@@ -291,7 +291,7 @@ void hev_task_run (HevTask *self, HevTaskEntry entry, void *data);
 /**
  * hev_task_exit:
  *
- * The function terminates the calling process immediately.
+ * The function terminates the calling task immediately.
  *
  * Since: 1.4
  */

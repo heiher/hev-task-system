@@ -34,12 +34,14 @@ hev_task_io_reactor_new (void)
 
     flags = fcntl (self->fd, F_GETFD);
     if (flags < 0) {
+        close (self->fd);
         hev_free (self);
         return NULL;
     }
 
     flags |= FD_CLOEXEC;
     if (fcntl (self->fd, F_SETFD, flags) < 0) {
+        close (self->fd);
         hev_free (self);
         return NULL;
     }

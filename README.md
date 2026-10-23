@@ -54,6 +54,9 @@ make apps
 
 # Tests
 make tests
+
+# Benchmarks
+make benches
 ```
 
 ### Android

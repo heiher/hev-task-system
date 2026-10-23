@@ -77,7 +77,7 @@ hev_task_cond_timedwait (HevTaskCond *self, HevTaskMutex *mutex,
         if (node.next)
             node.next->prev = node.prev;
         if (self->waiters == &node)
-            self->waiters = NULL;
+            self->waiters = node.next;
         return -1;
     }
 

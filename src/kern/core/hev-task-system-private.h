@@ -29,6 +29,7 @@ __declspec (noreturn) void hev_task_longjmp (void *env, int value);
 #include "kern/time/hev-task-timer.h"
 #include "kern/io/hev-task-io-reactor.h"
 #include "lib/list/hev-list.h"
+#include "lib/misc/hev-compiler.h"
 #include "lib/dns/hev-task-dns-proxy.h"
 #include "lib/rbtree/hev-rbtree-cached.h"
 #include "lib/misc/hev-task-stack-detector.h"
@@ -74,6 +75,12 @@ void hev_task_system_kill_current_task (void);
 void hev_task_system_wakeup_task_with_context (HevTaskSystemContext *ctx,
                                                HevTask *task);
 
-HevTaskSystemContext *hev_task_system_get_context (void);
+extern __thread HevTaskSystemContext *hev_task_system_tls_context HEV_TLS_MODEL;
+
+static inline HevTaskSystemContext *
+hev_task_system_get_context (void)
+{
+    return hev_task_system_tls_context;
+}
 
 #endif /* __HEV_TASK_SYSTEM_PRIVATE_H__ */

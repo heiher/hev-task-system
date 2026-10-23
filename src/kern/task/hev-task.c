@@ -246,6 +246,9 @@ hev_task_join (HevTask *task)
         hev_task_yield (HEV_TASK_WAITIO);
     }
 
+    /* Avoid waking up the joiner again if the task is re-run. */
+    task->joiner = NULL;
+
     return 0;
 }
 

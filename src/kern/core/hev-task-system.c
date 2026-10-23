@@ -12,8 +12,6 @@
 #include <stdlib.h>
 #if defined(HEV_MSVC_ABI)
 #include <windows.h>
-#else
-#include <pthread.h>
 #endif
 
 #include "lib/misc/hev-task-stack-detector.h"
@@ -65,27 +63,14 @@ hev_task_system_set_context (HevTaskSystemContext *context)
     return FlsSetValue (tls, context) ? 0 : -1;
 }
 
-#else /* POSIX pthread */
+#else /* POSIX */
 
-static pthread_key_t key;
-static pthread_once_t key_once = PTHREAD_ONCE_INIT;
+__thread HevTaskSystemContext *hev_task_system_tls_context HEV_TLS_MODEL;
 
-static void
-pthread_key_creator (void)
-{
-    pthread_key_create (&key, NULL);
-}
-
-HevTaskSystemContext *
-hev_task_system_get_context (void)
-{
-    return pthread_getspecific (key);
-}
-
-static inline int
+static inline void
 hev_task_system_set_context (HevTaskSystemContext *context)
 {
-    return pthread_setspecific (key, context);
+    hev_task_system_tls_context = context;
 }
 
 #endif /* HEV_MSVC_ABI */
@@ -103,10 +88,6 @@ hev_task_system_init (void)
     if (allocator)
         hev_memory_allocator_unref (allocator);
 
-#if !defined(HEV_MSVC_ABI)
-    pthread_once (&key_once, pthread_key_creator);
-#endif
-
     if (hev_task_system_get_context ())
         goto exit;
 
@@ -114,12 +95,9 @@ hev_task_system_init (void)
     if (!context)
         goto exit;
 
-    if (hev_task_system_set_context (context) < 0)
-        goto free_context;
-
     context->reactor = hev_task_io_reactor_new ();
     if (!context->reactor)
-        goto rest_context;
+        goto free_context;
 
     context->timer = hev_task_timer_new (context);
     if (!context->timer)
@@ -131,6 +109,8 @@ hev_task_system_init (void)
         goto free_timer;
 #endif
 
+    hev_task_system_set_context (context);
+
     return 0;
 
 #ifdef ENABLE_STACK_OVERFLOW_DETECTOR
@@ -139,8 +119,6 @@ free_timer:
 #endif
 free_reactor:
     hev_task_io_reactor_destroy (context->reactor);
-rest_context:
-    hev_task_system_set_context (NULL);
 free_context:
     hev_free (context);
 exit:
@@ -151,8 +129,9 @@ EXPORT_SYMBOL void
 hev_task_system_fini (void)
 {
     HevMemoryAllocator *allocator;
-    HevTaskSystemContext *context = hev_task_system_get_context ();
+    HevTaskSystemContext *context;
 
+    context = hev_task_system_get_context ();
     if (!context)
         return;
 

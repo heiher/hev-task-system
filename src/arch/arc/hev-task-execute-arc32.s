@@ -19,7 +19,7 @@ hev_task_execute:
     jl_s [r1]
 
     ld   blink, [sp]
-    ld   sp, [sp, 0x0c]
+    ld   sp, [sp, 0x04]
     j_s  [blink]
 
     .size hev_task_execute, . - hev_task_execute
