@@ -13,6 +13,16 @@
 #include <time.h>
 #include <setjmp.h>
 
+/* The MSVC ABI targets use the architecture specific hev_task_longjmp backend
+ * (src/arch), the other targets use the libc longjmp. */
+#if defined(_MSC_VER) && \
+    (defined(_M_X64) || defined(_M_IX86) || defined(_M_ARM64))
+__declspec (noreturn) void hev_task_longjmp (void *env, int value);
+#define HEV_TASK_LONGJMP(env, value) hev_task_longjmp ((void *)(env), (value))
+#else
+#define HEV_TASK_LONGJMP(env, value) _longjmp ((env), (value))
+#endif
+
 #include "hev-task-system.h"
 #include "kern/task/hev-task.h"
 #include "kern/task/hev-task-private.h"

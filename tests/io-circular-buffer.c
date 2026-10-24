@@ -50,7 +50,7 @@ main (int argc, char *argv[])
     wb2 = iov[0].iov_base;
     assert (iov[0].iov_base);
     assert (iov[0].iov_len == (128 - 32));
-    assert (32 == (wb2 - wb1));
+    assert (32 == ((char *)wb2 - (char *)wb1));
     hev_circular_buffer_write_finish (buffer, 128 - 32);
 
     /* |xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx|
@@ -78,7 +78,7 @@ main (int argc, char *argv[])
     rb3 = iov[0].iov_base;
     assert (iov[0].iov_base);
     assert (iov[0].iov_len == (128 - 16));
-    assert (rb3 == (rb1 + 16));
+    assert (rb3 == ((char *)rb1 + 16));
     hev_circular_buffer_read_finish (buffer, (128 - 16));
 
     /* |------------------------------|

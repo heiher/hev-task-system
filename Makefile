@@ -98,7 +98,7 @@ endif
 
 
 tests : $(patsubst $(TESTDIR)/%.c,$(BINDIR)/test-%,$(wildcard $(TESTDIR)/*.c))
-	$(ECHO_PREFIX) for test in $^; do printf $(TESTMSG) $$test; $$test; done
+	$(ECHO_PREFIX) set -e; for test in $^; do printf $(TESTMSG) $$test; $$test; done
 
 $(BINDIR)/test-% : $(TESTDIR)/%.c $(STATIC_TARGET)
 	$(ECHO_PREFIX) $(CC) -o $@ $^ $(APP_CCFLAGS) $(APP_LDFLAGS)

@@ -160,3 +160,59 @@ jobs:
           export MSYS=winsymlinks:native
           git clone --depth=1 --recursive file://`pwd` work; cd work
           make -j`nproc`
+
+  windows-msvc:
+    name: Windows native MSVC x64 with clang-cl (compile, link and test)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - name: Compile, link and test native library, tests and demos
+        shell: pwsh
+        run: |
+          & .\build-msvc.ps1 -Target run-tests
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+  windows-msvc-x86-experimental:
+    name: Windows native x86 with clang-cl (experimental, compile only)
+    runs-on: windows-latest
+    continue-on-error: true  # lift this once Win32 ABI/runtime tests pass
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - name: Compile and link experimental native Win32 library and tests
+        shell: pwsh
+        run: |
+          & .\build-msvc.ps1 -Target all -Arch x86
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+  windows-msvc-arm64:
+    name: Windows native ARM64 with clang-cl (cross compile and link)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      # Cross-compiles genuine native ARM64 (clang-cl targeting
+      # aarch64-pc-windows-msvc, not ARM64EC) from the x64 runner. Tests are
+      # compiled and linked but cannot be executed without Windows-on-ARM
+      # hardware.
+      - name: Compile and link native ARM64 library, tests and demos
+        shell: pwsh
+        run: |
+          & .\build-msvc.ps1 -Target all -Arch arm64
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      # Static checks: every library member and executable must be machine
+      # AA64, the GAS ARM64 context switch must carry .pdata/.xdata unwind
+      # records, and dumpbin must decode the hev_task_execute unwind entry
+      # without mismatches.
+      - name: Verify ARM64 machine types and unwind metadata
+        shell: pwsh
+        run: |
+          & .\build-msvc.ps1 -Target verify -Arch arm64
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

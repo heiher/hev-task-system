@@ -7,7 +7,7 @@
  ============================================================================
  */
 
-#if !defined(__linux__) && !defined(__MSYS__)
+#if !defined(__linux__) && !defined(__MSYS__) && !defined(_WIN32)
 
 #include <fcntl.h>
 #include <unistd.h>

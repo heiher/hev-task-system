@@ -12,7 +12,9 @@
 #include <string.h>
 #include <assert.h>
 #include <unistd.h>
+#ifndef _WIN32
 #include <alloca.h>
+#endif
 
 #include <hev-task.h>
 #include <hev-task-call.h>

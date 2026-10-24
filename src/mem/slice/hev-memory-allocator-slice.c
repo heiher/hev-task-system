@@ -93,15 +93,14 @@ _hev_memory_allocator_alloc (HevMemoryAllocator *allocator, size_t size)
     size = ALIGN_UP (size, CACHED_SLICE_ALIGN);
     index = size / CACHED_SLICE_ALIGN;
 
-    switch (index) {
-    case 0:
+    if (index == 0)
         return NULL;
-    case 1 ... MAX_CACHED_SLICE_INDEX:
+
+    if (index <= MAX_CACHED_SLICE_INDEX) {
         owner = &self->cached_mslices[index - 1];
-        break;
-    default:
+    } else {
 #ifdef _DEBUG
-        printf ("[%p] default alloc size: %lu\n", self, size);
+        printf ("[%p] default alloc size: %lu\n", self, (unsigned long)size);
 #endif
         slice = malloc (sizeof (HevMemorySlice) + size);
         if (!slice)
@@ -123,7 +122,7 @@ _hev_memory_allocator_alloc (HevMemoryAllocator *allocator, size_t size)
             _hev_memory_allocator_lru_insert (self, node);
     } else {
 #ifdef _DEBUG
-        printf ("[%p] alloc size: %lu\n", self, size);
+        printf ("[%p] alloc size: %lu\n", self, (unsigned long)size);
 #endif
         slice = malloc (sizeof (HevMemorySlice) + size);
         if (!slice)
@@ -155,17 +154,15 @@ _hev_memory_allocator_realloc (HevMemoryAllocator *allocator, void *ptr,
     if (!slice)
         return NULL;
 
-    switch (index) {
-    case 1 ... MAX_CACHED_SLICE_INDEX:
+    if (index <= MAX_CACHED_SLICE_INDEX) {
         slice->index = index - 1;
 #ifdef _DEBUG
-        printf ("[%p] realloc size: %lu\n", allocator, size);
+        printf ("[%p] realloc size: %lu\n", allocator, (unsigned long)size);
 #endif
-        break;
-    default:
+    } else {
         slice->index = -1;
 #ifdef _DEBUG
-        printf ("[%p] default realloc size: %lu\n", allocator, size);
+        printf ("[%p] default realloc size: %lu\n", allocator, (unsigned long)size);
 #endif
     }
 

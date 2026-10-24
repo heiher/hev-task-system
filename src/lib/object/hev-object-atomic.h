@@ -10,7 +10,7 @@
 #ifndef __HEV_OBJECT_ATOMIC_H__
 #define __HEV_OBJECT_ATOMIC_H__
 
-#include <hev-object.h>
+#include "hev-object.h"
 
 #ifdef __cplusplus
 extern "C" {
