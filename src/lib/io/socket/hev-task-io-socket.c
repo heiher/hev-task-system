@@ -305,6 +305,12 @@ retry:
         goto retry;
     }
 
+    /* The kernel updates these fields on our local copy, propagate them
+     * back, the caller can not see flags like MSG_TRUNC otherwise. */
+    msg->msg_flags = mh.msg_flags;
+    msg->msg_namelen = mh.msg_namelen;
+    msg->msg_controllen = mh.msg_controllen;
+
     if (!(flags & MSG_WAITALL))
         return s;
 
