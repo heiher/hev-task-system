@@ -19,7 +19,7 @@ jobs:
           sudo apt install -y clang-format
       - name: Format
         run: |
-          find src -iname "*.[h,c]" -exec clang-format -i {} \;
+          find apps benches src tests -iname "*.[h,c]" -exec clang-format -i {} \;
           git checkout src/arch/arm/asm.h src/arch/x86/asm.h
       - name: Check
         run: |
