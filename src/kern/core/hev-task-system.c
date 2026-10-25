@@ -18,7 +18,7 @@
 
 #include "hev-task-system.h"
 
-__thread HevTaskSystemContext *hev_task_system_tls_context HEV_TLS_MODEL;
+__thread HevTaskSystemContext *hev_task_system_tls_context;
 
 static inline void
 hev_task_system_set_context (HevTaskSystemContext *context)
