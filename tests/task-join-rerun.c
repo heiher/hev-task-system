@@ -55,7 +55,8 @@ main (int argc, char *argv[])
     assert (count == 1);
 
     /* Re-run task1. The stale joiner from task2 must not be woken
-     * now that task2 has stopped. */
+     * now that task2 has stopped. hev_task_run is transfer full. */
+    hev_task_ref (task1);
     hev_task_run (task1, task1_entry, NULL);
     hev_task_system_run ();
 

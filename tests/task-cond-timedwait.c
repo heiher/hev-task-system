@@ -60,9 +60,6 @@ main (int argc, char *argv[])
 
     hev_task_system_run ();
 
-    hev_task_unref (task_late);
-    hev_task_unref (task_early);
-
     hev_task_system_fini ();
     return 0;
 }
