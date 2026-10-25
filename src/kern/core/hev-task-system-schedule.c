@@ -174,6 +174,22 @@ hev_task_system_io_poll (HevTaskSystemContext *ctx, int timeout)
     }
 
     hev_task_timer_wake (ctx->timer);
+
+#if CONFIG_SCHED_IO_POLL_INTERVAL > 0
+    /* Re-arm the deadline for throttling the next non-blocking poll. */
+    hev_task_timer_poll_rearm (ctx->timer, CONFIG_SCHED_IO_POLL_INTERVAL);
+#endif
+}
+
+static inline void
+hev_task_system_io_poll_maybe (HevTaskSystemContext *ctx)
+{
+#if CONFIG_SCHED_IO_POLL_INTERVAL > 0
+    if (!hev_task_timer_poll_due (ctx->timer))
+        return;
+#endif
+
+    hev_task_system_io_poll (ctx, 0);
 }
 
 static inline void
@@ -183,7 +199,7 @@ hev_task_system_pick_current_task (HevTaskSystemContext *ctx)
 
     if (ctx->running_task_count < ctx->total_task_count) {
         if (ctx->running_task_count) {
-            hev_task_system_io_poll (ctx, 0);
+            hev_task_system_io_poll_maybe (ctx);
         } else {
             do {
                 hev_task_system_io_poll (ctx, -1);
