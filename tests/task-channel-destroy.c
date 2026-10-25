@@ -22,8 +22,7 @@ task_reader_entry (void *data)
     int val;
 
     /* Blocks until the writer produces; leaves after consuming. */
-    assert (hev_task_channel_read (chan1, &val, sizeof (val)) ==
-            sizeof (val));
+    assert (hev_task_channel_read (chan1, &val, sizeof (val)) == sizeof (val));
     assert (val == 42);
 }
 
@@ -32,8 +31,7 @@ task_writer_entry (void *data)
 {
     int val = 42;
 
-    assert (hev_task_channel_write (chan2, &val, sizeof (val)) ==
-            sizeof (val));
+    assert (hev_task_channel_write (chan2, &val, sizeof (val)) == sizeof (val));
 
     /* Wait until the reader consumed and exited, then destroy. The
      * stale waiter pointer must not be woken. */
