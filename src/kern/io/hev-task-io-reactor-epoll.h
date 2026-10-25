@@ -18,19 +18,19 @@
 typedef struct _HevTaskIOReactorSetupEvent HevTaskIOReactorSetupEvent;
 typedef struct epoll_event HevTaskIOReactorWaitEvent;
 
-typedef enum _HevTaskIOReactorEvents
+enum _HevTaskIOReactorEvents
 {
     HEV_TASK_IO_REACTOR_EV_RO = EPOLLIN,
     HEV_TASK_IO_REACTOR_EV_WO = EPOLLOUT,
     HEV_TASK_IO_REACTOR_EV_ER = EPOLLERR,
-} HevTaskIOReactorEvents;
+};
 
-typedef enum _HevTaskIOReactorOperation
+enum _HevTaskIOReactorOperation
 {
     HEV_TASK_IO_REACTOR_OP_ADD = EPOLL_CTL_ADD,
     HEV_TASK_IO_REACTOR_OP_MOD = EPOLL_CTL_MOD,
     HEV_TASK_IO_REACTOR_OP_DEL = EPOLL_CTL_DEL,
-} HevTaskIOReactorOperation;
+};
 
 struct _HevTaskIOReactorSetupEvent
 {

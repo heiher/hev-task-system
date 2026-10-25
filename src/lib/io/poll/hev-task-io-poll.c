@@ -7,6 +7,7 @@
  ============================================================================
  */
 
+#include "hev-sys.h"
 #include "kern/task/hev-task.h"
 #include "lib/misc/hev-compiler.h"
 

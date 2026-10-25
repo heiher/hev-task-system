@@ -30,7 +30,7 @@ $(SHARED_TARGET) : LDFLAGS+=-shared -pthread
 
 -include build.mk
 -include configs.mk
-CCFLAGS+=-I$(SRCDIR) $(CONFIG_CFLAGS)
+CCFLAGS+=-I$(SRCDIR) -I$(SRCDIR)/sys/unix $(CONFIG_CFLAGS)
 
 CCSRCS=$(filter %.c,$(SRCFILES))
 ASSRCS=$(filter %.S,$(SRCFILES))
@@ -98,7 +98,7 @@ endif
 
 
 tests : $(patsubst $(TESTDIR)/%.c,$(BINDIR)/test-%,$(wildcard $(TESTDIR)/*.c))
-	$(ECHO_PREFIX) set -e; for test in $^; do printf $(TESTMSG) $$test; $$test; done
+	$(ECHO_PREFIX) for test in $^; do printf $(TESTMSG) $$test; $$test; done
 
 $(BINDIR)/test-% : $(TESTDIR)/%.c $(STATIC_TARGET)
 	$(ECHO_PREFIX) $(CC) -o $@ $^ $(APP_CCFLAGS) $(APP_LDFLAGS)

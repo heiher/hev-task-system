@@ -10,9 +10,9 @@
 #ifndef __HEV_TASK_IO_REACTOR_H__
 #define __HEV_TASK_IO_REACTOR_H__
 
-#include "lib/misc/hev-compiler.h"
-
 typedef struct _HevTaskIOReactor HevTaskIOReactor;
+typedef enum _HevTaskIOReactorEvents HevTaskIOReactorEvents;
+typedef enum _HevTaskIOReactorOperation HevTaskIOReactorOperation;
 
 struct _HevTaskIOReactor
 {
@@ -23,7 +23,7 @@ struct _HevTaskIOReactor
     };
 };
 
-#if defined(__MSYS__) || defined(HEV_MSVC_ABI)
+#if defined(__MSYS__) || (defined(_WIN32) && !defined(__CYGWIN__))
 #include "kern/io/hev-task-io-reactor-iocp.h"
 #elif defined(__linux__)
 #include "kern/io/hev-task-io-reactor-epoll.h"

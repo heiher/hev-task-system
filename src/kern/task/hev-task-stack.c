@@ -8,13 +8,8 @@
  */
 
 #include <stdint.h>
-#include <unistd.h>
 
-/* No mman on Windows: discard is a no-op. */
-#if !defined(_WIN32)
-#include <sys/mman.h>
-#endif
-
+#include "hev-sys.h"
 #include "lib/misc/hev-compiler.h"
 
 #include "hev-task-stack.h"

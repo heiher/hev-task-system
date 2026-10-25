@@ -44,13 +44,13 @@ hev_task_channel_new_with_buffers (HevTaskChannel **chan1,
     if (!c2)
         goto err1;
 
-    memset (c1, 0, sizeof (HevTaskChannel));
+    __builtin_bzero (c1, sizeof (HevTaskChannel));
     c1->peer = c2;
     c1->max_size = size;
     c1->max_count = buffers;
     c1->ref_count = 1;
 
-    memset (c2, 0, sizeof (HevTaskChannel));
+    __builtin_bzero (c2, sizeof (HevTaskChannel));
     c2->peer = c1;
     c2->max_size = size;
     c2->max_count = buffers;
@@ -60,8 +60,10 @@ hev_task_channel_new_with_buffers (HevTaskChannel **chan1,
         unsigned int i;
 
         for (i = 0; i < buffers; i++) {
-            c1->buffers[i].data = (HevTaskChannelData *)((char *)c1->buffers + buffers_size + size * i);
-            c2->buffers[i].data = (HevTaskChannelData *)((char *)c2->buffers + buffers_size + size * i);
+            c1->buffers[i].data =
+                (void *)((char *)c1->buffers + buffers_size + size * i);
+            c2->buffers[i].data =
+                (void *)((char *)c2->buffers + buffers_size + size * i);
         }
     }
 
@@ -128,7 +130,7 @@ hev_task_channel_data_copy (void *dst, const void *src, size_t size)
         d->d[0] = s->d[0];
         break;
     default:
-        memcpy (dst, src, size);
+        __builtin_memcpy (dst, src, size);
     }
 
     return size;

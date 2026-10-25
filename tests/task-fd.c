@@ -8,7 +8,7 @@
  */
 
 #include <errno.h>
-#include <unistd.h>
+#include "hev-sys.h"
 #include <stddef.h>
 #include <assert.h>
 

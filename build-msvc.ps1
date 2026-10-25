@@ -7,7 +7,7 @@
 param(
     [ValidateSet('lib', 'tests', 'apps', 'all', 'run-tests', 'verify', 'clean')]
     [string]$Target = 'lib',
-    [ValidateSet('latest', '2026', '2022', '2019', '2017')]
+    [ValidateSet('latest', '2026', '2022')]
     [string]$VSVersion = 'latest',
     [ValidateSet('x64', 'x86', 'arm64')]
     [string]$Arch = 'x64',
@@ -214,8 +214,6 @@ function Initialize-MSVC {
         throw 'vswhere.exe not found. Install Visual Studio / Build Tools with Desktop development with C++.'
     }
     $versionRanges = @{
-        '2017' = '[15.0,16.0)'
-        '2019' = '[16.0,17.0)'
         '2022' = '[17.0,18.0)'
         '2026' = '[18.0,19.0)'
     }
@@ -279,6 +277,7 @@ function Assert-C11AtomicsSupport {
 }
 
 $CommonDefines = @(
+    '/DEXPORT_SYMBOL=',
     '/D_CRT_SECURE_NO_WARNINGS',
     '/D_CRT_NONSTDC_NO_WARNINGS',
     '/D_WINSOCK_DEPRECATED_NO_WARNINGS',
@@ -291,14 +290,8 @@ $CommonDefines = @(
     '/DCONFIG_MEMALLOC_SLICE_MAX_COUNT=1000',
     '/DCONFIG_SCHED_CLOCK=CLOCK_NONE'
 )
-$Includes = @(
-    "/I$Root\include", "/I$Root\src",
-    "/I$Root\win32-compat", "/I$Root\win32-compat\include"
-)
-$Cflags = @(
-    '/nologo', '/std:c11', '/O2', '/W3', "/$Runtime",
-    "/FI$Root\win32-compat\hev-win-compat.h"
-) + $Includes + $CommonDefines
+$Includes = @("/I$Root\include", "/I$Root\src", "/I$Root\src\sys\windows")
+$Cflags = @('/nologo', '/O2', '/W3', "/$Runtime") + $Includes + $CommonDefines
 # clang-cl defaults to the host architecture and ignores the MSVC INCLUDE/LIB
 # environment when selecting the target; pin the target explicitly per arch.
 $ClangTarget = if ($Arch -eq 'x64') {
@@ -335,13 +328,13 @@ function Build-Library {
     if (Test-Path -LiteralPath $LibPath) { Remove-Item -Force -LiteralPath $LibPath }
     New-Item -ItemType Directory -Force -Path $ObjDir | Out-Null
 
-    # POSIX-only stack implementations are excluded from native Windows builds.
+    # POSIX-only implementations are replaced by src/sys/windows.
     $sources = @(Get-ChildItem -LiteralPath (Join-Path $Root 'src') -Recurse -File -Filter '*.c' |
-        Where-Object { $_.Name -notin @('hev-task-stack-mmap.c', 'hev-task-stack-detector.c') } |
+        Where-Object { $_.Name -notin @('hev-task-stack-mmap.c', 'hev-task-stack-detector.c',
+            'hev-task-aide.c', 'hev-task-io-reactor-kqueue.c') } |
         Sort-Object FullName)
-    $compat = @(Get-ChildItem -LiteralPath (Join-Path $Root 'win32-compat') -File -Filter '*.c' | Sort-Object FullName)
     $objects = @()
-    foreach ($src in ($sources + $compat)) {
+    foreach ($src in $sources) {
         $rel = $src.FullName.Substring($Root.Length + 1) -replace '[\\/]', '_'
         $obj = Join-Path $ObjDir ($rel + '.obj')
         Write-Host "  CC  $rel"
@@ -380,6 +373,8 @@ function Build-Programs([string]$Kind) {
     if (-not (Test-Path -LiteralPath $LibPath)) { throw 'Missing static library.' }
     New-Item -ItemType Directory -Force -Path $BinDir | Out-Null
     $dir = Join-Path $Root $Kind
+    # Programs use POSIX names: hev-sys.h maps them.
+    $programCflags = $Cflags + @('/FIhev-sys.h')
     $names = if ($Kind -eq 'apps') { @('simple.c', 'wakeup.c', 'channel.c', 'timeout.c', 'echo-server.c', 'call.c') } else { @() }
     # The following tests depend on genuine POSIX /dev, openat or UDP socketpair behaviour.
     $skip = @('io-open.c', 'io-openat.c', 'io-creat.c', 'io-socket.c')
@@ -387,7 +382,9 @@ function Build-Programs([string]$Kind) {
     # Remove stale binaries for this kind, including tests no longer selected.
     Get-ChildItem -LiteralPath $BinDir -Filter "$Kind-*.exe" -File |
         Remove-Item -Force
-    foreach ($src in (Get-ChildItem -LiteralPath $dir -File -Filter '*.c' | Sort-Object Name)) {
+    $srcs = @(Get-ChildItem -LiteralPath $dir -File -Filter '*.c')
+    if ($Kind -eq 'tests') { $srcs += @(Get-ChildItem -LiteralPath (Join-Path $dir 'windows') -File -Filter '*.c') }
+    foreach ($src in ($srcs | Sort-Object Name)) {
         if ($Kind -eq 'apps' -and $src.Name -notin $names) { continue }
         if ($Kind -eq 'tests' -and $src.Name -in $skip) {
             Write-Host "  SKIP (POSIX-only) $($src.Name)"
@@ -407,7 +404,7 @@ function Build-Programs([string]$Kind) {
         Write-Host "  LINK $Kind-$name.exe"
         # clang-cl cannot mix a .lib and a source in one compile+link
         # invocation; produce the object first, then link it separately.
-        Invoke-Native $CompilerCmd ($Cflags + @('/c', "/Fo$obj", $src.FullName))
+        Invoke-Native $CompilerCmd ($programCflags + @('/c', "/Fo$obj", $src.FullName))
         Invoke-Native $CompilerCmd (@("/Fe$exe", $obj, $LibPath) + $ExeLinkFlags)
     }
     if ($failed.Count -gt 0) {

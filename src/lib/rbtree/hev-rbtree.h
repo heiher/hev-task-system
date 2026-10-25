@@ -29,12 +29,7 @@ struct _HevRBTreeNode
     uintptr_t __parent_color;
     HevRBTreeNode *right;
     HevRBTreeNode *left;
-#if defined(_MSC_VER) && !defined(__clang__)
-    /* The natural alignment of uintptr_t already matches the pointer size. */
-};
-#else
 } __attribute__ ((aligned (sizeof (uintptr_t))));
-#endif
 
 static inline int
 hev_rbtree_node_empty (HevRBTreeNode *node)

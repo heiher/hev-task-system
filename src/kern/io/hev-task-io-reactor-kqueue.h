@@ -24,19 +24,19 @@
 typedef struct kevent HevTaskIOReactorSetupEvent;
 typedef struct kevent HevTaskIOReactorWaitEvent;
 
-typedef enum _HevTaskIOReactorEvents
+enum _HevTaskIOReactorEvents
 {
     HEV_TASK_IO_REACTOR_EV_RO = EVFILT_READ,
     HEV_TASK_IO_REACTOR_EV_WO = EVFILT_WRITE,
     HEV_TASK_IO_REACTOR_EV_ER = EVFILT_EXCEPT,
-} HevTaskIOReactorEvents;
+};
 
-typedef enum _HevTaskIOReactorOperation
+enum _HevTaskIOReactorOperation
 {
     HEV_TASK_IO_REACTOR_OP_ADD,
     HEV_TASK_IO_REACTOR_OP_MOD,
     HEV_TASK_IO_REACTOR_OP_DEL,
-} HevTaskIOReactorOperation;
+};
 
 static inline int
 hev_task_io_reactor_wait (HevTaskIOReactor *self,

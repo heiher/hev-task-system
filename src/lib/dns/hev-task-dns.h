@@ -10,9 +10,15 @@
 #ifndef __HEV_TASK_DNS_H__
 #define __HEV_TASK_DNS_H__
 
+#if !(defined(_WIN32) && !defined(__MSYS__) && !defined(__CYGWIN__))
 #include <netdb.h>
+#endif
 #include <sys/types.h>
+#if defined(_WIN32) && !defined(__MSYS__) && !defined(__CYGWIN__)
+#include <windows/hev-win-types.h>
+#else
 #include <sys/socket.h>
+#endif
 
 #ifdef __cplusplus
 extern "C" {

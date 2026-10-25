@@ -9,12 +9,8 @@
 
 #include <stdio.h>
 #include <errno.h>
-#include <unistd.h>
+#include "hev-sys.h"
 #include <string.h>
-#include <sys/ioctl.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
 
 #include <hev-task.h>
 #include <hev-task-system.h>
@@ -67,12 +63,7 @@ task_listener_entry (void *data)
 
     memset (&addr, 0, sizeof (addr));
     addr.sin_family = AF_INET;
-#ifdef _WIN32
-    /* win32-compat undefines the s_addr macro, so name the union member. */
-    addr.sin_addr.S_un.S_addr = INADDR_ANY;
-#else
     addr.sin_addr.s_addr = INADDR_ANY;
-#endif
     addr.sin_port = htons (8000);
     ret = bind (fd, (struct sockaddr *)&addr, (socklen_t)sizeof (addr));
     if (ret == -1) {

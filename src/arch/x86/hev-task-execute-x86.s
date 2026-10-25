@@ -24,7 +24,7 @@ NESTED(hev_task_execute)
     ret
 END(hev_task_execute)
 
-#if defined(_WIN32)
+#if defined(_WIN32) && !defined(__MSYS__) && !defined(__CYGWIN__)
 .def @feat.00
 .scl 3
 .type 0

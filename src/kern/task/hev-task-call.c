@@ -8,10 +8,8 @@
  */
 
 #include <stdint.h>
-#if defined(HEV_MSVC_ABI)
-#include <windows.h>
-#endif
 
+#include "hev-sys.h"
 #include "lib/misc/hev-compiler.h"
 #include "mem/api/hev-memory-allocator-api.h"
 
@@ -43,21 +41,6 @@ hev_task_call_destroy (HevTaskCall *self)
 EXPORT_SYMBOL void *
 hev_task_call_jump (HevTaskCall *self, HevTaskCallEntry entry)
 {
-#if defined(HEV_MSVC_ABI)
-    /* See hev-task-system-schedule.c: keep TEB.StackLimit consistent with the
-     * stack the entry runs on, then restore the caller's range (which may be
-     * a task stack itself). */
-    NT_TIB *tib = (NT_TIB *)NtCurrentTeb ();
-    void *saved_base = tib->StackBase;
-    void *saved_limit = tib->StackLimit;
-
-    tib->StackBase = self->stack_top;
-    tib->StackLimit = (void *)self;
-    hev_task_execute (self, entry);
-    tib->StackBase = saved_base;
-    tib->StackLimit = saved_limit;
-#else
-    hev_task_execute (self, entry);
-#endif
+    HEV_TASK_CALL_EXECUTE (self, entry);
     return self->retval;
 }

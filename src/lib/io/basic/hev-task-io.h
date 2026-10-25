@@ -10,8 +10,13 @@
 #ifndef __HEV_TASK_IO_H__
 #define __HEV_TASK_IO_H__
 
+#if !(defined(_WIN32) && !defined(__MSYS__) && !defined(__CYGWIN__))
 #include <sys/uio.h>
+#endif
 #include <sys/types.h>
+#if defined(_WIN32) && !defined(__MSYS__) && !defined(__CYGWIN__)
+#include <windows/hev-win-types.h>
+#endif
 
 #ifdef __cplusplus
 extern "C" {

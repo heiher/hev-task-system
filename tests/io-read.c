@@ -8,7 +8,7 @@
  */
 
 #include <assert.h>
-#include <unistd.h>
+#include "hev-sys.h"
 #include <fcntl.h>
 
 #include <hev-task.h>

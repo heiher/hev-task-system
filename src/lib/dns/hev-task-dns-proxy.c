@@ -7,10 +7,9 @@
  ============================================================================
  */
 
-#include <poll.h>
 #include <errno.h>
-#include <unistd.h>
 
+#include "hev-sys.h"
 #include "kern/aide/hev-task-aide.h"
 #include "kern/sync/hev-task-mutex.h"
 #include "kern/core/hev-task-system-private.h"

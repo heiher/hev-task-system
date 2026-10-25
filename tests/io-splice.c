@@ -9,7 +9,7 @@
 
 #include <stdlib.h>
 #include <assert.h>
-#include <unistd.h>
+#include "hev-sys.h"
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>

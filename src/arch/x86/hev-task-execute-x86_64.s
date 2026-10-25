@@ -12,7 +12,7 @@
 /* The Windows x64 ABI passes arguments in rcx/rdx and requires 0x20 bytes
  * of shadow space (0x28 keeps 16-byte alignment after the pushed return
  * address slot); key on the OS, never on the compiler. */
-#if defined(__MSYS__) || defined(_WIN32)
+#if defined(__MSYS__) || (defined(_WIN32) && !defined(__CYGWIN__))
 #define REG_ARG0  %rcx
 #define REG_ARG1  %rdx
 #define STACK_PAD 0x28
@@ -34,7 +34,7 @@ NESTED(hev_task_execute)
     retq
 END(hev_task_execute)
 
-#if defined(_WIN32)
+#if defined(_WIN32) && !defined(__MSYS__) && !defined(__CYGWIN__)
 NESTED(hev_task_longjmp)
     testl   %edx, %edx
     jne     1f

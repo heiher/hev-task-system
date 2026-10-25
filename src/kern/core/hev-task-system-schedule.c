@@ -14,58 +14,13 @@
 
 #include <stdlib.h>
 
+#include "hev-sys.h"
 #include "hev-task-system.h"
 #include "hev-task-system-private.h"
 #include "kern/task/hev-task-private.h"
 #include "kern/task/hev-task-executer.h"
 #include "kern/io/hev-task-io-reactor.h"
 #include "lib/misc/hev-compiler.h"
-
-#if defined(_MSC_VER) && defined(_WIN32)
-#include <windows.h>
-
-#include "kern/task/hev-task-stack.h"
-
-/*
- * Coroutine stacks live on the heap, outside the range recorded in the TEB.
- * The x64 __chkstk (called for every _alloca and for frames >= 4 KiB) compares
- * the new RSP with TEB.StackLimit and, when it is below, probes (writes a zero
- * byte to) every page from StackLimit down to the new RSP.  With a heap stack
- * lying below the thread stack that walks over unrelated memory.  Publish the
- * running task's stack range in the TEB while a task runs and restore the real
- * thread stack range whenever control returns to the kernel context.
- */
-static __declspec (thread) void *hev_thread_stack_base;
-static __declspec (thread) void *hev_thread_stack_limit;
-
-static inline void
-hev_task_stack_range_enter (HevTask *task)
-{
-    NT_TIB *tib = (NT_TIB *)NtCurrentTeb ();
-
-    /* Called from the kernel context: the TEB still describes the thread. */
-    hev_thread_stack_base = tib->StackBase;
-    hev_thread_stack_limit = tib->StackLimit;
-
-    tib->StackBase = task->stack_bottom;
-    tib->StackLimit = hev_task_stack_get_base (task->stack);
-}
-
-static inline void
-hev_task_stack_range_leave (void)
-{
-    NT_TIB *tib = (NT_TIB *)NtCurrentTeb ();
-
-    if (!hev_thread_stack_base)
-        return;
-
-    tib->StackBase = hev_thread_stack_base;
-    tib->StackLimit = hev_thread_stack_limit;
-}
-#else
-#define hev_task_stack_range_enter(task) ((void)0)
-#define hev_task_stack_range_leave() ((void)0)
-#endif
 
 static inline void
 hev_task_system_get_clock_time (struct timespec *ts)
@@ -255,8 +210,8 @@ hev_task_system_schedule (HevTaskYieldType type)
             return; /* resume to task context */
 
         /* resume to kernel context */
-        hev_task_stack_range_leave ();
-        HEV_TASK_LONGJMP (ctx->kernel_context, type);
+        HEV_STACK_RANGE_LEAVE ();
+        HEV_LONGJMP (ctx->kernel_context, type);
     }
 
     /* NOTE: in kernel context */
@@ -289,8 +244,8 @@ hev_task_system_schedule (HevTaskYieldType type)
     hev_task_system_update_sched_time (ctx);
 
     /* switch to task */
-    hev_task_stack_range_enter (ctx->current_task);
-    HEV_TASK_LONGJMP (ctx->current_task->context, 1);
+    HEV_STACK_RANGE_ENTER (ctx->current_task);
+    HEV_LONGJMP (ctx->current_task->context, 1);
 }
 
 void
@@ -325,6 +280,6 @@ hev_task_system_kill_current_task (void)
      * NOTE: remove current task in kernel context, because current
      * task stack may be freed.
      */
-    hev_task_stack_range_leave ();
-    HEV_TASK_LONGJMP (ctx->kernel_context, HEV_TASK_SCHED_REMOVE);
+    HEV_STACK_RANGE_LEAVE ();
+    HEV_LONGJMP (ctx->kernel_context, HEV_TASK_SCHED_REMOVE);
 }

@@ -10,7 +10,7 @@
 #include "asm.h"
 
 NESTED(hev_task_execute)
-#if defined(_WIN32)
+#if defined(_WIN32) && !defined(__MSYS__) && !defined(__CYGWIN__)
     .seh_proc hev_task_execute
     stp  x29, x30, [sp, #-0x10]!
     .seh_save_fplr_x 16
@@ -42,7 +42,7 @@ NESTED(hev_task_execute)
 #endif
 END(hev_task_execute)
 
-#if defined(_WIN32)
+#if defined(_WIN32) && !defined(__MSYS__) && !defined(__CYGWIN__)
 NESTED(hev_task_longjmp)
     mov  x9, x0
     cmp  w1, #0

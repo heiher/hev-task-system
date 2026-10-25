@@ -10,7 +10,7 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <time.h>
-#include <unistd.h>
+#include "hev-sys.h"
 
 #include <hev-task-system.h>
 #include <hev-task.h>

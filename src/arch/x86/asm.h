@@ -15,7 +15,7 @@ _##symbol:
 
 # define END(symbol)
 
-#elif defined(_WIN32)
+#elif defined(_WIN32) && !defined(__MSYS__) && !defined(__CYGWIN__)
 
 /* COFF has no ELF .type/.size directives.  Windows x64 symbols are not
  * decorated, but 32-bit COFF decorates __cdecl symbols with a leading

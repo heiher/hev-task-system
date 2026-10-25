@@ -10,10 +10,6 @@
 #include <assert.h>
 #include <stdlib.h>
 
-#if defined(_MSC_VER)
-#include <malloc.h> /* alloca() -> _alloca() */
-#endif
-
 #include <hev-task.h>
 #include <hev-task-call.h>
 #include <hev-task-system.h>

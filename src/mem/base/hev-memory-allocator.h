@@ -12,8 +12,6 @@
 
 #include <stddef.h>
 
-#include "lib/misc/hev-compiler.h"
-
 typedef struct _HevMemoryAllocator HevMemoryAllocator;
 
 typedef void *(*HevMemoryAllocatorAlloc) (HevMemoryAllocator *self,
@@ -43,11 +41,6 @@ struct _HevMemoryAllocator
  * Since: 1.0
  */
 HevMemoryAllocator *hev_memory_allocator_default (void);
-
-#if defined(HEV_MSVC_ABI)
-/* Process-wide FLS index teardown, only safe after ALL threads have stopped. */
-void hev_memory_allocator_thread_key_fini (void);
-#endif
 
 /**
  * hev_memory_allocator_set_default:

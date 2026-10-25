@@ -9,7 +9,7 @@
 
 #define _GNU_SOURCE
 #include <stdio.h>
-#include <poll.h>
+#include "hev-sys.h"
 #include <dlfcn.h>
 
 #include <hev-task.h>

@@ -16,14 +16,9 @@
 #endif /* ENABLE_IO_SPLICE_SYSCALL */
 
 #include <errno.h>
-#include <fcntl.h>
-#include <unistd.h>
 #include <stdarg.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/ioctl.h>
-#include <sys/socket.h>
 
+#include "hev-sys.h"
 #include "kern/task/hev-task.h"
 #include "lib/io/buffer/hev-circular-buffer.h"
 #include "lib/misc/hev-compiler.h"

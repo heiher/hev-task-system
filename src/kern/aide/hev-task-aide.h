@@ -26,6 +26,4 @@ int hev_task_aide_init (void);
 int hev_task_aide_add (HevTaskAideWork *work);
 int hev_task_aide_del (HevTaskAideWork *work);
 
-void hev_task_aide_fini (void);
-
 #endif /* __HEV_TASK_AIDE_H__ */

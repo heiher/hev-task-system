@@ -11,6 +11,9 @@
 #define __HEV_TASK_CHANNEL_H__
 
 #include <sys/types.h>
+#if defined(_WIN32) && !defined(__MSYS__) && !defined(__CYGWIN__)
+#include <windows/hev-win-types.h>
+#endif
 
 #ifdef __cplusplus
 extern "C" {

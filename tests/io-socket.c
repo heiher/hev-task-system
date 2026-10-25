@@ -10,11 +10,9 @@
 #define _GNU_SOURCE
 #include <stddef.h>
 #include <assert.h>
-#include <unistd.h>
+#include "hev-sys.h"
 #include <string.h>
 #include <fcntl.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
 
 #include <hev-task.h>
 #include <hev-task-system.h>
