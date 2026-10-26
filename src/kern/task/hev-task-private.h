@@ -48,6 +48,8 @@ struct _HevTask
     HevListNode list_node;
 };
 
+void hev_task_destroy (HevTask *self);
+
 extern void hev_task_execute (HevTask *self, void *executer);
 
 #endif /* __HEV_TASK_PRIVATE_H__ */
