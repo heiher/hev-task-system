@@ -66,8 +66,10 @@ bench_run_exit (int count)
         tasks[i] = hev_task_new (-1);
 
     t0 = get_time ();
-    for (i = 0; i < count; i++)
+    for (i = 0; i < count; i++) {
+        hev_task_ref (tasks[i]);
         hev_task_run (tasks[i], exit_entry, NULL);
+    }
     hev_task_system_run ();
     t1 = get_time ();
 
