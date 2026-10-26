@@ -38,7 +38,7 @@
 #define HEV_MUTEX_LOCK(m) pthread_mutex_lock (m)
 #define HEV_MUTEX_UNLOCK(m) pthread_mutex_unlock (m)
 
-#define HEV_IOCP_HANDLE_T long
+#define HevIOCPHandle long
 
 #define HEV_FD_TO_HANDLE(fd) ((uintptr_t)get_osfhandle (fd))
 

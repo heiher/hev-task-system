@@ -209,7 +209,7 @@ __declspec (noreturn) void hev_task_longjmp (void *env, int value);
 #define HEV_MUTEX_UNLOCK(m) ReleaseSRWLockExclusive (m)
 
 #define HEV_IOCP_NATIVE 1
-#define HEV_IOCP_HANDLE_T uintptr_t
+#define HevIOCPHandle uintptr_t
 
 #define HEV_FD_TO_HANDLE(fd) ((uintptr_t)hev_win_fd_to_socket (fd))
 

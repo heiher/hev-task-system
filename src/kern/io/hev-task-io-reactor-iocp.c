@@ -27,7 +27,7 @@ struct _HevTaskIOReactorIOCPNode
     int ref_count;
     int events;
 
-    HEV_IOCP_HANDLE_T handle;
+    HevIOCPHandle handle;
     void *data;
 
     void *ihandle;
@@ -84,7 +84,7 @@ hev_task_io_reactor_iocp_node_detach (HevTaskIOReactorIOCP *self,
         node->whandle = NULL;
     }
 
-    if (node->ehandle && node->handle != (HEV_IOCP_HANDLE_T)node->ehandle) {
+    if (node->ehandle && node->handle != (HevIOCPHandle)node->ehandle) {
         WSAEventSelect (node->handle, NULL, 0);
         WSACloseEvent (node->ehandle);
     }
@@ -125,7 +125,7 @@ hev_task_io_reactor_iocp_insert (HevTaskIOReactorIOCP *self,
 
 static HevTaskIOReactorIOCPNode *
 hev_task_io_reactor_iocp_lookup (HevTaskIOReactorIOCP *self,
-                              HEV_IOCP_HANDLE_T handle)
+                              HevIOCPHandle handle)
 {
     HevRBTreeNode *node = self->tree.root;
 
@@ -154,7 +154,7 @@ hev_task_io_reactor_iocp_handler (void *data, BOOLEAN fired)
     if (fired)
         return;
 
-    if (node->handle != (HEV_IOCP_HANDLE_T)node->ehandle) {
+    if (node->handle != (HevIOCPHandle)node->ehandle) {
         WSANETWORKEVENTS events;
 
         res = WSAEnumNetworkEvents (node->handle, node->ehandle, &events);
@@ -219,12 +219,12 @@ hev_task_io_reactor_iocp_add (HevTaskIOReactorIOCP *self,
 
 free_event:
 #if defined(HEV_IOCP_NATIVE)
-    if (event->handle != (HEV_IOCP_HANDLE_T)node->ehandle) {
+    if (event->handle != (HevIOCPHandle)node->ehandle) {
         WSAEventSelect (event->handle, NULL, 0);
         WSACloseEvent (node->ehandle);
     }
 #else
-    if (event->handle != (HEV_IOCP_HANDLE_T)node->ehandle)
+    if (event->handle != (HevIOCPHandle)node->ehandle)
         WSACloseEvent (node->ehandle);
 #endif
 free_node:
@@ -243,7 +243,7 @@ hev_task_io_reactor_iocp_mod (HevTaskIOReactorIOCP *self,
     if (!node)
         return -1;
 
-    if (node->handle != (HEV_IOCP_HANDLE_T)node->ehandle && event->events) {
+    if (node->handle != (HevIOCPHandle)node->ehandle && event->events) {
         long events = event->events | HEV_TASK_IO_REACTOR_EV_ER;
         int res = WSAEventSelect (node->handle, node->ehandle, events);
         if (res)
@@ -270,7 +270,7 @@ hev_task_io_reactor_iocp_del (HevTaskIOReactorIOCP *self,
     return hev_task_io_reactor_iocp_node_detach (self, node);
 #else
     res = UnregisterWaitEx (node->whandle, INVALID_HANDLE_VALUE);
-    if (node->handle != (HEV_IOCP_HANDLE_T)node->ehandle)
+    if (node->handle != (HevIOCPHandle)node->ehandle)
         res &= WSACloseEvent (node->ehandle);
     if (!res)
         return -1;

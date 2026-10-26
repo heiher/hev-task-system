@@ -45,7 +45,7 @@ struct _HevTaskIOReactorSetupEvent
 {
     HevTaskIOReactorOperation op;
 
-    HEV_IOCP_HANDLE_T handle;
+    HevIOCPHandle handle;
     int events;
     void *data;
 };
@@ -62,7 +62,7 @@ int hev_task_io_reactor_wait (HevTaskIOReactor *self,
 
 static inline void
 hev_task_io_reactor_setup_event_set (HevTaskIOReactorSetupEvent *event,
-                                     HEV_IOCP_HANDLE_T handle,
+                                     HevIOCPHandle handle,
                                      HevTaskIOReactorOperation op,
                                      unsigned int events, void *data)
 {
@@ -98,7 +98,7 @@ hev_task_io_reactor_setup_event_whandle_gen (HevTaskIOReactorSetupEvent *events,
                                              HevTaskIOReactorOperation op,
                                              void *data)
 {
-    hev_task_io_reactor_setup_event_set (events, (HEV_IOCP_HANDLE_T)handle, op,
+    hev_task_io_reactor_setup_event_set (events, (HevIOCPHandle)handle, op,
                                          0, data);
 
     return 1;
