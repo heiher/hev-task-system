@@ -1,7 +1,7 @@
 /* hev-win-socket.c - Socket management on top of Winsock */
 
 #define HEV_WIN_RAW
-#include "hev-sys.h"
+#include "hev-sys-private.h"
 
 int
 hev_win_socket (int domain, int type, int protocol)

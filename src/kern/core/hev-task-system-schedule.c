@@ -14,7 +14,7 @@
 
 #include <stdlib.h>
 
-#include "hev-sys.h"
+#include "hev-sys-private.h"
 #include "hev-task-system.h"
 #include "hev-task-system-private.h"
 #include "kern/task/hev-task-private.h"
@@ -175,6 +175,22 @@ hev_task_system_io_poll (HevTaskSystemContext *ctx, int timeout)
     }
 
     hev_task_timer_wake (ctx->timer);
+
+#if CONFIG_SCHED_IO_POLL_INTERVAL > 0
+    /* Re-arm the deadline for throttling the next non-blocking poll. */
+    hev_task_timer_poll_rearm (ctx->timer, CONFIG_SCHED_IO_POLL_INTERVAL);
+#endif
+}
+
+static inline void
+hev_task_system_io_poll_maybe (HevTaskSystemContext *ctx)
+{
+#if CONFIG_SCHED_IO_POLL_INTERVAL > 0
+    if (!hev_task_timer_poll_due (ctx->timer))
+        return;
+#endif
+
+    hev_task_system_io_poll (ctx, 0);
 }
 
 static inline void
@@ -184,7 +200,7 @@ hev_task_system_pick_current_task (HevTaskSystemContext *ctx)
 
     if (ctx->running_task_count < ctx->total_task_count) {
         if (ctx->running_task_count) {
-            hev_task_system_io_poll (ctx, 0);
+            hev_task_system_io_poll_maybe (ctx);
         } else {
             do {
                 hev_task_system_io_poll (ctx, -1);
@@ -210,7 +226,7 @@ hev_task_system_schedule (HevTaskYieldType type)
             return; /* resume to task context */
 
         /* resume to kernel context */
-        HEV_STACK_RANGE_LEAVE ();
+        hev_sys_stack_leave ();
         hev_longjmp (ctx->kernel_context, type);
     }
 
@@ -244,7 +260,7 @@ hev_task_system_schedule (HevTaskYieldType type)
     hev_task_system_update_sched_time (ctx);
 
     /* switch to task */
-    HEV_STACK_RANGE_ENTER (ctx->current_task);
+    hev_sys_stack_enter (ctx->current_task);
     hev_longjmp (ctx->current_task->context, 1);
 }
 
@@ -280,6 +296,6 @@ hev_task_system_kill_current_task (void)
      * NOTE: remove current task in kernel context, because current
      * task stack may be freed.
      */
-    HEV_STACK_RANGE_LEAVE ();
+    hev_sys_stack_leave ();
     hev_longjmp (ctx->kernel_context, HEV_TASK_SCHED_REMOVE);
 }

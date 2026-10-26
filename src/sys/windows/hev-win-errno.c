@@ -1,7 +1,7 @@
 /* hev-win-errno.c - Winsock error to errno mapping */
 
 #define HEV_WIN_RAW
-#include "hev-sys.h"
+#include "hev-sys-private.h"
 
 void
 hev_win_set_errno_from_wsa_code (int error)

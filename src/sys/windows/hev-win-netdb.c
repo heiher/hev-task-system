@@ -1,7 +1,7 @@
 /* hev-win-netdb.c - Name resolution on top of Winsock */
 
 #define HEV_WIN_RAW
-#include "hev-sys.h"
+#include "hev-sys-private.h"
 
 int
 hev_win_getaddrinfo (const char *node, const char *service,

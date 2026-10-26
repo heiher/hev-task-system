@@ -7,7 +7,7 @@
  ============================================================================
  */
 
-#include "hev-sys.h"
+#include "hev-sys-private.h"
 #include "kern/task/hev-task.h"
 #include "lib/misc/hev-compiler.h"
 

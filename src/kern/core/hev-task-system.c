@@ -9,7 +9,6 @@
 
 #include <stdlib.h>
 
-#include "hev-sys.h"
 #include "lib/misc/hev-compiler.h"
 #include "lib/misc/hev-task-stack-detector.h"
 #include "mem/api/hev-memory-allocator-api.h"
@@ -19,7 +18,7 @@
 
 #include "hev-task-system.h"
 
-__thread HevTaskSystemContext *hev_task_system_tls_context HEV_TLS_MODEL;
+__thread HevTaskSystemContext *hev_task_system_tls_context;
 
 static inline void
 hev_task_system_set_context (HevTaskSystemContext *context)
@@ -95,8 +94,6 @@ hev_task_system_fini (void)
     hev_task_io_reactor_destroy (context->reactor);
     hev_free (context);
     hev_task_system_set_context (NULL);
-
-    HEV_AIDE_FINI ();
 
     allocator = hev_memory_allocator_set_default (NULL);
     if (allocator)

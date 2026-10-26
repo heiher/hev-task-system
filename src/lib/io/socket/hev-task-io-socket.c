@@ -10,7 +10,7 @@
 #define _GNU_SOURCE
 #include <errno.h>
 
-#include "hev-sys.h"
+#include "hev-sys-private.h"
 #include "kern/task/hev-task.h"
 #include "lib/io/basic/hev-task-io.h"
 #include "lib/misc/hev-compiler.h"

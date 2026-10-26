@@ -15,7 +15,7 @@
 
 #include "hev-memory-allocator.h"
 
-static __thread HevMemoryAllocator *tls_default_allocator HEV_TLS_MODEL;
+static __thread HevMemoryAllocator *tls_default_allocator;
 
 EXPORT_SYMBOL HevMemoryAllocator *
 hev_memory_allocator_default (void)

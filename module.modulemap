@@ -3,6 +3,7 @@ module HevTaskSystem {
     umbrella header "hev-memory-allocator.h"
     umbrella header "hev-object-atomic.h"
     umbrella header "hev-object.h"
+    umbrella header "hev-sys.h"
     umbrella header "hev-task-call.h"
     umbrella header "hev-task-channel.h"
     umbrella header "hev-task-channel-select.h"

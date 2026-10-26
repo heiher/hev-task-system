@@ -1,7 +1,7 @@
 /* hev-win-fdio.c - Descriptor operations for sockets and CRT descriptors */
 
 #define HEV_WIN_RAW
-#include "hev-sys.h"
+#include "hev-sys-private.h"
 #include "lib/misc/hev-compiler.h"
 
 static SOCKET

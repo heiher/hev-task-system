@@ -331,7 +331,7 @@ function Build-Library {
     # POSIX-only implementations are replaced by src/sys/windows.
     $sources = @(Get-ChildItem -LiteralPath (Join-Path $Root 'src') -Recurse -File -Filter '*.c' |
         Where-Object { $_.Name -notin @('hev-task-stack-mmap.c', 'hev-task-stack-detector.c',
-            'hev-task-aide.c', 'hev-task-io-reactor-kqueue.c') } |
+            'hev-task-io-reactor-kqueue.c') } |
         Sort-Object FullName)
     $objects = @()
     foreach ($src in $sources) {
@@ -373,11 +373,12 @@ function Build-Programs([string]$Kind) {
     if (-not (Test-Path -LiteralPath $LibPath)) { throw 'Missing static library.' }
     New-Item -ItemType Directory -Force -Path $BinDir | Out-Null
     $dir = Join-Path $Root $Kind
-    # Programs use POSIX names: hev-sys.h maps them.
-    $programCflags = $Cflags + @('/FIhev-sys.h')
+    # Programs use POSIX names: hev-sys-private.h maps them.
+    $programCflags = $Cflags + @('/FIhev-sys-private.h')
     $names = if ($Kind -eq 'apps') { @('simple.c', 'wakeup.c', 'channel.c', 'timeout.c', 'echo-server.c', 'call.c') } else { @() }
     # The following tests depend on genuine POSIX /dev, openat or UDP socketpair behaviour.
-    $skip = @('io-open.c', 'io-openat.c', 'io-creat.c', 'io-socket.c')
+    $skip = @('io-open.c', 'io-openat.c', 'io-creat.c', 'io-socket.c',
+        'task-dns-fork.c', 'task-dns-shared.c', 'task-dns-signal.c')
     $failed = @()
     # Remove stale binaries for this kind, including tests no longer selected.
     Get-ChildItem -LiteralPath $BinDir -Filter "$Kind-*.exe" -File |

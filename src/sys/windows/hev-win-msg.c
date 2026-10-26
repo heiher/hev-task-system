@@ -1,7 +1,7 @@
 /* hev-win-msg.c - Message and scatter/gather I/O on top of Winsock */
 
 #define HEV_WIN_RAW
-#include "hev-sys.h"
+#include "hev-sys-private.h"
 
 #define WBUF_STACK 64
 

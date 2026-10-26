@@ -9,7 +9,7 @@
 
 #include <stdint.h>
 
-#include "hev-sys.h"
+#include "hev-sys-private.h"
 #include "lib/misc/hev-compiler.h"
 #include "mem/api/hev-memory-allocator-api.h"
 
@@ -41,6 +41,6 @@ hev_task_call_destroy (HevTaskCall *self)
 EXPORT_SYMBOL void *
 hev_task_call_jump (HevTaskCall *self, HevTaskCallEntry entry)
 {
-    HEV_TASK_CALL_EXECUTE (self, entry);
+    hev_sys_call_execute (self, entry);
     return self->retval;
 }

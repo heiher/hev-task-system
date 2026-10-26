@@ -1,15 +1,26 @@
 /* hev-win-fd.c - Virtual file descriptors for Winsock sockets */
 
 #define HEV_WIN_RAW
-#include "hev-sys.h"
+#include "hev-sys-private.h"
 #include "lib/misc/hev-compiler.h"
 
 #define REG_INITIAL_CAP 256
 #define REG_MAX_FDS (1 << 20)
 #define REG_FD_BASE 0x40000000
+#define REG_TOKEN_BITS 20
+#define REG_GEN_MASK (~(uintptr_t)0 >> REG_TOKEN_BITS)
+#define HEV_WIN_INVALID_TOKEN ((uintptr_t)INVALID_SOCKET)
+
+typedef struct _RegSlot RegSlot;
+
+struct _RegSlot
+{
+    SOCKET socket;
+    uintptr_t gen;
+};
 
 static SRWLOCK reg_lock = SRWLOCK_INIT;
-static SOCKET *reg_slots;
+static RegSlot *reg_slots;
 static size_t reg_capacity;
 static volatile LONG reg_state;
 
@@ -22,12 +33,12 @@ reg_init (void)
     LONG state = InterlockedCompareExchange (&reg_state, 1, 0);
 
     if (state == 0) {
-        reg_slots = (SOCKET *)malloc (sizeof (SOCKET) * REG_INITIAL_CAP);
+        reg_slots = (RegSlot *)calloc (REG_INITIAL_CAP, sizeof (RegSlot));
         if (reg_slots) {
             size_t i;
 
             for (i = 0; i < REG_INITIAL_CAP; i++)
-                reg_slots[i] = INVALID_SOCKET;
+                reg_slots[i].socket = INVALID_SOCKET;
             reg_capacity = REG_INITIAL_CAP;
         } else {
             reg_capacity = 0;
@@ -55,7 +66,7 @@ static int
 reg_grow_locked (size_t need_idx)
 {
     size_t new_cap;
-    SOCKET *new_slots;
+    RegSlot *new_slots;
     size_t i;
 
     if (need_idx >= REG_MAX_FDS)
@@ -69,12 +80,14 @@ reg_grow_locked (size_t need_idx)
     if (new_cap <= reg_capacity)
         return -1;
 
-    new_slots = (SOCKET *)realloc (reg_slots, sizeof (SOCKET) * new_cap);
+    new_slots = (RegSlot *)realloc (reg_slots, sizeof (RegSlot) * new_cap);
     if (!new_slots)
         return -1;
 
-    for (i = reg_capacity; i < new_cap; i++)
-        new_slots[i] = INVALID_SOCKET;
+    for (i = reg_capacity; i < new_cap; i++) {
+        new_slots[i].socket = INVALID_SOCKET;
+        new_slots[i].gen = 0;
+    }
 
     reg_slots = new_slots;
     reg_capacity = new_cap;
@@ -95,7 +108,48 @@ hev_win_fd_to_socket (int fd)
 
     AcquireSRWLockShared (&reg_lock);
     if ((size_t)idx < reg_capacity)
-        s = reg_slots[idx];
+        s = reg_slots[idx].socket;
+    ReleaseSRWLockShared (&reg_lock);
+
+    return s;
+}
+
+/*
+ * A token names one registration of a descriptor, a reused descriptor gets
+ * a new one. So a reactor that still holds the token of a closed descriptor
+ * can tell it from the socket that took the descriptor over.
+ */
+uintptr_t
+hev_win_fd_to_token (int fd)
+{
+    uintptr_t token = HEV_WIN_INVALID_TOKEN;
+    int idx;
+
+    reg_init ();
+    idx = reg_index_from_fd (fd);
+    if (idx < 0)
+        return token;
+
+    AcquireSRWLockShared (&reg_lock);
+    if ((size_t)idx < reg_capacity && reg_slots[idx].socket != INVALID_SOCKET)
+        token = (reg_slots[idx].gen << REG_TOKEN_BITS) | (uintptr_t)idx;
+    ReleaseSRWLockShared (&reg_lock);
+
+    return token;
+}
+
+SOCKET
+hev_win_token_to_socket (uintptr_t token)
+{
+    SOCKET s = INVALID_SOCKET;
+    size_t idx = token & (((uintptr_t)1 << REG_TOKEN_BITS) - 1);
+
+    reg_init ();
+
+    AcquireSRWLockShared (&reg_lock);
+    if (idx < reg_capacity &&
+        reg_slots[idx].gen == (token >> REG_TOKEN_BITS))
+        s = reg_slots[idx].socket;
     ReleaseSRWLockShared (&reg_lock);
 
     return s;
@@ -115,8 +169,9 @@ hev_win_socket_to_fd (SOCKET s)
     AcquireSRWLockExclusive (&reg_lock);
 
     for (i = 0; i < reg_capacity; i++) {
-        if (reg_slots[i] == INVALID_SOCKET) {
-            reg_slots[i] = s;
+        if (reg_slots[i].socket == INVALID_SOCKET) {
+            reg_slots[i].socket = s;
+            reg_slots[i].gen = (reg_slots[i].gen + 1) & REG_GEN_MASK;
             fd = REG_FD_BASE + (int)i;
             break;
         }
@@ -126,7 +181,8 @@ hev_win_socket_to_fd (SOCKET s)
         size_t old_cap = reg_capacity;
 
         if (reg_grow_locked (old_cap) == 0) {
-            reg_slots[old_cap] = s;
+            reg_slots[old_cap].socket = s;
+            reg_slots[old_cap].gen = (reg_slots[old_cap].gen + 1) & REG_GEN_MASK;
             fd = REG_FD_BASE + (int)old_cap;
         }
     }
@@ -149,8 +205,8 @@ hev_win_fd_close_socket (int fd)
 
     AcquireSRWLockExclusive (&reg_lock);
     if ((size_t)idx < reg_capacity) {
-        s = reg_slots[idx];
-        reg_slots[idx] = INVALID_SOCKET;
+        s = reg_slots[idx].socket;
+        reg_slots[idx].socket = INVALID_SOCKET;
     }
     ReleaseSRWLockExclusive (&reg_lock);
 
@@ -174,8 +230,9 @@ hev_win_fd_replace (int fd, SOCKET s, SOCKET *old)
         errno = EMFILE;
         return -1;
     }
-    *old = reg_slots[idx];
-    reg_slots[idx] = s;
+    *old = reg_slots[idx].socket;
+    reg_slots[idx].socket = s;
+    reg_slots[idx].gen = (reg_slots[idx].gen + 1) & REG_GEN_MASK;
     ReleaseSRWLockExclusive (&reg_lock);
 
     return 0;

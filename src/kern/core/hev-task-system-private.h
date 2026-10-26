@@ -65,11 +65,10 @@ void hev_task_system_kill_current_task (void);
 void hev_task_system_wakeup_task_with_context (HevTaskSystemContext *ctx,
                                                HevTask *task);
 
-extern __thread HevTaskSystemContext *hev_task_system_tls_context HEV_TLS_MODEL;
-
 static inline HevTaskSystemContext *
 hev_task_system_get_context (void)
 {
+    extern __thread HevTaskSystemContext *hev_task_system_tls_context;
     return hev_task_system_tls_context;
 }
 

@@ -9,7 +9,7 @@
 
 #include <stdlib.h>
 
-#include "hev-sys.h"
+#include "hev-sys-private.h"
 #include "hev-task-timer.h"
 #include "kern/core/hev-task-system-private.h"
 #include "mem/api/hev-memory-allocator-api.h"
@@ -36,6 +36,9 @@ struct _HevTaskTimer
      * read; wake() drops it so it never survives a schedule pass. */
     struct timespec cached_curr;
     int cached_curr_valid;
+
+    /* Next non-blocking I/O poll deadline (HEV_TASK_TIMER_CLOCK). */
+    struct timespec poll_deadline;
 };
 
 struct _HevTaskTimerNode
@@ -97,6 +100,17 @@ hev_task_timer_get_expire (struct timespec *expire, unsigned int milliseconds)
     }
 }
 
+static inline void
+hev_task_timer_add_ns (struct timespec *ts, uint64_t ns)
+{
+    ts->tv_sec += ns / 1000000000U;
+    ts->tv_nsec += ns % 1000000000U;
+    if (ts->tv_nsec >= 1000000000L) {
+        ts->tv_sec++;
+        ts->tv_nsec -= 1000000000L;
+    }
+}
+
 static inline unsigned int
 hev_task_timer_get_time (const struct timespec *curr,
                          const struct timespec *expire)
@@ -135,6 +149,20 @@ void
 hev_task_timer_destroy (HevTaskTimer *self)
 {
     hev_free (self);
+}
+
+static inline const struct timespec *
+hev_task_timer_peek_expiry (HevTaskTimer *self)
+{
+    HevTaskTimerNode *this;
+    HevRBTreeNode *node;
+
+    node = hev_rbtree_cached_first (&self->sort_tree);
+    if (!node)
+        return NULL;
+
+    this = container_of (node, HevTaskTimerNode, base);
+    return &this->expire;
 }
 
 int
@@ -190,6 +218,38 @@ hev_task_timer_wake (HevTaskTimer *self)
 
     hev_task_timer_get_curr (&curr);
     hev_task_timer_wakeup (self, &curr);
+}
+
+int
+hev_task_timer_poll_due (HevTaskTimer *self)
+{
+    const struct timespec *expire;
+    struct timespec curr;
+
+    if (clock_gettime (HEV_TASK_TIMER_CLOCK, &curr) < 0)
+        abort ();
+
+    if (hev_task_timer_cmp (&curr, &self->poll_deadline) < 0) {
+        /* Keep polling before the nearest timer expiry, so that timer
+         * wakeups keep their precision. */
+        expire = hev_task_timer_peek_expiry (self);
+        if (!expire || hev_task_timer_cmp (expire, &self->poll_deadline) > 0)
+            return 0; /* no pending timer, or it expires after the deadline */
+    }
+
+    return 1;
+}
+
+void
+hev_task_timer_poll_rearm (HevTaskTimer *self, uint64_t interval)
+{
+    struct timespec ts;
+
+    if (clock_gettime (HEV_TASK_TIMER_CLOCK, &ts) < 0)
+        abort ();
+
+    hev_task_timer_add_ns (&ts, interval);
+    self->poll_deadline = ts;
 }
 
 unsigned int

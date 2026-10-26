@@ -18,7 +18,7 @@
 #include <errno.h>
 #include <stdarg.h>
 
-#include "hev-sys.h"
+#include "hev-sys-private.h"
 #include "kern/task/hev-task.h"
 #include "lib/io/buffer/hev-circular-buffer.h"
 #include "lib/misc/hev-compiler.h"

@@ -1,7 +1,7 @@
 /* hev-win-time.c - clock_gettime() on top of QueryPerformanceCounter */
 
 #define HEV_WIN_RAW
-#include "hev-sys.h"
+#include "hev-sys-private.h"
 
 int
 hev_win_clock_gettime (int clock_id, struct timespec *ts)

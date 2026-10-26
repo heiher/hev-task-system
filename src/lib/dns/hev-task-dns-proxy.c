@@ -2,14 +2,14 @@
  ============================================================================
  Name        : hev-task-dns-proxy.c
  Author      : Heiher <r@hev.cc>
- Copyright   : Copyright (c) 2021 - 2022 everyone.
+ Copyright   : Copyright (c) 2021 - 2026 everyone.
  Description : DNS Proxy
  ============================================================================
  */
 
 #include <errno.h>
 
-#include "hev-sys.h"
+#include "hev-sys-private.h"
 #include "kern/aide/hev-task-aide.h"
 #include "kern/sync/hev-task-mutex.h"
 #include "kern/core/hev-task-system-private.h"
@@ -34,6 +34,7 @@ struct _HevTaskDNSProxy
 {
     int fd;
     HevTaskMutex mutex;
+    HevTaskAide *aide;
     HevTaskAideWork work;
     HevTaskDNSCall *call;
     HevTaskSchedEntity sched_entity;
@@ -100,60 +101,80 @@ hev_task_dns_server_handler (unsigned int revents, void *data)
         int res;
 
         res = read (proxy->work.fd, &sync, sizeof (sync));
-        if (0 >= res)
+        if (0 > res) {
+            if (EINTR == errno)
+                continue;
+            break;
+        }
+        if (0 == res)
             break;
 
-        switch (proxy->call->type) {
-        case HEV_TASK_DNS_CALL_GETADDRINFO:
-            hev_task_dns_server_getaddrinfo (proxy->call);
-            break;
-        case HEV_TASK_DNS_CALL_GETNAMEINFO:
-            hev_task_dns_server_getnameinfo (proxy->call);
-            break;
+        if (proxy->call) {
+            switch (proxy->call->type) {
+            case HEV_TASK_DNS_CALL_GETADDRINFO:
+                hev_task_dns_server_getaddrinfo (proxy->call);
+                break;
+            case HEV_TASK_DNS_CALL_GETNAMEINFO:
+                hev_task_dns_server_getnameinfo (proxy->call);
+                break;
+            }
         }
 
         for (;;) {
             struct pollfd pfd;
 
             res = write (proxy->work.fd, &sync, sizeof (sync));
-            if ((0 <= res) || (EAGAIN != errno))
+            if (0 <= res)
+                break;
+            if (EINTR == errno)
+                continue;
+            if (EAGAIN != errno)
                 break;
 
             pfd.fd = proxy->work.fd;
             pfd.events = POLLOUT;
             poll (&pfd, 1, -1);
         }
+
+        /* The 'd' echo was delivered, the proxy is being destroyed: do not
+         * touch it again, the destroy side frees it upon this echo.
+         */
+        if ('d' == sync)
+            return;
     }
 }
 
 HevTaskDNSProxy *
 hev_task_dns_proxy_new (void)
 {
+    HevTaskSystemContext *context = hev_task_system_get_context ();
     HevTaskDNSProxy *self;
-    HevTaskIOReactor *reactor;
     HevTaskIOReactorSetupEvent revents[HEV_TASK_IO_REACTOR_EVENT_GEN_MAX];
     int fds[2];
     int count;
     int res;
 
-    res = hev_task_aide_init ();
-    if (0 > res)
-        return NULL;
-
     self = hev_malloc0 (sizeof (HevTaskDNSProxy));
     if (!self)
         goto exit;
 
-    res = hev_task_io_socket_socketpair (PF_LOCAL, SOCK_STREAM, 0, fds);
-    if (0 > res)
+    self->aide = hev_task_aide_get ();
+    if (!self->aide)
         goto free;
 
-    reactor = hev_task_system_get_context ()->reactor;
+    res = hev_task_io_socket_socketpair (PF_LOCAL, SOCK_STREAM, 0, fds);
+    if (0 > res)
+        goto put;
+
+    if ((0 > fcntl (fds[0], F_SETFD, FD_CLOEXEC)) ||
+        (0 > fcntl (fds[1], F_SETFD, FD_CLOEXEC)))
+        goto close;
+
     count = hev_task_io_reactor_setup_event_fd_gen (revents, fds[0],
                                                     HEV_TASK_IO_REACTOR_OP_ADD,
                                                     POLLIN | POLLOUT,
                                                     &self->sched_entity);
-    res = hev_task_io_reactor_setup (reactor, revents, count);
+    res = hev_task_io_reactor_setup (context->reactor, revents, count);
     if (0 > res)
         goto close;
 
@@ -162,7 +183,7 @@ hev_task_dns_proxy_new (void)
     self->work.events = POLLIN;
     self->work.handler = hev_task_dns_server_handler;
     self->work.data = self;
-    res = hev_task_aide_add (&self->work);
+    res = hev_task_aide_add (self->aide, &self->work);
     if (0 > res)
         goto close;
 
@@ -171,16 +192,68 @@ hev_task_dns_proxy_new (void)
 close:
     close (fds[0]);
     close (fds[1]);
+put:
+    hev_task_aide_put (self->aide);
 free:
     hev_free (self);
 exit:
     return NULL;
 }
 
+static void
+hev_task_dns_proxy_drain (HevTaskDNSProxy *self)
+{
+    struct pollfd pfd;
+    char sync = 'd';
+    int res;
+
+    self->call = NULL;
+
+    /* The 'd' byte drains the handler on the aide thread, and its echo
+     * means that no handler is in flight with the proxy.
+     */
+    for (;;) {
+        res = write (self->fd, &sync, sizeof (sync));
+        if (0 <= res)
+            break;
+        if (EINTR == errno)
+            continue;
+        if (EAGAIN != errno)
+            break;
+
+        pfd.fd = self->fd;
+        pfd.events = POLLOUT;
+        poll (&pfd, 1, -1);
+    }
+
+    for (;;) {
+        res = read (self->fd, &sync, sizeof (sync));
+        if ((1 == res) && ('d' == sync))
+            break;
+        if (0 == res)
+            break;
+        if ((0 > res) && (EINTR == errno))
+            continue;
+        if ((0 > res) && (EAGAIN != errno))
+            break;
+
+        pfd.fd = self->fd;
+        pfd.events = POLLIN;
+        poll (&pfd, 1, -1);
+    }
+}
+
 void
 hev_task_dns_proxy_destroy (HevTaskDNSProxy *self)
 {
-    hev_task_aide_del (&self->work);
+    /* The sockets of a proxy inherited by fork() are shared with the aide
+     * of the parent process, which must not be drained from the child.
+     */
+    if (!hev_task_aide_is_orphan (self->aide))
+        hev_task_dns_proxy_drain (self);
+
+    hev_task_aide_del (self->aide, &self->work);
+    hev_task_aide_put (self->aide);
     close (self->work.fd);
     close (self->fd);
     hev_free (self);
@@ -197,7 +270,11 @@ hev_task_dns_proxy_call (HevTaskDNSProxy *self, HevTaskDNSCall *call)
     for (;;) {
         char sync = 's';
         int res = write (self->fd, &sync, sizeof (sync));
-        if ((0 <= res) || (EAGAIN != errno))
+        if (0 <= res)
+            break;
+        if (EINTR == errno)
+            continue;
+        if (EAGAIN != errno)
             break;
 
         hev_task_yield (HEV_TASK_WAITIO);
@@ -206,7 +283,11 @@ hev_task_dns_proxy_call (HevTaskDNSProxy *self, HevTaskDNSCall *call)
     for (;;) {
         char sync;
         int res = read (self->fd, &sync, sizeof (sync));
-        if ((0 <= res) || (EAGAIN != errno))
+        if (0 <= res)
+            break;
+        if (EINTR == errno)
+            continue;
+        if (EAGAIN != errno)
             break;
 
         hev_task_yield (HEV_TASK_WAITIO);

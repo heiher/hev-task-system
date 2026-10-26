@@ -10,11 +10,7 @@
 #ifndef __HEV_TASK_IO_SOCKET_H__
 #define __HEV_TASK_IO_SOCKET_H__
 
-#if defined(_WIN32) && !defined(__MSYS__) && !defined(__CYGWIN__)
-#include <windows/hev-win-types.h>
-#else
-#include <sys/socket.h>
-#endif
+#include <hev-sys.h>
 
 #ifdef __cplusplus
 extern "C" {

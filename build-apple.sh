@@ -59,6 +59,7 @@ mergeStatic appletvsimulator x86_64 arm64
 INCLUDE_DIR="$XCFRAMEWORK_DIR/include"
 mkdir -p $INCLUDE_DIR
 cp ./include/*.h $INCLUDE_DIR
+cp ./src/sys/unix/hev-sys.h $INCLUDE_DIR
 cp ./module.modulemap $INCLUDE_DIR
 xcodebuild -create-xcframework \
     -library ./apple_xcframework/iphoneos-arm64/libhev-task-system.a -headers $INCLUDE_DIR \

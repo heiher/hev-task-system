@@ -10,7 +10,7 @@
 #ifndef __HEV_TASK_IO_REACTOR_IOCP_H__
 #define __HEV_TASK_IO_REACTOR_IOCP_H__
 
-#include "hev-sys.h"
+#include "hev-sys-private.h"
 #include "lib/rbtree/hev-rbtree.h"
 
 #define HEV_TASK_IO_REACTOR_EVENT_GEN_MAX (1)
@@ -45,7 +45,7 @@ struct _HevTaskIOReactorSetupEvent
 {
     HevTaskIOReactorOperation op;
 
-    HevIOCPHandle handle;
+    uintptr_t handle;
     int events;
     void *data;
 };
@@ -62,7 +62,7 @@ int hev_task_io_reactor_wait (HevTaskIOReactor *self,
 
 static inline void
 hev_task_io_reactor_setup_event_set (HevTaskIOReactorSetupEvent *event,
-                                     HevIOCPHandle handle,
+                                     uintptr_t handle,
                                      HevTaskIOReactorOperation op,
                                      unsigned int events, void *data)
 {
@@ -86,7 +86,7 @@ hev_task_io_reactor_setup_event_fd_gen (HevTaskIOReactorSetupEvent *events,
     if (poll_events & POLLERR)
         reactor_events |= HEV_TASK_IO_REACTOR_EV_ER;
 
-    hev_task_io_reactor_setup_event_set (events, HEV_FD_TO_HANDLE (fd), op,
+    hev_task_io_reactor_setup_event_set (events, hev_sys_fd_to_handle (fd), op,
                                          reactor_events, data);
 
     return 1;
@@ -98,8 +98,8 @@ hev_task_io_reactor_setup_event_whandle_gen (HevTaskIOReactorSetupEvent *events,
                                              HevTaskIOReactorOperation op,
                                              void *data)
 {
-    hev_task_io_reactor_setup_event_set (events, (HevIOCPHandle)handle, op,
-                                         0, data);
+    hev_task_io_reactor_setup_event_set (events, (uintptr_t)handle, op, 0,
+                                         data);
 
     return 1;
 }
