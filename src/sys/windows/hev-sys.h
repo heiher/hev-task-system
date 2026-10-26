@@ -202,7 +202,7 @@ __declspec (noreturn) void hev_task_longjmp (void *env, int value);
 
 #define HEV_AIDE_FINI() hev_win_aide_fini ()
 
-#define HEV_MUTEX_T SRWLOCK
+#define HevSysMutex SRWLOCK
 #define HEV_MUTEX_INIT(m) InitializeSRWLock (m)
 #define HEV_MUTEX_FINI(m) ((void)0)
 #define HEV_MUTEX_LOCK(m) AcquireSRWLockExclusive (m)

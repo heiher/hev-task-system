@@ -32,7 +32,7 @@
 
 #define HEV_AIDE_FINI() ((void)0)
 
-#define HEV_MUTEX_T pthread_mutex_t
+#define HevSysMutex pthread_mutex_t
 #define HEV_MUTEX_INIT(m) pthread_mutex_init ((m), NULL)
 #define HEV_MUTEX_FINI(m) pthread_mutex_destroy (m)
 #define HEV_MUTEX_LOCK(m) pthread_mutex_lock (m)

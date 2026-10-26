@@ -24,7 +24,7 @@ struct _HevTaskIOReactorIOCP
     HevTaskIOReactor base;
 
     HevRBTree tree;
-    HEV_MUTEX_T mutex;
+    HevSysMutex mutex;
 };
 
 enum _HevTaskIOReactorEvents
