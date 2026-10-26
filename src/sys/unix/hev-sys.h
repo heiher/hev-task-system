@@ -23,7 +23,7 @@
 #include "lib/misc/hev-windows-api.h"
 #endif
 
-#define HEV_LONGJMP(env, val) _longjmp ((env), (val))
+#define hev_longjmp(env, val) _longjmp ((env), (val))
 
 #define HEV_STACK_RANGE_ENTER(task) ((void)0)
 #define HEV_STACK_RANGE_LEAVE() ((void)0)

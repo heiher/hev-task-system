@@ -184,7 +184,7 @@ __declspec (noreturn) void hev_task_longjmp (void *env, int value);
 
 #endif /* HEV_WIN_RAW */
 
-#define HEV_LONGJMP(env, val) hev_task_longjmp ((void *)(env), (val))
+#define hev_longjmp(env, val) hev_task_longjmp ((void *)(env), (val))
 
 /* Heap stacks are outside the TEB stack range, which __chkstk relies on. */
 #define HEV_STACK_RANGE_ENTER(task)            \

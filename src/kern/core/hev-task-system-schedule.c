@@ -211,7 +211,7 @@ hev_task_system_schedule (HevTaskYieldType type)
 
         /* resume to kernel context */
         HEV_STACK_RANGE_LEAVE ();
-        HEV_LONGJMP (ctx->kernel_context, type);
+        hev_longjmp (ctx->kernel_context, type);
     }
 
     /* NOTE: in kernel context */
@@ -245,7 +245,7 @@ hev_task_system_schedule (HevTaskYieldType type)
 
     /* switch to task */
     HEV_STACK_RANGE_ENTER (ctx->current_task);
-    HEV_LONGJMP (ctx->current_task->context, 1);
+    hev_longjmp (ctx->current_task->context, 1);
 }
 
 void
@@ -281,5 +281,5 @@ hev_task_system_kill_current_task (void)
      * task stack may be freed.
      */
     HEV_STACK_RANGE_LEAVE ();
-    HEV_LONGJMP (ctx->kernel_context, HEV_TASK_SCHED_REMOVE);
+    hev_longjmp (ctx->kernel_context, HEV_TASK_SCHED_REMOVE);
 }
