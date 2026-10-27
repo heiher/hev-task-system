@@ -41,6 +41,6 @@ hev_task_call_destroy (HevTaskCall *self)
 EXPORT_SYMBOL void *
 hev_task_call_jump (HevTaskCall *self, HevTaskCallEntry entry)
 {
-    hev_sys_call_execute (self, entry);
+    hev_sys_task_execute (self, entry);
     return self->retval;
 }
