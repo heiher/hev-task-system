@@ -1,4 +1,11 @@
-/* hev-sys-thread.c - Threads and one-time initialization on Win32 */
+/*
+ ============================================================================
+ Name        : hev-sys-thread.c
+ Author      : Heiher <r@hev.cc>
+ Copyright   : Copyright (c) 2026 everyone.
+ Description : Threads and one-time initialization on Win32
+ ============================================================================
+ */
 
 #define HEV_SYS_RAW
 #include "hev-sys-private.h"

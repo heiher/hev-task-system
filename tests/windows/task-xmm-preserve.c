@@ -1,4 +1,11 @@
-/* task-xmm-preserve.c - XMM6-15 preservation across coroutine switches */
+/*
+ ============================================================================
+ Name        : task-xmm-preserve.c
+ Author      : Heiher <r@hev.cc>
+ Copyright   : Copyright (c) 2026 everyone.
+ Description : Task XMM Preserve Test
+ ============================================================================
+ */
 
 #include <assert.h>
 #include <stdint.h>

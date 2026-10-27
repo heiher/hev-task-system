@@ -1,4 +1,11 @@
-/* hev-sys-fd.c - Virtual file descriptors for Winsock sockets */
+/*
+ ============================================================================
+ Name        : hev-sys-fd.c
+ Author      : Heiher <r@hev.cc>
+ Copyright   : Copyright (c) 2026 everyone.
+ Description : Virtual file descriptors for Winsock sockets
+ ============================================================================
+ */
 
 #define HEV_SYS_RAW
 #include "hev-sys-private.h"

@@ -1,4 +1,11 @@
-/* hev-sys-fdio.c - Descriptor operations for sockets and CRT descriptors */
+/*
+ ============================================================================
+ Name        : hev-sys-fdio.c
+ Author      : Heiher <r@hev.cc>
+ Copyright   : Copyright (c) 2026 everyone.
+ Description : Descriptor operations for sockets and CRT descriptors
+ ============================================================================
+ */
 
 #define HEV_SYS_RAW
 #include "hev-sys-private.h"

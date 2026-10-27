@@ -1,3 +1,12 @@
+/*
+ ============================================================================
+ Name        : platform-abi.c
+ Author      : Heiher <r@hev.cc>
+ Copyright   : Copyright (c) 2026 everyone.
+ Description : Platform ABI Test
+ ============================================================================
+ */
+
 /* Check that pointer packing does not assume MSVC's 32-bit 'long' on Win64. */
 #include <stddef.h>
 #include <stdint.h>

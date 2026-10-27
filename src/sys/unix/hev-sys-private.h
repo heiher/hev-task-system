@@ -1,4 +1,11 @@
-/* hev-sys-private.h - POSIX system layer of the library */
+/*
+ ============================================================================
+ Name        : hev-sys-private.h
+ Author      : Heiher <r@hev.cc>
+ Copyright   : Copyright (c) 2026 everyone.
+ Description : POSIX system layer of the library
+ ============================================================================
+ */
 
 #ifndef __HEV_SYS_PRIVATE_H__
 #define __HEV_SYS_PRIVATE_H__

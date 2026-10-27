@@ -1,4 +1,11 @@
-/* hev-sys-time.c - clock_gettime() on top of QueryPerformanceCounter */
+/*
+ ============================================================================
+ Name        : hev-sys-time.c
+ Author      : Heiher <r@hev.cc>
+ Copyright   : Copyright (c) 2026 everyone.
+ Description : clock_gettime() on top of QueryPerformanceCounter
+ ============================================================================
+ */
 
 #define HEV_SYS_RAW
 #include "hev-sys-private.h"

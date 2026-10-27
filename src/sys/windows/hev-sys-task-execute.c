@@ -1,4 +1,11 @@
-/* hev-sys-task-execute.c - Task call stack range in the TEB */
+/*
+ ============================================================================
+ Name        : hev-sys-task-execute.c
+ Author      : Heiher <r@hev.cc>
+ Copyright   : Copyright (c) 2026 everyone.
+ Description : Task call stack range in the TEB
+ ============================================================================
+ */
 
 #define HEV_SYS_RAW
 #include "hev-sys-private.h"

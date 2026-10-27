@@ -1,4 +1,11 @@
-/* hev-sys-stack.c - Task stack range in the TEB and the stack detector stub */
+/*
+ ============================================================================
+ Name        : hev-sys-stack.c
+ Author      : Heiher <r@hev.cc>
+ Copyright   : Copyright (c) 2026 everyone.
+ Description : Task stack range in the TEB and the stack detector stub
+ ============================================================================
+ */
 
 #define HEV_SYS_RAW
 #include "hev-sys-private.h"

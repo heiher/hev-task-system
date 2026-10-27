@@ -1,4 +1,11 @@
-/* hev-sys.h - POSIX headers of the public API */
+/*
+ ============================================================================
+ Name        : hev-sys.h
+ Author      : Heiher <r@hev.cc>
+ Copyright   : Copyright (c) 2026 everyone.
+ Description : POSIX headers of the public API
+ ============================================================================
+ */
 
 #ifndef __HEV_SYS_UNIX_H__
 #define __HEV_SYS_UNIX_H__

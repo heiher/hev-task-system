@@ -1,3 +1,12 @@
+/*
+ ============================================================================
+ Name        : task-context-stress.c
+ Author      : Heiher <r@hev.cc>
+ Copyright   : Copyright (c) 2026 everyone.
+ Description : Task Context Stress Test
+ ============================================================================
+ */
+
 /* Regression test for register/stack preservation across many task yields.
  * Especially important for the separate native MSVC x86/x64 ASM backends. */
 #include <assert.h>

@@ -1,4 +1,11 @@
-/* task-big-frame.c - Large stack frame on a heap-allocated coroutine stack */
+/*
+ ============================================================================
+ Name        : task-big-frame.c
+ Author      : Heiher <r@hev.cc>
+ Copyright   : Copyright (c) 2026 everyone.
+ Description : Task Big Frame Test
+ ============================================================================
+ */
 
 #include <assert.h>
 #include <stdint.h>

@@ -1,4 +1,11 @@
-/* hev-sys-poll.c - poll() on top of WSAPoll */
+/*
+ ============================================================================
+ Name        : hev-sys-poll.c
+ Author      : Heiher <r@hev.cc>
+ Copyright   : Copyright (c) 2026 everyone.
+ Description : poll() on top of WSAPoll
+ ============================================================================
+ */
 
 #define HEV_SYS_RAW
 #include "hev-sys-private.h"

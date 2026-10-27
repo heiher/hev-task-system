@@ -1,4 +1,11 @@
-/* hev-sys.h - POSIX types and constants of the public API on Windows */
+/*
+ ============================================================================
+ Name        : hev-sys.h
+ Author      : Heiher <r@hev.cc>
+ Copyright   : Copyright (c) 2026 everyone.
+ Description : POSIX types and constants of the public API on Windows
+ ============================================================================
+ */
 
 #ifndef __HEV_SYS_WINDOWS_H__
 #define __HEV_SYS_WINDOWS_H__

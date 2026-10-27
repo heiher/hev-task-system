@@ -1,4 +1,11 @@
-/* hev-sys-errno.c - Winsock error to errno mapping */
+/*
+ ============================================================================
+ Name        : hev-sys-errno.c
+ Author      : Heiher <r@hev.cc>
+ Copyright   : Copyright (c) 2026 everyone.
+ Description : Winsock error to errno mapping
+ ============================================================================
+ */
 
 #define HEV_SYS_RAW
 #include "hev-sys-private.h"

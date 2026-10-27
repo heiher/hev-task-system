@@ -1,4 +1,11 @@
-/* hev-sys-socket.c - Socket management on top of Winsock */
+/*
+ ============================================================================
+ Name        : hev-sys-socket.c
+ Author      : Heiher <r@hev.cc>
+ Copyright   : Copyright (c) 2026 everyone.
+ Description : Socket management on top of Winsock
+ ============================================================================
+ */
 
 #define HEV_SYS_RAW
 #include "hev-sys-private.h"

@@ -1,4 +1,11 @@
-/* hev-sys-netdb.c - Name resolution on top of Winsock */
+/*
+ ============================================================================
+ Name        : hev-sys-netdb.c
+ Author      : Heiher <r@hev.cc>
+ Copyright   : Copyright (c) 2026 everyone.
+ Description : Name resolution on top of Winsock
+ ============================================================================
+ */
 
 #define HEV_SYS_RAW
 #include "hev-sys-private.h"

@@ -1,4 +1,11 @@
-/* hev-sys-msg.c - Message and scatter/gather I/O on top of Winsock */
+/*
+ ============================================================================
+ Name        : hev-sys-msg.c
+ Author      : Heiher <r@hev.cc>
+ Copyright   : Copyright (c) 2026 everyone.
+ Description : Message and scatter/gather I/O on top of Winsock
+ ============================================================================
+ */
 
 #define HEV_SYS_RAW
 #include "hev-sys-private.h"

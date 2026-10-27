@@ -1,5 +1,10 @@
-/* hev-sys-private.h - Windows system layer of the library: POSIX names
- * mapped to hev_sys_*
+/*
+ ============================================================================
+ Name        : hev-sys-private.h
+ Author      : Heiher <r@hev.cc>
+ Copyright   : Copyright (c) 2026 everyone.
+ Description : Windows system layer of the library
+ ============================================================================
  */
 
 #ifndef __HEV_SYS_PRIVATE_H__
