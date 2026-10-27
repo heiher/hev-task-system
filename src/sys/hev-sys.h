@@ -4,9 +4,9 @@
 #define __HEV_SYS_H__
 
 #if defined(_WIN32) && !defined(__MSYS__) && !defined(__CYGWIN__)
-#include "../src/sys/windows/hev-sys.h"
+#include "windows/hev-sys.h"
 #else
-#include "../src/sys/unix/hev-sys.h"
+#include "unix/hev-sys.h"
 #endif
 
 #endif /* __HEV_SYS_H__ */
