@@ -8,7 +8,6 @@
  */
 
 #include <fcntl.h>
-#include <unistd.h>
 #include <stddef.h>
 #include <assert.h>
 
