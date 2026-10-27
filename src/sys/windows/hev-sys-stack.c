@@ -1,7 +1,9 @@
-/* hev-win-stack.c - Task stack range in the TEB and the stack detector stub */
+/* hev-sys-stack.c - Task stack range in the TEB and the stack detector stub */
 
 #define HEV_WIN_RAW
-#include "hev-sys.h"
+#include "hev-sys-private.h"
+#include "kern/task/hev-task-private.h"
+#include "kern/task/hev-task-stack.h"
 #include "lib/misc/hev-task-stack-detector.h"
 
 /*
@@ -13,19 +15,19 @@ static __thread void *thread_stack_base;
 static __thread void *thread_stack_limit;
 
 void
-hev_win_stack_enter (void *bottom, void *limit)
+hev_sys_stack_enter (HevTask *task)
 {
     NT_TIB *tib = (NT_TIB *)NtCurrentTeb ();
 
     thread_stack_base = tib->StackBase;
     thread_stack_limit = tib->StackLimit;
 
-    tib->StackBase = bottom;
-    tib->StackLimit = limit;
+    tib->StackBase = task->stack_bottom;
+    tib->StackLimit = hev_task_stack_get_base (task->stack);
 }
 
 void
-hev_win_stack_leave (void)
+hev_sys_stack_leave (void)
 {
     NT_TIB *tib = (NT_TIB *)NtCurrentTeb ();
 
@@ -34,27 +36,6 @@ hev_win_stack_leave (void)
 
     tib->StackBase = thread_stack_base;
     tib->StackLimit = thread_stack_limit;
-}
-
-void
-hev_win_stack_swap (void *bottom, void *limit, void *saved[2])
-{
-    NT_TIB *tib = (NT_TIB *)NtCurrentTeb ();
-
-    saved[0] = tib->StackBase;
-    saved[1] = tib->StackLimit;
-
-    tib->StackBase = bottom;
-    tib->StackLimit = limit;
-}
-
-void
-hev_win_stack_restore (void *saved[2])
-{
-    NT_TIB *tib = (NT_TIB *)NtCurrentTeb ();
-
-    tib->StackBase = saved[0];
-    tib->StackLimit = saved[1];
 }
 
 void

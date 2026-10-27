@@ -8,7 +8,8 @@
 #define TASKS 12
 #define SWITCHES 200
 
-typedef struct {
+typedef struct
+{
     unsigned int index;
     unsigned int completed;
 } Work;

@@ -147,8 +147,7 @@ hev_win_token_to_socket (uintptr_t token)
     reg_init ();
 
     AcquireSRWLockShared (&reg_lock);
-    if (idx < reg_capacity &&
-        reg_slots[idx].gen == (token >> REG_TOKEN_BITS))
+    if (idx < reg_capacity && reg_slots[idx].gen == (token >> REG_TOKEN_BITS))
         s = reg_slots[idx].socket;
     ReleaseSRWLockShared (&reg_lock);
 
@@ -182,7 +181,8 @@ hev_win_socket_to_fd (SOCKET s)
 
         if (reg_grow_locked (old_cap) == 0) {
             reg_slots[old_cap].socket = s;
-            reg_slots[old_cap].gen = (reg_slots[old_cap].gen + 1) & REG_GEN_MASK;
+            reg_slots[old_cap].gen = (reg_slots[old_cap].gen + 1) &
+                                     REG_GEN_MASK;
             fd = REG_FD_BASE + (int)old_cap;
         }
     }

@@ -35,14 +35,16 @@ typedef pthread_mutex_t HevSysMutex;
 #define hev_sys_mutex_lock(m) pthread_mutex_lock (m)
 #define hev_sys_mutex_unlock(m) pthread_mutex_unlock (m)
 
-#define hev_sys_thread_create(t, entry, data)     pthread_create ((t), NULL, (entry), (data))
+#define hev_sys_thread_create(t, entry, data) \
+    pthread_create ((t), NULL, (entry), (data))
 #define hev_sys_thread_join(t) pthread_join ((t), NULL)
 
 #define hev_sys_once(once, func) pthread_once ((once), (func))
 
-#define hev_sys_atfork(prepare, parent, child)     pthread_atfork ((prepare), (parent), (child))
+#define hev_sys_atfork(prepare, parent, child) \
+    pthread_atfork ((prepare), (parent), (child))
 
-#define HEV_SYS_INVALID_SOCKET ((uintptr_t)-1)
+#define HEV_SYS_INVALID_SOCKET ((uintptr_t) - 1)
 
 #define hev_sys_fd_to_handle(fd) ((uintptr_t)get_osfhandle (fd))
 #define hev_sys_handle_to_socket(handle) (handle)

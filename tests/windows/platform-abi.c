@@ -5,10 +5,12 @@
 #include "lib/rbtree/hev-rbtree.h"
 
 #if defined(_MSC_VER)
-_Static_assert (sizeof (((HevRBTreeNode *)0)->__parent_color) == sizeof (uintptr_t),
+_Static_assert (sizeof (((HevRBTreeNode *)0)->__parent_color) ==
+                    sizeof (uintptr_t),
                 "MSVC rbtree parent must be pointer-sized");
 #else
-_Static_assert (sizeof (((HevRBTreeNode *)0)->__parent_color) == sizeof (unsigned long),
+_Static_assert (sizeof (((HevRBTreeNode *)0)->__parent_color) ==
+                    sizeof (unsigned long),
                 "GNU rbtree parent must retain its original ABI");
 #endif
 
@@ -19,7 +21,8 @@ _Static_assert (sizeof (long) == 4, "ARM64 Windows 'long' must be 32-bit");
 _Static_assert (sizeof (uintptr_t) == 8, "ARM64 uintptr_t must be 64-bit");
 #endif
 
-int main (void)
+int
+main (void)
 {
     HevRBTree tree = { 0 };
     HevRBTreeNode node;
