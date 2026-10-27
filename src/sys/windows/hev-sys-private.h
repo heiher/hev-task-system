@@ -80,7 +80,7 @@ extern "C" {
 #define CLOCK_REALTIME 0
 #endif
 
-int hev_win_wsa_init (void);
+int hev_sys_wsa_init (void);
 void hev_win_wsa_fini (void);
 
 SOCKET hev_win_fd_socket (int fd);
