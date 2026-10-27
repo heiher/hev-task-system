@@ -13,7 +13,7 @@
 
 #if defined(__MSYS__)
 #include <io.h>
-#include "lib/misc/hev-windows-api.h"
+#include "hev-windows-api.h"
 #endif
 
 typedef pthread_t HevSysThread;
