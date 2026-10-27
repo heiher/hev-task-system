@@ -1,13 +1,13 @@
-/* hev-sys-call.c - Task call stack range in the TEB */
+/* hev-sys-task-execute.c - Task call stack range in the TEB */
 
-#define HEV_WIN_RAW
+#define HEV_SYS_RAW
 #include "hev-sys-private.h"
 #include "kern/task/hev-task-call.h"
 
 extern void hev_task_execute (HevTaskCall *self, HevTaskCallEntry entry);
 
 void
-hev_sys_call_execute (HevTaskCall *call, HevTaskCallEntry entry)
+hev_sys_task_execute (HevTaskCall *call, HevTaskCallEntry entry)
 {
     NT_TIB *tib = (NT_TIB *)NtCurrentTeb ();
     void *base = tib->StackBase;

@@ -57,9 +57,9 @@ struct mmsghdr
 };
 
 /* Descriptors are virtual: a socket is only usable through its fd. */
-int hev_win_socket_to_fd (SOCKET s);
-SOCKET hev_win_fd_to_socket (int fd);
-int hev_win_close (int fd);
+int hev_sys_socket_to_fd (SOCKET s);
+SOCKET hev_sys_fd_to_socket (int fd);
+int hev_sys_close (int fd);
 
 #ifdef __cplusplus
 }

@@ -1,6 +1,6 @@
 /* hev-sys-stack.c - Task stack range in the TEB and the stack detector stub */
 
-#define HEV_WIN_RAW
+#define HEV_SYS_RAW
 #include "hev-sys-private.h"
 #include "kern/task/hev-task-private.h"
 #include "kern/task/hev-task-stack.h"

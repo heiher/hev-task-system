@@ -1,10 +1,10 @@
-/* hev-win-time.c - clock_gettime() on top of QueryPerformanceCounter */
+/* hev-sys-time.c - clock_gettime() on top of QueryPerformanceCounter */
 
-#define HEV_WIN_RAW
+#define HEV_SYS_RAW
 #include "hev-sys-private.h"
 
 int
-hev_win_clock_gettime (int clock_id, struct timespec *ts)
+hev_sys_clock_gettime (int clock_id, struct timespec *ts)
 {
     LARGE_INTEGER freq, counter;
 

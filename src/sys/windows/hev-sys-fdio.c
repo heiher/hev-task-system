@@ -1,11 +1,11 @@
-/* hev-win-fdio.c - Descriptor operations for sockets and CRT descriptors */
+/* hev-sys-fdio.c - Descriptor operations for sockets and CRT descriptors */
 
-#define HEV_WIN_RAW
+#define HEV_SYS_RAW
 #include "hev-sys-private.h"
 #include "lib/misc/hev-compiler.h"
 
 static SOCKET
-hev_win_duplicate_socket_handle (SOCKET s)
+hev_sys_duplicate_socket_handle (SOCKET s)
 {
     WSAPROTOCOL_INFOW info;
 
@@ -18,36 +18,36 @@ hev_win_duplicate_socket_handle (SOCKET s)
 }
 
 int
-hev_win_dup (int oldfd)
+hev_sys_dup (int oldfd)
 {
-    SOCKET s = hev_win_fd_to_socket (oldfd);
+    SOCKET s = hev_sys_fd_to_socket (oldfd);
     SOCKET copy;
     int fd;
 
     if (s == INVALID_SOCKET)
         return _dup (oldfd);
 
-    if (hev_win_wsa_init () < 0)
+    if (hev_sys_wsa_init () < 0)
         return -1;
 
-    copy = hev_win_duplicate_socket_handle (s);
+    copy = hev_sys_duplicate_socket_handle (s);
     if (copy == INVALID_SOCKET) {
-        hev_win_set_errno_from_wsa ();
-        hev_win_wsa_fini ();
+        hev_sys_set_errno_from_wsa ();
+        hev_sys_wsa_fini ();
         return -1;
     }
 
-    fd = hev_win_fd_register (copy);
+    fd = hev_sys_fd_register (copy);
     if (fd < 0)
-        hev_win_wsa_fini ();
+        hev_sys_wsa_fini ();
 
     return fd;
 }
 
 int
-hev_win_dup2 (int oldfd, int newfd)
+hev_sys_dup2 (int oldfd, int newfd)
 {
-    SOCKET s = hev_win_fd_to_socket (oldfd);
+    SOCKET s = hev_sys_fd_to_socket (oldfd);
     SOCKET copy;
     SOCKET replaced;
     u_long nonblock = 1;
@@ -58,49 +58,49 @@ hev_win_dup2 (int oldfd, int newfd)
     if (oldfd == newfd)
         return newfd;
 
-    if (hev_win_wsa_init () < 0)
+    if (hev_sys_wsa_init () < 0)
         return -1;
 
-    copy = hev_win_duplicate_socket_handle (s);
+    copy = hev_sys_duplicate_socket_handle (s);
     if (copy == INVALID_SOCKET) {
-        hev_win_set_errno_from_wsa ();
-        hev_win_wsa_fini ();
+        hev_sys_set_errno_from_wsa ();
+        hev_sys_wsa_fini ();
         return -1;
     }
 
     if (ioctlsocket (copy, FIONBIO, &nonblock) != 0) {
-        hev_win_set_errno_from_wsa ();
+        hev_sys_set_errno_from_wsa ();
         closesocket (copy);
-        hev_win_wsa_fini ();
+        hev_sys_wsa_fini ();
         return -1;
     }
 
-    if (hev_win_fd_replace (newfd, copy, &replaced) < 0) {
+    if (hev_sys_fd_replace (newfd, copy, &replaced) < 0) {
         closesocket (copy);
-        hev_win_wsa_fini ();
+        hev_sys_wsa_fini ();
         return -1;
     }
 
     if (replaced != INVALID_SOCKET) {
         closesocket (replaced);
-        hev_win_wsa_fini ();
+        hev_sys_wsa_fini ();
     }
 
     return newfd;
 }
 
 EXPORT_SYMBOL int
-hev_win_close (int fd)
+hev_sys_close (int fd)
 {
-    SOCKET s = hev_win_fd_close_socket (fd);
+    SOCKET s = hev_sys_fd_close_socket (fd);
 
     if (s != INVALID_SOCKET) {
         int res = closesocket (s);
 
         if (res != 0)
-            hev_win_set_errno_from_wsa ();
+            hev_sys_set_errno_from_wsa ();
 
-        hev_win_wsa_fini ();
+        hev_sys_wsa_fini ();
         return res == 0 ? 0 : -1;
     }
 
@@ -108,13 +108,13 @@ hev_win_close (int fd)
 }
 
 int
-hev_win_pipe (int pipefd[2])
+hev_sys_pipe (int pipefd[2])
 {
-    return hev_win_socketpair (AF_INET, SOCK_STREAM, 0, pipefd);
+    return hev_sys_socketpair (AF_INET, SOCK_STREAM, 0, pipefd);
 }
 
 int
-hev_win_fcntl (int fd, int cmd, ...)
+hev_sys_fcntl (int fd, int cmd, ...)
 {
     (void)fd;
 
@@ -134,7 +134,7 @@ hev_win_fcntl (int fd, int cmd, ...)
 }
 
 int
-hev_win_openat (int dirfd, const char *pathname, int flags, ...)
+hev_sys_openat (int dirfd, const char *pathname, int flags, ...)
 {
     va_list ap;
     int mode = 0;

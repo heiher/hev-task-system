@@ -1,10 +1,10 @@
-/* hev-win-errno.c - Winsock error to errno mapping */
+/* hev-sys-errno.c - Winsock error to errno mapping */
 
-#define HEV_WIN_RAW
+#define HEV_SYS_RAW
 #include "hev-sys-private.h"
 
 void
-hev_win_set_errno_from_wsa_code (int error)
+hev_sys_set_errno_from_wsa_code (int error)
 {
     switch (error) {
     case WSAEWOULDBLOCK:
@@ -80,7 +80,7 @@ hev_win_set_errno_from_wsa_code (int error)
 }
 
 void
-hev_win_set_errno_from_wsa (void)
+hev_sys_set_errno_from_wsa (void)
 {
-    hev_win_set_errno_from_wsa_code (WSAGetLastError ());
+    hev_sys_set_errno_from_wsa_code (WSAGetLastError ());
 }

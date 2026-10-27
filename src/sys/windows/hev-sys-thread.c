@@ -1,6 +1,6 @@
 /* hev-sys-thread.c - Threads and one-time initialization on Win32 */
 
-#define HEV_WIN_RAW
+#define HEV_SYS_RAW
 #include "hev-sys-private.h"
 
 #include <process.h>

@@ -1,6 +1,6 @@
-/* hev-win-fd.c - Virtual file descriptors for Winsock sockets */
+/* hev-sys-fd.c - Virtual file descriptors for Winsock sockets */
 
-#define HEV_WIN_RAW
+#define HEV_SYS_RAW
 #include "hev-sys-private.h"
 #include "lib/misc/hev-compiler.h"
 
@@ -9,7 +9,7 @@
 #define REG_FD_BASE 0x40000000
 #define REG_TOKEN_BITS 20
 #define REG_GEN_MASK (~(uintptr_t)0 >> REG_TOKEN_BITS)
-#define HEV_WIN_INVALID_TOKEN ((uintptr_t)INVALID_SOCKET)
+#define HEV_SYS_INVALID_TOKEN ((uintptr_t)INVALID_SOCKET)
 
 typedef struct _RegSlot RegSlot;
 
@@ -96,7 +96,7 @@ reg_grow_locked (size_t need_idx)
 }
 
 EXPORT_SYMBOL SOCKET
-hev_win_fd_to_socket (int fd)
+hev_sys_fd_to_socket (int fd)
 {
     SOCKET s = INVALID_SOCKET;
     int idx;
@@ -120,9 +120,9 @@ hev_win_fd_to_socket (int fd)
  * can tell it from the socket that took the descriptor over.
  */
 uintptr_t
-hev_win_fd_to_token (int fd)
+hev_sys_fd_to_token (int fd)
 {
-    uintptr_t token = HEV_WIN_INVALID_TOKEN;
+    uintptr_t token = HEV_SYS_INVALID_TOKEN;
     int idx;
 
     reg_init ();
@@ -139,7 +139,7 @@ hev_win_fd_to_token (int fd)
 }
 
 SOCKET
-hev_win_token_to_socket (uintptr_t token)
+hev_sys_token_to_socket (uintptr_t token)
 {
     SOCKET s = INVALID_SOCKET;
     size_t idx = token & (((uintptr_t)1 << REG_TOKEN_BITS) - 1);
@@ -155,7 +155,7 @@ hev_win_token_to_socket (uintptr_t token)
 }
 
 EXPORT_SYMBOL int
-hev_win_socket_to_fd (SOCKET s)
+hev_sys_socket_to_fd (SOCKET s)
 {
     size_t i;
     int fd = -1;
@@ -193,7 +193,7 @@ hev_win_socket_to_fd (SOCKET s)
 }
 
 SOCKET
-hev_win_fd_close_socket (int fd)
+hev_sys_fd_close_socket (int fd)
 {
     SOCKET s = INVALID_SOCKET;
     int idx;
@@ -214,7 +214,7 @@ hev_win_fd_close_socket (int fd)
 }
 
 int
-hev_win_fd_replace (int fd, SOCKET s, SOCKET *old)
+hev_sys_fd_replace (int fd, SOCKET s, SOCKET *old)
 {
     int idx = reg_index_from_fd (fd);
 
@@ -239,9 +239,9 @@ hev_win_fd_replace (int fd, SOCKET s, SOCKET *old)
 }
 
 SOCKET
-hev_win_fd_socket (int fd)
+hev_sys_fd_socket (int fd)
 {
-    SOCKET s = hev_win_fd_to_socket (fd);
+    SOCKET s = hev_sys_fd_to_socket (fd);
 
     if (s == INVALID_SOCKET)
         WSASetLastError (WSAENOTSOCK);
@@ -250,23 +250,23 @@ hev_win_fd_socket (int fd)
 }
 
 int
-hev_win_fd_register (SOCKET s)
+hev_sys_fd_register (SOCKET s)
 {
     int fd;
     u_long nonblock = 1;
 
     if (s == INVALID_SOCKET) {
-        hev_win_set_errno_from_wsa ();
+        hev_sys_set_errno_from_wsa ();
         return -1;
     }
 
     if (ioctlsocket (s, FIONBIO, &nonblock) != 0) {
-        hev_win_set_errno_from_wsa ();
+        hev_sys_set_errno_from_wsa ();
         closesocket (s);
         return -1;
     }
 
-    fd = hev_win_socket_to_fd (s);
+    fd = hev_sys_socket_to_fd (s);
     if (fd < 0) {
         closesocket (s);
         errno = EMFILE;
@@ -277,7 +277,7 @@ hev_win_fd_register (SOCKET s)
 }
 
 int
-hev_win_wsa_init (void)
+hev_sys_wsa_init (void)
 {
     int res = 0;
 
@@ -302,7 +302,7 @@ hev_win_wsa_init (void)
 }
 
 void
-hev_win_wsa_fini (void)
+hev_sys_wsa_fini (void)
 {
     AcquireSRWLockExclusive (&wsa_lock);
 

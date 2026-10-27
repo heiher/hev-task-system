@@ -1,5 +1,5 @@
 /* hev-sys-private.h - Windows system layer of the library: POSIX names
- * mapped to hev_win_*
+ * mapped to hev_sys_*
  */
 
 #ifndef __HEV_SYS_PRIVATE_H__
@@ -81,62 +81,62 @@ extern "C" {
 #endif
 
 int hev_sys_wsa_init (void);
-void hev_win_wsa_fini (void);
+void hev_sys_wsa_fini (void);
 
-SOCKET hev_win_fd_socket (int fd);
-uintptr_t hev_win_fd_to_token (int fd);
-SOCKET hev_win_token_to_socket (uintptr_t token);
-SOCKET hev_win_fd_close_socket (int fd);
-int hev_win_fd_register (SOCKET s);
-int hev_win_fd_replace (int fd, SOCKET s, SOCKET *old);
+SOCKET hev_sys_fd_socket (int fd);
+uintptr_t hev_sys_fd_to_token (int fd);
+SOCKET hev_sys_token_to_socket (uintptr_t token);
+SOCKET hev_sys_fd_close_socket (int fd);
+int hev_sys_fd_register (SOCKET s);
+int hev_sys_fd_replace (int fd, SOCKET s, SOCKET *old);
 
-void hev_win_set_errno_from_wsa (void);
-void hev_win_set_errno_from_wsa_code (int error);
+void hev_sys_set_errno_from_wsa (void);
+void hev_sys_set_errno_from_wsa_code (int error);
 
-int hev_win_socket (int domain, int type, int protocol);
-int hev_win_accept (int s, struct sockaddr *addr, socklen_t *addrlen);
-int hev_win_socketpair (int domain, int type, int protocol, int sv[2]);
-int hev_win_connect (int s, const struct sockaddr *name, int namelen);
-int hev_win_bind (int s, const struct sockaddr *name, int namelen);
-int hev_win_listen (int s, int backlog);
-int hev_win_shutdown (int s, int how);
-int hev_win_setsockopt (int s, int level, int optname, const void *optval,
+int hev_sys_socket (int domain, int type, int protocol);
+int hev_sys_accept (int s, struct sockaddr *addr, socklen_t *addrlen);
+int hev_sys_socketpair (int domain, int type, int protocol, int sv[2]);
+int hev_sys_connect (int s, const struct sockaddr *name, int namelen);
+int hev_sys_bind (int s, const struct sockaddr *name, int namelen);
+int hev_sys_listen (int s, int backlog);
+int hev_sys_shutdown (int s, int how);
+int hev_sys_setsockopt (int s, int level, int optname, const void *optval,
                         int optlen);
-int hev_win_ioctl (int fd, long request, void *argp);
+int hev_sys_ioctl (int fd, long request, void *argp);
 
-ssize_t hev_win_recv (int fd, void *buf, size_t len, int flags);
-ssize_t hev_win_send (int fd, const void *buf, size_t len, int flags);
-ssize_t hev_win_recvfrom (int fd, void *buf, size_t len, int flags,
+ssize_t hev_sys_recv (int fd, void *buf, size_t len, int flags);
+ssize_t hev_sys_send (int fd, const void *buf, size_t len, int flags);
+ssize_t hev_sys_recvfrom (int fd, void *buf, size_t len, int flags,
                           struct sockaddr *addr, socklen_t *addrlen);
-ssize_t hev_win_sendto (int fd, const void *buf, size_t len, int flags,
+ssize_t hev_sys_sendto (int fd, const void *buf, size_t len, int flags,
                         const struct sockaddr *addr, socklen_t addrlen);
-ssize_t hev_win_read (int fd, void *buf, size_t count);
-ssize_t hev_win_write (int fd, const void *buf, size_t count);
-ssize_t hev_win_readv (int fd, const struct iovec *iov, int iovcnt);
-ssize_t hev_win_writev (int fd, const struct iovec *iov, int iovcnt);
-ssize_t hev_win_recvmsg (int fd, struct msghdr *msg, int flags);
-ssize_t hev_win_sendmsg (int fd, const struct msghdr *msg, int flags);
-ssize_t hev_win_recvmmsg (int fd, struct mmsghdr *msgv, unsigned int vlen,
+ssize_t hev_sys_read (int fd, void *buf, size_t count);
+ssize_t hev_sys_write (int fd, const void *buf, size_t count);
+ssize_t hev_sys_readv (int fd, const struct iovec *iov, int iovcnt);
+ssize_t hev_sys_writev (int fd, const struct iovec *iov, int iovcnt);
+ssize_t hev_sys_recvmsg (int fd, struct msghdr *msg, int flags);
+ssize_t hev_sys_sendmsg (int fd, const struct msghdr *msg, int flags);
+ssize_t hev_sys_recvmmsg (int fd, struct mmsghdr *msgv, unsigned int vlen,
                           int flags, void *timeout);
-ssize_t hev_win_sendmmsg (int fd, struct mmsghdr *msgv, unsigned int vlen,
+ssize_t hev_sys_sendmmsg (int fd, struct mmsghdr *msgv, unsigned int vlen,
                           int flags);
 
-int hev_win_dup (int oldfd);
-int hev_win_dup2 (int oldfd, int newfd);
-int hev_win_pipe (int pipefd[2]);
-int hev_win_fcntl (int fd, int cmd, ...);
-int hev_win_openat (int dirfd, const char *pathname, int flags, ...);
+int hev_sys_dup (int oldfd);
+int hev_sys_dup2 (int oldfd, int newfd);
+int hev_sys_pipe (int pipefd[2]);
+int hev_sys_fcntl (int fd, int cmd, ...);
+int hev_sys_openat (int dirfd, const char *pathname, int flags, ...);
 
-int hev_win_poll (struct pollfd *fds, int nfds, int timeout);
+int hev_sys_poll (struct pollfd *fds, int nfds, int timeout);
 
-int hev_win_getaddrinfo (const char *node, const char *service,
+int hev_sys_getaddrinfo (const char *node, const char *service,
                          const struct addrinfo *hints, struct addrinfo **res);
-int hev_win_getnameinfo (const struct sockaddr *addr, socklen_t addrlen,
+int hev_sys_getnameinfo (const struct sockaddr *addr, socklen_t addrlen,
                          char *node, socklen_t nodelen, char *service,
                          socklen_t servicelen, int flags);
-void hev_win_freeaddrinfo (struct addrinfo *res);
+void hev_sys_freeaddrinfo (struct addrinfo *res);
 
-int hev_win_clock_gettime (int clock_id, struct timespec *ts);
+int hev_sys_clock_gettime (int clock_id, struct timespec *ts);
 
 __declspec (noreturn) void hev_task_longjmp (void *env, int value);
 
@@ -147,7 +147,7 @@ struct _HevTaskCall;
 void hev_sys_stack_enter (struct _HevTask *task);
 void hev_sys_stack_leave (void);
 
-void hev_sys_call_execute (struct _HevTaskCall *call,
+void hev_sys_task_execute (struct _HevTaskCall *call,
                            void (*entry) (struct _HevTaskCall *));
 
 typedef HANDLE HevSysThread;
@@ -203,59 +203,59 @@ hev_sys_atfork (void (*prepare) (void), void (*parent) (void),
 static inline uintptr_t
 hev_sys_fd_to_handle (int fd)
 {
-    return hev_win_fd_to_token (fd);
+    return hev_sys_fd_to_token (fd);
 }
 
 static inline uintptr_t
 hev_sys_handle_to_socket (uintptr_t handle)
 {
-    return (uintptr_t)hev_win_token_to_socket (handle);
+    return (uintptr_t)hev_sys_token_to_socket (handle);
 }
 
-#ifndef HEV_WIN_RAW
+#ifndef HEV_SYS_RAW
 
-#define socket hev_win_socket
-#define accept hev_win_accept
-#define socketpair hev_win_socketpair
-#define connect hev_win_connect
-#define bind hev_win_bind
-#define listen hev_win_listen
-#define shutdown hev_win_shutdown
-#define setsockopt hev_win_setsockopt
-#define recv hev_win_recv
-#define send hev_win_send
-#define recvfrom hev_win_recvfrom
-#define sendto hev_win_sendto
+#define socket hev_sys_socket
+#define accept hev_sys_accept
+#define socketpair hev_sys_socketpair
+#define connect hev_sys_connect
+#define bind hev_sys_bind
+#define listen hev_sys_listen
+#define shutdown hev_sys_shutdown
+#define setsockopt hev_sys_setsockopt
+#define recv hev_sys_recv
+#define send hev_sys_send
+#define recvfrom hev_sys_recvfrom
+#define sendto hev_sys_sendto
 
-#define read hev_win_read
-#define write hev_win_write
-#define readv hev_win_readv
-#define writev hev_win_writev
-#define recvmsg hev_win_recvmsg
-#define sendmsg hev_win_sendmsg
-#define recvmmsg hev_win_recvmmsg
-#define sendmmsg hev_win_sendmmsg
+#define read hev_sys_read
+#define write hev_sys_write
+#define readv hev_sys_readv
+#define writev hev_sys_writev
+#define recvmsg hev_sys_recvmsg
+#define sendmsg hev_sys_sendmsg
+#define recvmmsg hev_sys_recvmmsg
+#define sendmmsg hev_sys_sendmmsg
 
-#define ioctl hev_win_ioctl
-#define dup hev_win_dup
-#define dup2 hev_win_dup2
-#define close hev_win_close
-#define pipe hev_win_pipe
-#define poll hev_win_poll
-#define fcntl hev_win_fcntl
+#define ioctl hev_sys_ioctl
+#define dup hev_sys_dup
+#define dup2 hev_sys_dup2
+#define close hev_sys_close
+#define pipe hev_sys_pipe
+#define poll hev_sys_poll
+#define fcntl hev_sys_fcntl
 #define open _open
-#define openat hev_win_openat
+#define openat hev_sys_openat
 
-#define getaddrinfo hev_win_getaddrinfo
-#define getnameinfo hev_win_getnameinfo
-#define freeaddrinfo hev_win_freeaddrinfo
-#define clock_gettime hev_win_clock_gettime
+#define getaddrinfo hev_sys_getaddrinfo
+#define getnameinfo hev_sys_getnameinfo
+#define freeaddrinfo hev_sys_freeaddrinfo
+#define clock_gettime hev_sys_clock_gettime
 
 #define alloca _alloca
 #define strdup _strdup
 #define getpagesize() 4096
 
-#endif /* HEV_WIN_RAW */
+#endif /* HEV_SYS_RAW */
 
 #define hev_longjmp(env, val) hev_task_longjmp ((void *)(env), (val))
 

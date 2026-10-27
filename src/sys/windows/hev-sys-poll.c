@@ -1,10 +1,10 @@
-/* hev-win-poll.c - poll() on top of WSAPoll */
+/* hev-sys-poll.c - poll() on top of WSAPoll */
 
-#define HEV_WIN_RAW
+#define HEV_SYS_RAW
 #include "hev-sys-private.h"
 
 int
-hev_win_poll (struct pollfd *fds, int nfds, int timeout)
+hev_sys_poll (struct pollfd *fds, int nfds, int timeout)
 {
     WSAPOLLFD stack_fds[64];
     int stack_map[64];
@@ -38,7 +38,7 @@ hev_win_poll (struct pollfd *fds, int nfds, int timeout)
         if ((intptr_t)fds[i].fd < 0)
             continue;
 
-        s = hev_win_fd_to_socket ((int)fds[i].fd);
+        s = hev_sys_fd_to_socket ((int)fds[i].fd);
         if (s == INVALID_SOCKET) {
             fds[i].revents = POLLNVAL;
             invalid++;
@@ -65,7 +65,7 @@ hev_win_poll (struct pollfd *fds, int nfds, int timeout)
 
     res = WSAPoll (native, (ULONG)valid, invalid ? 0 : timeout);
     if (res == SOCKET_ERROR) {
-        hev_win_set_errno_from_wsa ();
+        hev_sys_set_errno_from_wsa ();
         res = -1;
         goto exit;
     }
