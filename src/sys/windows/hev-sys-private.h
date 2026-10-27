@@ -29,6 +29,7 @@
 #include <sys/stat.h>
 
 #include "hev-sys.h"
+#include "hev-sys-task-execute.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -141,14 +142,10 @@ int hev_sys_clock_gettime (int clock_id, struct timespec *ts);
 __declspec (noreturn) void hev_task_longjmp (void *env, int value);
 
 struct _HevTask;
-struct _HevTaskCall;
 
 /* Heap stacks are outside the TEB stack range, which __chkstk relies on. */
 void hev_sys_stack_enter (struct _HevTask *task);
 void hev_sys_stack_leave (void);
-
-void hev_sys_task_execute (struct _HevTaskCall *call,
-                           void (*entry) (struct _HevTaskCall *));
 
 typedef HANDLE HevSysThread;
 typedef INIT_ONCE HevSysOnce;
