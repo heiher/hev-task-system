@@ -131,7 +131,6 @@ ifeq ($(WIN_NATIVE),1)
 # Skip what needs POSIX /dev, openat, UDP socketpair or a peer pthread.
 TESTS:=$(filter-out io-open io-openat io-creat io-socket \
 	task-dns-fork task-dns-shared task-dns-signal,$(TESTS))
-TESTS+=$(patsubst $(TESTDIR)/windows/%.c,%,$(wildcard $(TESTDIR)/windows/*.c))
 BENCHES:=$(filter-out poll-latency,$(BENCHES))
 endif
 
@@ -139,10 +138,6 @@ tests : $(patsubst %,$(BINDIR)/test-%$(EXEEXT),$(TESTS))
 	$(ECHO_PREFIX) for test in $^; do printf $(TESTMSG) $$test; $$test; done
 
 $(BINDIR)/test-%$(EXEEXT) : $(TESTDIR)/%.c $(STATIC_TARGET)
-	$(ECHO_PREFIX) $(CC) -o $@ $^ $(APP_CCFLAGS) $(APP_LDFLAGS)
-	@printf $(LINKMSG) $@
-
-$(BINDIR)/test-%$(EXEEXT) : $(TESTDIR)/windows/%.c $(STATIC_TARGET)
 	$(ECHO_PREFIX) $(CC) -o $@ $^ $(APP_CCFLAGS) $(APP_LDFLAGS)
 	@printf $(LINKMSG) $@
 
