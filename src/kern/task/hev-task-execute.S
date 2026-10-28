@@ -13,13 +13,13 @@
  * unwind model, so it is rejected before a backend is selected. */
 #if defined(_MSC_VER)
 # if defined(_M_ARM64EC)
-#  error "ARM64EC is not supported: it uses the x64-compatible ABI,
-#  _JUMP_BUFFER layout and unwind model,
-#  which differ from native ARM64 and have not been independently validated.
-#  Do not substitute the x64 or ARM64 backend."
+#  error "ARM64EC is not supported: it uses the x64-compatible ABI, " \
+         "_JUMP_BUFFER layout and unwind model, which differ from native " \
+         "ARM64 and have not been independently validated. Do not " \
+         "substitute the x64 or ARM64 backend."
 # endif
 # if !defined(_M_X64) && !defined(_M_IX86) && !defined(_M_ARM64)
-#  error "Native MSVC coroutine backends exist only for x64, x86 and native ARM64."
+#  error "Native MSVC backends exist only for x64, x86 and native ARM64."
 # endif
 #endif
 
