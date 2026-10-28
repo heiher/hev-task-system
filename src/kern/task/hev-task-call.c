@@ -15,7 +15,7 @@
 
 #include "lib/misc/hev-compiler.h"
 
-extern void hev_task_execute (HevTaskCall *self, HevTaskCallEntry entry);
+extern void hev_task_execute (void *self, void *entry);
 
 EXPORT_SYMBOL HevTaskCall *
 hev_task_call_new (int base_size, int stack_size)
@@ -41,6 +41,6 @@ hev_task_call_destroy (HevTaskCall *self)
 EXPORT_SYMBOL void *
 hev_task_call_jump (HevTaskCall *self, HevTaskCallEntry entry)
 {
-    hev_sys_task_execute (self, entry);
+    hev_sys_task_execute (self, self->stack_top, self, entry);
     return self->retval;
 }

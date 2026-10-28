@@ -278,7 +278,9 @@ hev_task_system_run_new_task (HevTask *task)
 {
     HevTaskSystemContext *ctx = hev_task_system_get_context ();
 
-    hev_task_execute (task, hev_task_executer);
+    hev_sys_task_execute (task, task->stack_bottom,
+                          hev_task_stack_get_base (task->stack),
+                          hev_task_executer);
 
     if (ctx->current_task)
         task->sched_key += hev_task_system_get_min_sched_key (ctx);

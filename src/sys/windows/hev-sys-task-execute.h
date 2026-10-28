@@ -3,7 +3,7 @@
  Name        : hev-sys-task-execute.h
  Author      : Heiher <r@hev.cc>
  Copyright   : Copyright (c) 2026 everyone.
- Description : Task call stack range in the TEB
+ Description : Task stack range in the TEB
  ============================================================================
  */
 
@@ -14,10 +14,7 @@
 extern "C" {
 #endif
 
-typedef struct _HevTaskCall HevTaskCall;
-typedef void (*HevTaskCallEntry) (HevTaskCall *call);
-
-void hev_sys_task_execute (HevTaskCall *call, HevTaskCallEntry entry);
+void hev_sys_task_execute (void *ctx, void *top, void *limit, void *entry);
 
 #ifdef __cplusplus
 }

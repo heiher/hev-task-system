@@ -3,29 +3,28 @@
  Name        : hev-sys-task-execute.c
  Author      : Heiher <r@hev.cc>
  Copyright   : Copyright (c) 2026 everyone.
- Description : Task call stack range in the TEB
+ Description : Task stack range in the TEB
  ============================================================================
  */
 
 #define HEV_SYS_RAW
 #include "sys/hev-sys-private.h"
 #include "hev-sys-task-execute.h"
-#include <hev-task-call.h>
 
-extern void hev_task_execute (HevTaskCall *self, HevTaskCallEntry entry);
+extern void hev_task_execute (void *self, void *executer);
 
 void
-hev_sys_task_execute (HevTaskCall *call, HevTaskCallEntry entry)
+hev_sys_task_execute (void *ctx, void *top, void *limit, void *entry)
 {
     NT_TIB *tib = (NT_TIB *)NtCurrentTeb ();
-    void *base = tib->StackBase;
-    void *limit = tib->StackLimit;
+    void *saved_base = tib->StackBase;
+    void *saved_limit = tib->StackLimit;
 
-    tib->StackBase = call->stack_top;
-    tib->StackLimit = call;
-
-    hev_task_execute (call, entry);
-
-    tib->StackBase = base;
+    tib->StackBase = top;
     tib->StackLimit = limit;
+
+    hev_task_execute (ctx, entry);
+
+    tib->StackBase = saved_base;
+    tib->StackLimit = saved_limit;
 }

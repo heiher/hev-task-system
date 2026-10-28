@@ -35,7 +35,8 @@ typedef pthread_mutex_t HevSysMutex;
 #define hev_sys_stack_enter(task) ((void)0)
 #define hev_sys_stack_leave() ((void)0)
 
-#define hev_sys_task_execute(call, entry) hev_task_execute ((call), (entry))
+#define hev_sys_task_execute(ctx, top, limit, entry) \
+    hev_task_execute ((ctx), (entry))
 
 #define hev_sys_mutex_init(m) pthread_mutex_init ((m), NULL)
 #define hev_sys_mutex_fini(m) pthread_mutex_destroy (m)
