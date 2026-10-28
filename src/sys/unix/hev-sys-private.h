@@ -27,13 +27,19 @@ typedef pthread_t HevSysThread;
 typedef pthread_once_t HevSysOnce;
 typedef pthread_mutex_t HevSysMutex;
 
+typedef struct _HevSysTaskStack HevSysTaskStack;
+
+struct _HevSysTaskStack
+{
+};
+
 #define HEV_SYS_ONCE_INITIALIZER PTHREAD_ONCE_INIT
 #define HEV_SYS_MUTEX_INITIALIZER PTHREAD_MUTEX_INITIALIZER
 
 #define hev_longjmp(env, val) _longjmp ((env), (val))
 
-#define hev_sys_stack_enter(task) ((void)0)
-#define hev_sys_stack_leave() ((void)0)
+#define hev_sys_task_stack_enter(self, base, limit) ((void)0)
+#define hev_sys_task_stack_leave(self) ((void)0)
 
 #define hev_sys_task_execute(ctx, top, limit, entry) \
     hev_task_execute ((ctx), (entry))

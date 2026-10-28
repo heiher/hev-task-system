@@ -14,8 +14,8 @@
 
 #include <stdlib.h>
 
-#include "sys/hev-sys-private.h"
 #include <hev-task-system.h>
+
 #include "hev-task-system-private.h"
 #include "kern/task/hev-task-private.h"
 #include "kern/task/hev-task-executer.h"
@@ -226,7 +226,7 @@ hev_task_system_schedule (HevTaskYieldType type)
             return; /* resume to task context */
 
         /* resume to kernel context */
-        hev_sys_stack_leave ();
+        hev_sys_task_stack_leave (&ctx->sys_task_stack);
         hev_longjmp (ctx->kernel_context, type);
     }
 
@@ -260,7 +260,9 @@ hev_task_system_schedule (HevTaskYieldType type)
     hev_task_system_update_sched_time (ctx);
 
     /* switch to task */
-    hev_sys_stack_enter (ctx->current_task);
+    hev_sys_task_stack_enter (
+        &ctx->sys_task_stack, ctx->current_task->stack_bottom,
+        hev_task_stack_get_base (ctx->current_task->stack));
     hev_longjmp (ctx->current_task->context, 1);
 }
 
@@ -298,6 +300,6 @@ hev_task_system_kill_current_task (void)
      * NOTE: remove current task in kernel context, because current
      * task stack may be freed.
      */
-    hev_sys_stack_leave ();
+    hev_sys_task_stack_leave (&ctx->sys_task_stack);
     hev_longjmp (ctx->kernel_context, HEV_TASK_SCHED_REMOVE);
 }

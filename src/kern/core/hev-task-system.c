@@ -96,8 +96,10 @@ hev_task_system_fini (void)
 
     if (context->dns_proxy)
         hev_task_dns_proxy_destroy (context->dns_proxy);
+#ifdef ENABLE_STACK_OVERFLOW_DETECTOR
     if (context->stack_detector)
         hev_task_stack_detector_destroy (context->stack_detector);
+#endif
     hev_task_timer_destroy (context->timer);
     hev_task_io_reactor_destroy (context->reactor);
     hev_free (context);
