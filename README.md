@@ -88,17 +88,24 @@ cd hev-task-system
 ./build-apple.sh
 ```
 
-### Native Visual C++ / MSVC (Windows x64)
+### Native Windows (clang, MSVC target)
 
-For native MSVC, use the scripts at the project root (PowerShell is required):
+The same `Makefile` builds natively with clang targeting MSVC. Open a Visual
+Studio developer prompt (clang from the VS LLVM component or `PATH`), make
+sure GNU make and a POSIX `sh.exe` (for example the one of Git for Windows,
+`C:\Program Files\Git\usr\bin`) are on `PATH`, then:
 
 ```bat
-build-msvc.bat -Target all
-build-msvc.bat -Target run-tests -TestTimeoutSeconds 60
-build-msvc.bat -Target all -Arch arm64
+make
+make tests
+make ARCH=x86 tests
+make ARCH=arm64 static apps
 ```
 
-Requires **Visual Studio 2022 17.5+** (or newer) and **clang-cl** in `PATH` with the MSVC/Windows SDK components.
+`ARCH` is `x64` (default), `x86` or `arm64` and must match the developer
+prompt architecture. The static library is `bin/hev-task-system.lib`; link
+programs with `/CETCOMPAT:NO` on x86/x64, since coroutine switching is
+incompatible with the CET shadow stack.
 
 ### Windows (MSYS2)
 

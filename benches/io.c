@@ -52,7 +52,7 @@ sleep_yielder (HevTaskYieldType type, void *data)
 static void
 writer_entry (void *data)
 {
-    long i, n = (long)data;
+    long i, n = (intptr_t)data;
     char buf[64];
 
     for (i = 0; i < n; i++)
@@ -62,7 +62,7 @@ writer_entry (void *data)
 static void
 reader_entry (void *data)
 {
-    long i, n = (long)data;
+    long i, n = (intptr_t)data;
     char buf[64];
 
     for (i = 0; i < n; i++)
@@ -72,7 +72,7 @@ reader_entry (void *data)
 static void
 mod_entry (void *data)
 {
-    long i, n = (long)data;
+    long i, n = (intptr_t)data;
 
     for (i = 0; i < n; i++)
         hev_task_mod_fd (hev_task_self (), pipe_fds[0], POLLIN);
@@ -92,10 +92,10 @@ bench_pipe_io (HevTaskIOYielder yielder, const char *name)
 
     tasks[0] = hev_task_new (-1);
     hev_task_add_fd (tasks[0], pipe_fds[0], POLLIN);
-    hev_task_run (tasks[0], reader_entry, (void *)(long)NOPS);
+    hev_task_run (tasks[0], reader_entry, (void *)(intptr_t)NOPS);
     tasks[1] = hev_task_new (-1);
     hev_task_add_fd (tasks[1], pipe_fds[1], POLLOUT);
-    hev_task_run (tasks[1], writer_entry, (void *)(long)NOPS);
+    hev_task_run (tasks[1], writer_entry, (void *)(intptr_t)NOPS);
 
     t0 = get_time ();
     hev_task_system_run ();
@@ -122,7 +122,7 @@ bench_fd_mod (void)
 
     task = hev_task_new (-1);
     hev_task_add_fd (task, pipe_fds[0], POLLIN);
-    hev_task_run (task, mod_entry, (void *)(long)NOPS);
+    hev_task_run (task, mod_entry, (void *)(intptr_t)NOPS);
 
     t0 = get_time ();
     hev_task_system_run ();

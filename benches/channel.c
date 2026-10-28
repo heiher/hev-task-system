@@ -38,7 +38,7 @@ report (const char *name, double n, double t0, double t1)
 static void
 speaker_entry (void *data)
 {
-    long i, n = (long)data;
+    long i, n = (intptr_t)data;
     long val = 0;
     ssize_t s;
 
@@ -81,7 +81,7 @@ bench_channel (unsigned int buffers, const char *name)
     hev_task_channel_new_with_buffers (&chan_req, &chan_rep, sizeof (long),
                                        buffers);
     tasks[0] = hev_task_new (-1);
-    hev_task_run (tasks[0], speaker_entry, (void *)(long)NOPS);
+    hev_task_run (tasks[0], speaker_entry, (void *)(intptr_t)NOPS);
     tasks[1] = hev_task_new (-1);
     hev_task_run (tasks[1], echo_entry, NULL);
 

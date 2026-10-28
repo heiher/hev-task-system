@@ -40,7 +40,7 @@ static void
 task2_entry (void *data)
 {
     HevTask *task = hev_task_self ();
-    int val;
+    int val = 0;
 
     assert (hev_task_sleep (50) == 0);
     assert (hev_task_add_fd (task, fds[1], POLLOUT) == 0);
