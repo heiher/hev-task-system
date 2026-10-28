@@ -1,8 +1,8 @@
 /*
  ============================================================================
  Name        : hev-task-timer.h
- Author      : Heiher <r@hev.cc>
- Copyright   : Copyright (c) 2018 - 2025 everyone.
+ Author      : hev <r@hev.cc>
+ Copyright   : Copyright (c) 2018 - 2026 hev
  Description : Timer
  ============================================================================
  */
@@ -13,7 +13,8 @@
 #include <time.h>
 #include <stdint.h>
 
-#include "kern/task/hev-task.h"
+#include <hev-task.h>
+
 #include "lib/rbtree/hev-rbtree-cached.h"
 
 typedef struct _HevTaskTimer HevTaskTimer;

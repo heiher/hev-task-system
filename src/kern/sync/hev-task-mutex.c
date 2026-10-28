@@ -1,18 +1,18 @@
 /*
  ============================================================================
  Name        : hev-task-mutex.c
- Author      : Heiher <r@hev.cc>
- Copyright   : Copyright (c) 2019 everyone.
+ Author      : hev <r@hev.cc>
+ Copyright   : Copyright (c) 2019 - 2026 hev
  Description : Mutex
  ============================================================================
  */
 
 #include <stddef.h>
 
-#include "kern/task/hev-task.h"
-#include "lib/misc/hev-compiler.h"
+#include <hev-task.h>
+#include <hev-task-mutex.h>
 
-#include "hev-task-mutex.h"
+#include "lib/misc/hev-compiler.h"
 
 struct _HevTaskMutexNode
 {

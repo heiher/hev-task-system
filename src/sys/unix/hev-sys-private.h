@@ -16,7 +16,7 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 
-#include "hev-sys.h"
+#include <hev-sys.h>
 
 #if defined(__MSYS__)
 #include <io.h>

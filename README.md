@@ -103,7 +103,6 @@ Requires **Visual Studio 2022 17.5+** (or newer) and **clang-cl** in `PATH` with
 ### Windows (MSYS2)
 
 ```bash
-export MSYS=winsymlinks:native
 git clone https://gitlab.com/hev/hev-task-system
 cd hev-task-system
 make

@@ -1,8 +1,8 @@
 /*
  ============================================================================
- Name        : hev-sys.h
- Author      : Heiher <r@hev.cc>
- Copyright   : Copyright (c) 2026 everyone.
+ Name        : hev-sys-unix.h
+ Author      : hev <r@hev.cc>
+ Copyright   : Copyright (c) 2026 hev
  Description : POSIX headers of the public API
  ============================================================================
  */

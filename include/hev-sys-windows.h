@@ -1,8 +1,8 @@
 /*
  ============================================================================
- Name        : hev-sys.h
- Author      : Heiher <r@hev.cc>
- Copyright   : Copyright (c) 2026 everyone.
+ Name        : hev-sys-windows.h
+ Author      : hev <r@hev.cc>
+ Copyright   : Copyright (c) 2026 hev
  Description : POSIX types and constants of the public API on Windows
  ============================================================================
  */

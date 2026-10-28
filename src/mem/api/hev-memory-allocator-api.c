@@ -1,18 +1,18 @@
 /*
  ============================================================================
  Name        : hev-memory-allocator-api.c
- Author      : Heiher <r@hev.cc>
- Copyright   : Copyright (c) 2018 everyone.
+ Author      : hev <r@hev.cc>
+ Copyright   : Copyright (c) 2018 - 2026 hev
  Description : Memory allocator APIs
  ============================================================================
  */
 
 #include <string.h>
 
+#include <hev-memory-allocator.h>
+
 #include "lib/misc/hev-compiler.h"
 #include "mem/base/hev-memory-allocator.h"
-
-#include "hev-memory-allocator-api.h"
 
 EXPORT_SYMBOL void *
 hev_malloc (size_t size)

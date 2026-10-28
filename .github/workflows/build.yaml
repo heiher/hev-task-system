@@ -157,7 +157,6 @@ jobs:
       - name: Build
         shell: msys2 {0}
         run: |
-          export MSYS=winsymlinks:native
           git clone --depth=1 --recursive file://`pwd` work; cd work
           make -j`nproc`
 

@@ -2,14 +2,14 @@
  ============================================================================
  Name        : hev-object.c
  Author      : hev <r@hev.cc>
- Copyright   : Copyright (c) 2024 hev
+ Copyright   : Copyright (c) 2024 - 2026 hev
  Description : Object
  ============================================================================
  */
 
-#include "lib/misc/hev-compiler.h"
+#include <hev-object.h>
 
-#include "hev-object.h"
+#include "lib/misc/hev-compiler.h"
 
 EXPORT_SYMBOL int
 hev_object_construct (HevObject *self)

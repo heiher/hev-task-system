@@ -1,16 +1,17 @@
 /*
  ============================================================================
  Name        : hev-task-channel-select.c
- Author      : Heiher <r@hev.cc>
- Copyright   : Copyright (c) 2019 everyone.
+ Author      : hev <r@hev.cc>
+ Copyright   : Copyright (c) 2019 - 2026 hev
  Description : Channel Selector
  ============================================================================
  */
 
-#include "lib/misc/hev-compiler.h"
-#include "mem/api/hev-memory-allocator-api.h"
+#include <hev-memory-allocator.h>
+#include <hev-task-channel-select.h>
 
-#include "hev-task-channel-select.h"
+#include "lib/misc/hev-compiler.h"
+
 #include "hev-task-channel-select-private.h"
 
 EXPORT_SYMBOL HevTaskChannelSelect *

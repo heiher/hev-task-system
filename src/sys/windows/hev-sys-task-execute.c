@@ -10,7 +10,7 @@
 #define HEV_SYS_RAW
 #include "hev-sys-private.h"
 #include "hev-sys-task-execute.h"
-#include "kern/task/hev-task-call.h"
+#include <hev-task-call.h>
 
 extern void hev_task_execute (HevTaskCall *self, HevTaskCallEntry entry);
 
