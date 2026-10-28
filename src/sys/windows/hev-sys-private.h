@@ -7,8 +7,8 @@
  ============================================================================
  */
 
-#ifndef __HEV_SYS_PRIVATE_H__
-#define __HEV_SYS_PRIVATE_H__
+#ifndef __HEV_SYS_WINDOWS_PRIVATE_H__
+#define __HEV_SYS_WINDOWS_PRIVATE_H__
 
 #ifndef _WIN32_WINNT
 #define _WIN32_WINNT 0x0600
@@ -265,4 +265,4 @@ hev_sys_handle_to_socket (uintptr_t handle)
 }
 #endif
 
-#endif /* __HEV_SYS_PRIVATE_H__ */
+#endif /* __HEV_SYS_WINDOWS_PRIVATE_H__ */

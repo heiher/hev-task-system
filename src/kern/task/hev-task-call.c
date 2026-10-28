@@ -9,7 +9,7 @@
 
 #include <stdint.h>
 
-#include "hev-sys-private.h"
+#include "sys/hev-sys-private.h"
 #include <hev-task-call.h>
 #include <hev-memory-allocator.h>
 

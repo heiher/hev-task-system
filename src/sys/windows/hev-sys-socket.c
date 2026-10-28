@@ -8,7 +8,7 @@
  */
 
 #define HEV_SYS_RAW
-#include "hev-sys-private.h"
+#include "sys/hev-sys-private.h"
 
 int
 hev_sys_socket (int domain, int type, int protocol)

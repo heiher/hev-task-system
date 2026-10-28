@@ -9,7 +9,7 @@
 
 #include <stdint.h>
 
-#include "hev-sys-private.h"
+#include "sys/hev-sys-private.h"
 #include "lib/misc/hev-compiler.h"
 
 #include "hev-task-stack.h"

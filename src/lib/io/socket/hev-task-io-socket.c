@@ -10,7 +10,7 @@
 #define _GNU_SOURCE
 #include <errno.h>
 
-#include "hev-sys-private.h"
+#include "sys/hev-sys-private.h"
 #include <hev-task.h>
 #include <hev-task-io.h>
 #include <hev-task-io-socket.h>

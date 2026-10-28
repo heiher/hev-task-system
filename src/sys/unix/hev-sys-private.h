@@ -7,8 +7,8 @@
  ============================================================================
  */
 
-#ifndef __HEV_SYS_PRIVATE_H__
-#define __HEV_SYS_PRIVATE_H__
+#ifndef __HEV_SYS_UNIX_PRIVATE_H__
+#define __HEV_SYS_UNIX_PRIVATE_H__
 
 #include <stdint.h>
 #include <fcntl.h>
@@ -51,9 +51,9 @@ typedef pthread_mutex_t HevSysMutex;
 #define hev_sys_atfork(prepare, parent, child) \
     pthread_atfork ((prepare), (parent), (child))
 
-#define HEV_SYS_INVALID_SOCKET ((uintptr_t) - 1)
+#define HEV_SYS_INVALID_SOCKET ((uintptr_t)-1)
 
 #define hev_sys_fd_to_handle(fd) ((uintptr_t)get_osfhandle (fd))
 #define hev_sys_handle_to_socket(handle) (handle)
 
-#endif /* __HEV_SYS_PRIVATE_H__ */
+#endif /* __HEV_SYS_UNIX_PRIVATE_H__ */

@@ -8,7 +8,7 @@
  */
 
 #define HEV_SYS_RAW
-#include "hev-sys-private.h"
+#include "sys/hev-sys-private.h"
 
 int
 hev_sys_clock_gettime (int clock_id, struct timespec *ts)

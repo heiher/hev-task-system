@@ -10,7 +10,7 @@
 #ifndef __HEV_TASK_IO_REACTOR_IOCP_H__
 #define __HEV_TASK_IO_REACTOR_IOCP_H__
 
-#include "hev-sys-private.h"
+#include "sys/hev-sys-private.h"
 #include "lib/rbtree/hev-rbtree.h"
 
 #define HEV_TASK_IO_REACTOR_EVENT_GEN_MAX (1)

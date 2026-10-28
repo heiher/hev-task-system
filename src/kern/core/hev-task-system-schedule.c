@@ -14,7 +14,7 @@
 
 #include <stdlib.h>
 
-#include "hev-sys-private.h"
+#include "sys/hev-sys-private.h"
 #include <hev-task-system.h>
 #include "hev-task-system-private.h"
 #include "kern/task/hev-task-private.h"

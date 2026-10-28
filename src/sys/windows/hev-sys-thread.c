@@ -8,7 +8,7 @@
  */
 
 #define HEV_SYS_RAW
-#include "hev-sys-private.h"
+#include "sys/hev-sys-private.h"
 
 #include <process.h>
 
@@ -20,7 +20,8 @@ struct _HevSysThreadStart
     void *data;
 };
 
-static unsigned __stdcall hev_sys_thread_entry (void *data)
+static unsigned __stdcall
+hev_sys_thread_entry (void *data)
 {
     HevSysThreadStart start = *(HevSysThreadStart *)data;
 

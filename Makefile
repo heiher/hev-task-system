@@ -30,7 +30,7 @@ $(SHARED_TARGET) : LDFLAGS+=-shared -pthread
 
 -include build.mk
 -include configs.mk
-CCFLAGS+=-I$(SRCDIR) -I$(SRCDIR)/sys/unix $(CONFIG_CFLAGS)
+CCFLAGS+=-I$(SRCDIR) $(CONFIG_CFLAGS)
 
 CCSRCS=$(filter %.c,$(SRCFILES))
 ASSRCS=$(filter %.S,$(SRCFILES))

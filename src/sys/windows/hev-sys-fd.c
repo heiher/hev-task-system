@@ -8,7 +8,7 @@
  */
 
 #define HEV_SYS_RAW
-#include "hev-sys-private.h"
+#include "sys/hev-sys-private.h"
 #include "lib/misc/hev-compiler.h"
 
 #define REG_INITIAL_CAP 256

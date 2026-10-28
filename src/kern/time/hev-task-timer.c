@@ -9,7 +9,7 @@
 
 #include <stdlib.h>
 
-#include "hev-sys-private.h"
+#include "sys/hev-sys-private.h"
 #include <hev-memory-allocator.h>
 #include "hev-task-timer.h"
 #include "kern/core/hev-task-system-private.h"

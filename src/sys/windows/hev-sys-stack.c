@@ -8,7 +8,7 @@
  */
 
 #define HEV_SYS_RAW
-#include "hev-sys-private.h"
+#include "sys/hev-sys-private.h"
 #include "kern/task/hev-task-private.h"
 #include "kern/task/hev-task-stack.h"
 #include "lib/misc/hev-task-stack-detector.h"

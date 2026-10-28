@@ -290,7 +290,7 @@ $CommonDefines = @(
     '/DCONFIG_MEMALLOC_SLICE_MAX_COUNT=1000',
     '/DCONFIG_SCHED_CLOCK=CLOCK_NONE'
 )
-$Includes = @("/I$Root\include", "/I$Root\src", "/I$Root\src\sys\windows")
+$Includes = @("/I$Root\include", "/I$Root\src")
 $Cflags = @('/nologo', '/O2', '/W3', "/$Runtime") + $Includes + $CommonDefines
 # clang-cl defaults to the host architecture and ignores the MSVC INCLUDE/LIB
 # environment when selecting the target; pin the target explicitly per arch.
@@ -373,8 +373,8 @@ function Build-Programs([string]$Kind) {
     if (-not (Test-Path -LiteralPath $LibPath)) { throw 'Missing static library.' }
     New-Item -ItemType Directory -Force -Path $BinDir | Out-Null
     $dir = Join-Path $Root $Kind
-    # Programs use POSIX names: hev-sys-private.h maps them.
-    $programCflags = $Cflags + @('/FIhev-sys-private.h')
+    # Programs use POSIX names: sys/hev-sys-private.h maps them.
+    $programCflags = $Cflags + @('/FIsys/hev-sys-private.h')
     $names = if ($Kind -eq 'apps') { @('simple.c', 'wakeup.c', 'channel.c', 'timeout.c', 'echo-server.c', 'call.c') } else { @() }
     # The following tests depend on genuine POSIX /dev, openat or UDP socketpair behaviour.
     $skip = @('io-open.c', 'io-openat.c', 'io-creat.c', 'io-socket.c',

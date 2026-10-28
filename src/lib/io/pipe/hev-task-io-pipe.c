@@ -7,7 +7,7 @@
  ============================================================================
  */
 
-#include "hev-sys-private.h"
+#include "sys/hev-sys-private.h"
 #include <hev-task-io-pipe.h>
 
 #include "lib/misc/hev-compiler.h"

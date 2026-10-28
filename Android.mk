@@ -23,7 +23,6 @@ LOCAL_MODULE    := libhev-task-system
 LOCAL_SRC_FILES := $(patsubst $(SRCDIR)/%,src/%,$(SRCFILES))
 LOCAL_C_INCLUDES := \
 	$(LOCAL_PATH)/src \
-	$(LOCAL_PATH)/src/sys/unix \
 	$(LOCAL_PATH)/include
 LOCAL_CFLAGS += -fno-stack-clash-protection -fvisibility=hidden $(CONFIG_CFLAGS)
 ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
