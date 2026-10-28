@@ -34,6 +34,16 @@
 #include <sys/stat.h>
 
 #include <hev-sys.h>
+#include "hev-sys-errno.h"
+#include "hev-sys-fd.h"
+#include "hev-sys-fdio.h"
+#include "hev-sys-msg.h"
+#include "hev-sys-netdb.h"
+#include "hev-sys-poll.h"
+#include "hev-sys-socket.h"
+#include "hev-sys-thread.h"
+#include "hev-sys-mutex.h"
+#include "hev-sys-time.h"
 #include "hev-sys-task-stack.h"
 #include "hev-sys-task-execute.h"
 
@@ -87,127 +97,7 @@ extern "C" {
 #define CLOCK_REALTIME 0
 #endif
 
-int hev_sys_wsa_init (void);
-void hev_sys_wsa_fini (void);
-
-SOCKET hev_sys_fd_socket (int fd);
-uintptr_t hev_sys_fd_to_token (int fd);
-SOCKET hev_sys_token_to_socket (uintptr_t token);
-SOCKET hev_sys_fd_close_socket (int fd);
-int hev_sys_fd_register (SOCKET s);
-int hev_sys_fd_replace (int fd, SOCKET s, SOCKET *old);
-
-void hev_sys_set_errno_from_wsa (void);
-void hev_sys_set_errno_from_wsa_code (int error);
-
-int hev_sys_socket (int domain, int type, int protocol);
-int hev_sys_accept (int s, struct sockaddr *addr, socklen_t *addrlen);
-int hev_sys_socketpair (int domain, int type, int protocol, int sv[2]);
-int hev_sys_connect (int s, const struct sockaddr *name, int namelen);
-int hev_sys_bind (int s, const struct sockaddr *name, int namelen);
-int hev_sys_listen (int s, int backlog);
-int hev_sys_shutdown (int s, int how);
-int hev_sys_setsockopt (int s, int level, int optname, const void *optval,
-                        int optlen);
-int hev_sys_ioctl (int fd, long request, void *argp);
-
-ssize_t hev_sys_recv (int fd, void *buf, size_t len, int flags);
-ssize_t hev_sys_send (int fd, const void *buf, size_t len, int flags);
-ssize_t hev_sys_recvfrom (int fd, void *buf, size_t len, int flags,
-                          struct sockaddr *addr, socklen_t *addrlen);
-ssize_t hev_sys_sendto (int fd, const void *buf, size_t len, int flags,
-                        const struct sockaddr *addr, socklen_t addrlen);
-ssize_t hev_sys_read (int fd, void *buf, size_t count);
-ssize_t hev_sys_write (int fd, const void *buf, size_t count);
-ssize_t hev_sys_readv (int fd, const struct iovec *iov, int iovcnt);
-ssize_t hev_sys_writev (int fd, const struct iovec *iov, int iovcnt);
-ssize_t hev_sys_recvmsg (int fd, struct msghdr *msg, int flags);
-ssize_t hev_sys_sendmsg (int fd, const struct msghdr *msg, int flags);
-ssize_t hev_sys_recvmmsg (int fd, struct mmsghdr *msgv, unsigned int vlen,
-                          int flags, void *timeout);
-ssize_t hev_sys_sendmmsg (int fd, struct mmsghdr *msgv, unsigned int vlen,
-                          int flags);
-
-int hev_sys_dup (int oldfd);
-int hev_sys_dup2 (int oldfd, int newfd);
-int hev_sys_pipe (int pipefd[2]);
-int hev_sys_fcntl (int fd, int cmd, ...);
-int hev_sys_openat (int dirfd, const char *pathname, int flags, ...);
-
-int hev_sys_poll (struct pollfd *fds, int nfds, int timeout);
-
-int hev_sys_getaddrinfo (const char *node, const char *service,
-                         const struct addrinfo *hints, struct addrinfo **res);
-int hev_sys_getnameinfo (const struct sockaddr *addr, socklen_t addrlen,
-                         char *node, socklen_t nodelen, char *service,
-                         socklen_t servicelen, int flags);
-void hev_sys_freeaddrinfo (struct addrinfo *res);
-
-int hev_sys_clock_gettime (int clock_id, struct timespec *ts);
-
 __declspec (noreturn) void hev_task_longjmp (void *env, int value);
-
-typedef HANDLE HevSysThread;
-typedef INIT_ONCE HevSysOnce;
-typedef SRWLOCK HevSysMutex;
-
-#define HEV_SYS_ONCE_INITIALIZER INIT_ONCE_STATIC_INIT
-#define HEV_SYS_MUTEX_INITIALIZER SRWLOCK_INIT
-
-static inline void
-hev_sys_mutex_init (HevSysMutex *m)
-{
-    InitializeSRWLock (m);
-}
-
-static inline void
-hev_sys_mutex_fini (HevSysMutex *m)
-{
-    (void)m;
-}
-
-static inline void
-hev_sys_mutex_lock (HevSysMutex *m)
-{
-    AcquireSRWLockExclusive (m);
-}
-
-static inline void
-hev_sys_mutex_unlock (HevSysMutex *m)
-{
-    ReleaseSRWLockExclusive (m);
-}
-
-int hev_sys_thread_create (HevSysThread *thread, void *(*entry) (void *),
-                           void *data);
-int hev_sys_thread_join (HevSysThread thread);
-
-void hev_sys_once (HevSysOnce *once, void (*func) (void));
-
-static inline int
-hev_sys_atfork (void (*prepare) (void), void (*parent) (void),
-                void (*child) (void))
-{
-    (void)prepare;
-    (void)parent;
-    (void)child;
-
-    return 0;
-}
-
-#define HEV_SYS_INVALID_SOCKET ((uintptr_t)INVALID_SOCKET)
-
-static inline uintptr_t
-hev_sys_fd_to_handle (int fd)
-{
-    return hev_sys_fd_to_token (fd);
-}
-
-static inline uintptr_t
-hev_sys_handle_to_socket (uintptr_t handle)
-{
-    return (uintptr_t)hev_sys_token_to_socket (handle);
-}
 
 #ifndef HEV_SYS_RAW
 
