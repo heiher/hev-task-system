@@ -20,7 +20,7 @@
 
 #if defined(__MSYS__)
 #include <io.h>
-#include "hev-windows-api.h"
+#include "hev-sys-msys-api.h"
 #endif
 
 typedef pthread_t HevSysThread;

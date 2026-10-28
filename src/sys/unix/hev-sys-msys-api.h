@@ -1,14 +1,14 @@
 /*
  ============================================================================
- Name        : hev-windows-api.h
+ Name        : hev-sys-msys-api.h
  Author      : hev <r@hev.cc>
  Copyright   : Copyright (c) 2025 everyone.
  Description : Windows API
  ============================================================================
  */
 
-#ifndef __HEV_WINDOWS_API_H__
-#define __HEV_WINDOWS_API_H__
+#ifndef __HEV_SYS_MSYS_API_H__
+#define __HEV_SYS_MSYS_API_H__
 
 #include <winerror.h>
 #include <handleapi.h>
@@ -76,4 +76,4 @@ BOOL UnregisterWaitEx (HANDLE, HANDLE);
 }
 #endif
 
-#endif /* __HEV_WINDOWS_API_H__ */
+#endif /* __HEV_SYS_MSYS_API_H__ */
