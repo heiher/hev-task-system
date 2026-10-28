@@ -28,6 +28,7 @@ struct _HevTaskIOReactorIOCPNode
 
     int ref_count;
     int events;
+    int queued;
 
     uintptr_t handle;
     void *data;
@@ -169,13 +170,61 @@ hev_task_io_reactor_iocp_handler (void *data, BOOLEAN fired)
         res = WSAEnumNetworkEvents (sock, node->ehandle, &events);
         if (res || !events.lNetworkEvents)
             return;
-        node->events = events.lNetworkEvents;
+        atomic_fetch_or_explicit ((atomic_int *)&node->events,
+                                  events.lNetworkEvents, memory_order_acq_rel);
     }
+
+    /* One pending completion per node, further events merge into it. */
+    if (atomic_exchange_explicit ((atomic_int *)&node->queued, 1,
+                                  memory_order_acq_rel))
+        return;
 
     hev_task_io_reactor_iocp_node_ref (node);
     res = PostQueuedCompletionStatus (node->ihandle, 1, 0, (LPOVERLAPPED)node);
-    if (!res)
+    if (!res) {
+        atomic_store_explicit ((atomic_int *)&node->queued, 0,
+                               memory_order_release);
         hev_task_io_reactor_iocp_node_unref (node);
+    }
+}
+
+/*
+ * A socket event is reset by WSAEnumNetworkEvents, so its wait is persistent
+ * and fires once per edge. A waitable handle can stay signaled (a process, a
+ * manual-reset event), so its wait is one-shot: it fires once and stays idle
+ * until the handle is added again, or it would spin the reactor.
+ */
+static BOOL
+hev_task_io_reactor_iocp_register (HevTaskIOReactorIOCPNode *node)
+{
+    ULONG flags = WT_EXECUTEINPERSISTENTTHREAD;
+
+    if (node->handle == (uintptr_t)node->ehandle)
+        flags |= WT_EXECUTEONLYONCE;
+
+    return RegisterWaitForSingleObject (&node->whandle, node->ehandle,
+                                        hev_task_io_reactor_iocp_handler, node,
+                                        INFINITE, flags);
+}
+
+static int
+hev_task_io_reactor_iocp_rearm (HevTaskIOReactorIOCPNode *node,
+                                HevTaskIOReactorSetupEvent *event)
+{
+    if (node->handle != (uintptr_t)node->ehandle || event->events)
+        return -1;
+
+    if (node->whandle) {
+        if (!UnregisterWaitEx (node->whandle, INVALID_HANDLE_VALUE))
+            return -1;
+        node->whandle = NULL;
+    }
+
+    node->data = event->data;
+    if (!hev_task_io_reactor_iocp_register (node))
+        return -1;
+
+    return 0;
 }
 
 static int
@@ -187,7 +236,7 @@ hev_task_io_reactor_iocp_add (HevTaskIOReactorIOCP *self,
 
     node = hev_task_io_reactor_iocp_lookup (self, event->handle);
     if (node)
-        goto exit;
+        return hev_task_io_reactor_iocp_rearm (node, event);
 
     node = hev_task_io_reactor_iocp_node_new ();
     if (!node)
@@ -216,9 +265,7 @@ hev_task_io_reactor_iocp_add (HevTaskIOReactorIOCP *self,
     node->handle = event->handle;
     node->ihandle = self->base.handle;
 
-    res = RegisterWaitForSingleObject (&node->whandle, node->ehandle,
-                                       hev_task_io_reactor_iocp_handler, node,
-                                       INFINITE, WT_EXECUTEINPERSISTENTTHREAD);
+    res = hev_task_io_reactor_iocp_register (node);
     if (!res)
         goto free_event;
 
@@ -391,9 +438,15 @@ retry:
     }
 
     node = (HevTaskIOReactorIOCPNode *)overlap;
-    events->events = node->events;
+    atomic_store_explicit ((atomic_int *)&node->queued, 0,
+                           memory_order_release);
+    events->events = atomic_exchange_explicit ((atomic_int *)&node->events, 0,
+                                               memory_order_acq_rel);
     events->data = node->data;
     res = node->ehandle && node->whandle;
+    /* A socket node without events was merged into an earlier wakeup. */
+    if (node->handle != (uintptr_t)node->ehandle && !events->events)
+        res = 0;
     hev_task_io_reactor_iocp_node_unref (node);
 
     if (!res)
