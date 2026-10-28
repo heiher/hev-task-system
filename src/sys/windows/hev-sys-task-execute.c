@@ -7,6 +7,8 @@
  ============================================================================
  */
 
+#if defined(_WIN32) && !defined(__MSYS__) && !defined(__CYGWIN__)
+
 #define HEV_SYS_RAW
 #include "sys/hev-sys-private.h"
 #include "hev-sys-task-execute.h"
@@ -28,3 +30,5 @@ hev_sys_task_execute (void *ctx, void *top, void *limit, void *entry)
     tib->StackBase = saved_base;
     tib->StackLimit = saved_limit;
 }
+
+#endif /* defined(_WIN32) && !defined(__MSYS__) && !defined(__CYGWIN__) */

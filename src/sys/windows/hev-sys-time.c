@@ -7,6 +7,8 @@
  ============================================================================
  */
 
+#if defined(_WIN32) && !defined(__MSYS__) && !defined(__CYGWIN__)
+
 #define HEV_SYS_RAW
 #include "sys/hev-sys-private.h"
 
@@ -30,3 +32,5 @@ hev_sys_clock_gettime (int clock_id, struct timespec *ts)
 
     return 0;
 }
+
+#endif /* defined(_WIN32) && !defined(__MSYS__) && !defined(__CYGWIN__) */

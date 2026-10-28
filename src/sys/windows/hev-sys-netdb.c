@@ -7,6 +7,8 @@
  ============================================================================
  */
 
+#if defined(_WIN32) && !defined(__MSYS__) && !defined(__CYGWIN__)
+
 #define HEV_SYS_RAW
 #include "sys/hev-sys-private.h"
 
@@ -53,3 +55,5 @@ hev_sys_freeaddrinfo (struct addrinfo *res)
 {
     freeaddrinfo (res);
 }
+
+#endif /* defined(_WIN32) && !defined(__MSYS__) && !defined(__CYGWIN__) */
