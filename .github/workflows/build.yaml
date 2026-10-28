@@ -132,8 +132,74 @@ jobs:
         run: |
           ./android-ndk-r27d/ndk-build
 
-  windows:
-    name: Windows
+  windows-msvc-x64:
+    name: Windows (MSVC, x64)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - name: Setup MSVC environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+      - name: Setup GNU make for Win32
+        shell: pwsh
+        run: |
+          choco install make --no-progress -y
+          Add-Content $env:GITHUB_PATH "C:\Program Files\Git\usr\bin"
+      - name: Build
+        shell: cmd
+        run: |
+          make -j4 tests
+
+  windows-msvc-x86:
+    name: Windows (MSVC, x86)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - name: Setup MSVC environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x86
+      - name: Setup GNU make for Win32
+        shell: pwsh
+        run: |
+          choco install make --no-progress -y
+          Add-Content $env:GITHUB_PATH "C:\Program Files\Git\usr\bin"
+      - name: Build
+        shell: cmd
+        run: |
+          make -j4 ARCH=x86 tests
+
+  windows-msvc-arm64:
+    name: Windows (MSVC, arm64)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - name: Setup MSVC environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: amd64_arm64
+      - name: Setup GNU make for Win32
+        shell: pwsh
+        run: |
+          choco install make --no-progress -y
+          Add-Content $env:GITHUB_PATH "C:\Program Files\Git\usr\bin"
+      - name: Build
+        shell: cmd
+        run: |
+          make -j4 ARCH=arm64 static apps
+
+  windows-msys2:
+    name: Windows (MSYS2)
     runs-on: windows-latest
     defaults:
       run:
@@ -159,70 +225,3 @@ jobs:
         run: |
           git clone --depth=1 --recursive file://`pwd` work; cd work
           make -j`nproc`
-
-  windows-msvc:
-    name: Windows native x64 with clang (build and test)
-    runs-on: windows-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 1
-      - name: Setup MSVC environment
-        uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: x64
-      - name: Setup GNU make for Win32
-        shell: pwsh
-        run: |
-          choco install make --no-progress -y
-          Add-Content $env:GITHUB_PATH "C:\Program Files\Git\usr\bin"
-      - name: Build
-        shell: cmd
-        run: |
-          make -j4 tests
-
-  windows-msvc-x86-experimental:
-    name: Windows native x86 with clang (experimental)
-    continue-on-error: true  # lift this once Win32 ABI/runtime tests pass
-    runs-on: windows-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 1
-      - name: Setup MSVC environment
-        uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: x86
-      - name: Setup GNU make for Win32
-        shell: pwsh
-        run: |
-          choco install make --no-progress -y
-          Add-Content $env:GITHUB_PATH "C:\Program Files\Git\usr\bin"
-      - name: Build
-        shell: cmd
-        run: |
-          make -j4 ARCH=x86 tests
-
-  windows-msvc-arm64:
-    name: Windows native ARM64 with clang (cross build only)
-    runs-on: windows-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 1
-      - name: Setup MSVC environment
-        uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: amd64_arm64
-      - name: Setup GNU make for Win32
-        shell: pwsh
-        run: |
-          choco install make --no-progress -y
-          Add-Content $env:GITHUB_PATH "C:\Program Files\Git\usr\bin"
-      - name: Build
-        shell: cmd
-        run: |
-          make -j4 ARCH=arm64 static apps
