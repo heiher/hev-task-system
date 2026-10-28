@@ -1,19 +1,19 @@
 /*
  ============================================================================
  Name        : hev-task-dns.c
- Author      : Heiher <r@hev.cc>
- Copyright   : Copyright (c) 2021 everyone.
+ Author      : hev <r@hev.cc>
+ Copyright   : Copyright (c) 2021 - 2026 hev
  Description : DNS
  ============================================================================
  */
 
 #include <errno.h>
 
+#include <hev-task-dns.h>
+
 #include "lib/misc/hev-compiler.h"
 #include "lib/dns/hev-task-dns-proxy.h"
 #include "kern/core/hev-task-system-private.h"
-
-#include "hev-task-dns.h"
 
 static HevTaskDNSProxy *
 hev_task_dns_proxy_get (void)

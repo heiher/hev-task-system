@@ -1,8 +1,8 @@
 /*
  ============================================================================
  Name        : hev-task-dns-proxy.c
- Author      : Heiher <r@hev.cc>
- Copyright   : Copyright (c) 2021 - 2026 everyone.
+ Author      : hev <r@hev.cc>
+ Copyright   : Copyright (c) 2021 - 2026 hev
  Description : DNS Proxy
  ============================================================================
  */
@@ -12,12 +12,14 @@
 #include <errno.h>
 #include <unistd.h>
 
+#include <hev-task.h>
+#include <hev-task-io.h>
+#include <hev-task-mutex.h>
+#include <hev-task-io-socket.h>
+#include <hev-memory-allocator.h>
+
 #include "kern/aide/hev-task-aide.h"
-#include "kern/sync/hev-task-mutex.h"
 #include "kern/core/hev-task-system-private.h"
-#include "lib/io/basic/hev-task-io.h"
-#include "lib/io/socket/hev-task-io-socket.h"
-#include "mem/api/hev-memory-allocator-api.h"
 
 #include "hev-task-dns-proxy.h"
 

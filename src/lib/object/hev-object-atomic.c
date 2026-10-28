@@ -2,7 +2,7 @@
  ============================================================================
  Name        : hev-object-atomic.c
  Author      : hev <r@hev.cc>
- Copyright   : Copyright (c) 2024 hev
+ Copyright   : Copyright (c) 2024 - 2026 hev
  Description : Object with atomic ref-count
  ============================================================================
  */
@@ -10,9 +10,9 @@
 #include <string.h>
 #include <stdatomic.h>
 
-#include "lib/misc/hev-compiler.h"
+#include <hev-object-atomic.h>
 
-#include "hev-object-atomic.h"
+#include "lib/misc/hev-compiler.h"
 
 EXPORT_SYMBOL int
 hev_object_atomic_construct (HevObjectAtomic *self)

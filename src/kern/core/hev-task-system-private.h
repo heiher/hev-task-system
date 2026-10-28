@@ -1,8 +1,8 @@
 /*
  ============================================================================
  Name        : hev-task-system-private.h
- Author      : Heiher <r@hev.cc>
- Copyright   : Copyright (c) 2017 - 2025 everyone.
+ Author      : hev <r@hev.cc>
+ Copyright   : Copyright (c) 2017 - 2026 hev
  Description :
  ============================================================================
  */
@@ -13,8 +13,9 @@
 #include <time.h>
 #include <setjmp.h>
 
-#include "hev-task-system.h"
-#include "kern/task/hev-task.h"
+#include <hev-task.h>
+#include <hev-task-system.h>
+
 #include "kern/task/hev-task-private.h"
 #include "kern/time/hev-task-timer.h"
 #include "kern/io/hev-task-io-reactor.h"

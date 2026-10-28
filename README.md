@@ -91,7 +91,6 @@ cd hev-task-system
 ### Windows (MSYS2)
 
 ```bash
-export MSYS=winsymlinks:native
 git clone https://gitlab.com/hev/hev-task-system
 cd hev-task-system
 make

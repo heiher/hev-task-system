@@ -13,8 +13,9 @@
 #include <stdlib.h>
 #include <stdatomic.h>
 
+#include <hev-memory-allocator.h>
+
 #include "lib/misc/hev-compiler.h"
-#include "mem/api/hev-memory-allocator-api.h"
 
 #include "kern/io/hev-task-io-reactor.h"
 

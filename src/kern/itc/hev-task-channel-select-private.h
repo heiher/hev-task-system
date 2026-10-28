@@ -1,8 +1,8 @@
 /*
  ============================================================================
  Name        : hev-task-channel-select-private.h
- Author      : Heiher <r@hev.cc>
- Copyright   : Copyright (c) 2019 everyone.
+ Author      : hev <r@hev.cc>
+ Copyright   : Copyright (c) 2019 - 2026 hev
  Description : Channel Selector
  ============================================================================
  */
@@ -10,13 +10,13 @@
 #ifndef __HEV_TASK_CHANNEL_SELECT_PRIVATE_H__
 #define __HEV_TASK_CHANNEL_SELECT_PRIVATE_H__
 
+#include <hev-task.h>
+#include <hev-task-channel.h>
+#include <hev-task-channel-select.h>
+
 #include "lib/list/hev-list.h"
-#include "kern/task/hev-task.h"
 
-#include "hev-task-channel.h"
 #include "hev-task-channel-private.h"
-
-#include "hev-task-channel-select.h"
 
 #ifdef __cplusplus
 extern "C" {
