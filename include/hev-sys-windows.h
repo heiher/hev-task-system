@@ -63,11 +63,6 @@ struct mmsghdr
     unsigned int msg_len;
 };
 
-/* Descriptors are virtual: a socket is only usable through its fd. */
-int hev_sys_socket_to_fd (SOCKET s);
-SOCKET hev_sys_fd_to_socket (int fd);
-int hev_sys_close (int fd);
-
 #ifdef __cplusplus
 }
 #endif

@@ -93,6 +93,20 @@ int hev_task_io_dup (int oldfd);
 int hev_task_io_dup2 (int oldfd, int newfd);
 
 /**
+ * hev_task_io_close:
+ * @fd: a file descriptor
+ *
+ * The close function closes the file descriptor @fd, which was returned by
+ * the hev_task_io_* functions. Always use it instead of the system close,
+ * so that platform specific resources behind @fd are released too.
+ *
+ * Returns: 0 on success, or -1 if an error occurred.
+ *
+ * Since: 5.12
+ */
+int hev_task_io_close (int fd);
+
+/**
  * hev_task_io_read:
  * @fd: a file descriptor
  * @buf: buffer

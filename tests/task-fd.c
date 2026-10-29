@@ -67,8 +67,8 @@ main (int argc, char *argv[])
 
     hev_task_system_run ();
 
-    close (fds[0]);
-    close (fds[1]);
+    hev_task_io_close (fds[0]);
+    hev_task_io_close (fds[1]);
 
     hev_task_system_fini ();
 

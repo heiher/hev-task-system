@@ -107,8 +107,8 @@ bench (const char *name, int m)
     printf ("%-22s: %10.0f yields/s (%7.1f ns/yield)\n", name,
             nyield / ((t1 - t0) / 1000), (t1 - t0) * 1e6 / nyield);
 
-    close (sk[0]);
-    close (sk[1]);
+    hev_task_io_close (sk[0]);
+    hev_task_io_close (sk[1]);
     hev_task_unref (compute);
     if (waiter)
         hev_task_unref (waiter);

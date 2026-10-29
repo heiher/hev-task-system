@@ -99,8 +99,8 @@ test_empty (void)
     assert (write (fds[1], "x", 1) == 1);
     assert (hev_task_io_read (fds[0], buf, sizeof (buf), NULL, NULL) == 1);
 
-    close (fds[0]);
-    close (fds[1]);
+    hev_task_io_close (fds[0]);
+    hev_task_io_close (fds[1]);
 }
 
 static void
@@ -116,8 +116,8 @@ test_unread (void)
     idle ("unread data");
 
     assert (hev_task_io_read (fds[0], buf, sizeof (buf), NULL, NULL) == 5);
-    close (fds[0]);
-    close (fds[1]);
+    hev_task_io_close (fds[0]);
+    hev_task_io_close (fds[1]);
 }
 
 static void
@@ -134,8 +134,8 @@ test_partial (void)
     idle ("partially read data");
     assert (read (fds[0], buf, sizeof (buf)) == 6);
 
-    close (fds[0]);
-    close (fds[1]);
+    hev_task_io_close (fds[0]);
+    hev_task_io_close (fds[1]);
 }
 
 static void
@@ -145,13 +145,13 @@ test_closed (void)
     char buf[16];
 
     make_pair (fds);
-    close (fds[1]);
+    hev_task_io_close (fds[1]);
     hev_task_sleep (20);
     idle ("peer closed (EOF unread)");
     assert (read (fds[0], buf, sizeof (buf)) == 0);
     idle ("peer closed (EOF read)");
 
-    close (fds[0]);
+    hev_task_io_close (fds[0]);
 }
 
 static void
@@ -178,8 +178,8 @@ test_full (void)
     s = hev_task_io_write (fds[0], buf, sizeof (buf), NULL, NULL);
     assert (s > 0);
 
-    close (fds[0]);
-    close (fds[1]);
+    hev_task_io_close (fds[0]);
+    hev_task_io_close (fds[1]);
 }
 
 static void
@@ -218,9 +218,9 @@ test_accept (void)
     assert (write (cfd, "x", 1) == 1);
     assert (hev_task_io_read (afd, buf, sizeof (buf), NULL, NULL) == 1);
 
-    close (afd);
-    close (cfd);
-    close (lfd);
+    hev_task_io_close (afd);
+    hev_task_io_close (cfd);
+    hev_task_io_close (lfd);
 }
 
 #ifdef _WIN32

@@ -37,7 +37,7 @@ task_client_entry (void *data)
     }
 
 quit:
-    close (fd);
+    hev_task_io_close (fd);
 }
 
 static void
@@ -57,7 +57,7 @@ task_listener_entry (void *data)
                       sizeof (reuseaddr));
     if (ret == -1) {
         fprintf (stderr, "Set reuse address failed!\n");
-        close (fd);
+        hev_task_io_close (fd);
         return;
     }
 
@@ -68,13 +68,13 @@ task_listener_entry (void *data)
     ret = bind (fd, (struct sockaddr *)&addr, (socklen_t)sizeof (addr));
     if (ret == -1) {
         fprintf (stderr, "Bind address failed!\n");
-        close (fd);
+        hev_task_io_close (fd);
         return;
     }
     ret = listen (fd, 100);
     if (ret == -1) {
         fprintf (stderr, "Listen failed!\n");
-        close (fd);
+        hev_task_io_close (fd);
         return;
     }
 
@@ -102,7 +102,7 @@ task_listener_entry (void *data)
         hev_task_run (task, task_client_entry, (void *)(intptr_t)client_fd);
     }
 
-    close (fd);
+    hev_task_io_close (fd);
 }
 
 int

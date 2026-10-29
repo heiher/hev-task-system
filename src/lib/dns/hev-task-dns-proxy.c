@@ -191,8 +191,8 @@ hev_task_dns_proxy_new (void)
     return self;
 
 close:
-    close (fds[0]);
-    close (fds[1]);
+    hev_task_io_close (fds[0]);
+    hev_task_io_close (fds[1]);
 put:
     hev_task_aide_put (self->aide);
 free:
@@ -255,8 +255,8 @@ hev_task_dns_proxy_destroy (HevTaskDNSProxy *self)
 
     hev_task_aide_del (self->aide, &self->work);
     hev_task_aide_put (self->aide);
-    close (self->work.fd);
-    close (self->fd);
+    hev_task_io_close (self->work.fd);
+    hev_task_io_close (self->fd);
     hev_free (self);
 }
 

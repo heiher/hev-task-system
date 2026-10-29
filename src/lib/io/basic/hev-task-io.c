@@ -83,6 +83,12 @@ hev_task_io_openat (int dirfd, const char *pathname, int flags, ...)
 }
 
 EXPORT_SYMBOL int
+hev_task_io_close (int fd)
+{
+    return close (fd);
+}
+
+EXPORT_SYMBOL int
 hev_task_io_dup (int oldfd)
 {
     int newfd;
@@ -93,7 +99,7 @@ hev_task_io_dup (int oldfd)
         return -1;
 
     if (0 > ioctl (newfd, FIONBIO, (char *)&nonblock)) {
-        close (newfd);
+        hev_task_io_close (newfd);
         return -2;
     }
 
@@ -110,7 +116,7 @@ hev_task_io_dup2 (int oldfd, int newfd)
         return -1;
 
     if (0 > ioctl (newfd, FIONBIO, (char *)&nonblock)) {
-        close (newfd);
+        hev_task_io_close (newfd);
         return -2;
     }
 
@@ -231,8 +237,8 @@ task_io_splicer_init (HevTaskIOSplicer *self, size_t buf_size)
     return 0;
 
 exit_close:
-    close (self->fd[0]);
-    close (self->fd[1]);
+    hev_task_io_close (self->fd[0]);
+    hev_task_io_close (self->fd[1]);
 exit:
     return res;
 }
@@ -240,8 +246,8 @@ exit:
 static void
 task_io_splicer_fini (HevTaskIOSplicer *self)
 {
-    close (self->fd[0]);
-    close (self->fd[1]);
+    hev_task_io_close (self->fd[0]);
+    hev_task_io_close (self->fd[1]);
 }
 
 static int

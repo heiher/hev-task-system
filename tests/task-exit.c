@@ -63,8 +63,8 @@ task_reader_entry (void *data)
     assert (hev_task_io_read (fds[0], &val, sizeof (val), NULL, NULL) > 0);
 
     /* exit with open fds registered, closed fds are removed from reactor */
-    close (fds[0]);
-    close (fds[1]);
+    hev_task_io_close (fds[0]);
+    hev_task_io_close (fds[1]);
     hev_task_exit ();
     assert (0);
 }

@@ -8,6 +8,8 @@
  */
 
 #include "sys/hev-sys-private.h"
+#include <hev-task.h>
+#include <hev-task-io.h>
 #include <hev-task-io-pipe.h>
 
 #include "lib/misc/hev-compiler.h"
@@ -21,14 +23,14 @@ hev_task_io_pipe_pipe (int pipefd[2])
         return -1;
 
     if (0 > ioctl (pipefd[0], FIONBIO, (char *)&nonblock)) {
-        close (pipefd[0]);
-        close (pipefd[1]);
+        hev_task_io_close (pipefd[0]);
+        hev_task_io_close (pipefd[1]);
         return -2;
     }
 
     if (0 > ioctl (pipefd[1], FIONBIO, (char *)&nonblock)) {
-        close (pipefd[0]);
-        close (pipefd[1]);
+        hev_task_io_close (pipefd[0]);
+        hev_task_io_close (pipefd[1]);
         return -3;
     }
 

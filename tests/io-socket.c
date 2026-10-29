@@ -83,8 +83,8 @@ task_tcp_server_entry (void *data)
     assert (hev_task_del_fd (task, cfd) == 0);
     assert (hev_task_del_fd (task, fd) == 0);
 
-    close (cfd);
-    close (fd);
+    hev_task_io_close (cfd);
+    hev_task_io_close (fd);
 }
 
 static void
@@ -137,7 +137,7 @@ task_tcp_client_entry (void *data)
 
     assert (hev_task_del_fd (task, fd) == 0);
 
-    close (fd);
+    hev_task_io_close (fd);
 }
 
 static void
@@ -177,7 +177,7 @@ task_udp_server_entry (void *data)
     }
 
     assert (hev_task_del_fd (task, fds[0]) == 0);
-    close (fds[0]);
+    hev_task_io_close (fds[0]);
 }
 
 static void
@@ -211,7 +211,7 @@ task_udp_client_entry (void *data)
         assert (msgv[i].msg_len == strlen (msg));
 
     assert (hev_task_del_fd (task, fds[1]) == 0);
-    close (fds[1]);
+    hev_task_io_close (fds[1]);
 }
 
 int

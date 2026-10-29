@@ -166,8 +166,8 @@ free_allocator:
 free:
     free (self);
 close:
-    close (fds[0]);
-    close (fds[1]);
+    hev_task_io_close (fds[0]);
+    hev_task_io_close (fds[1]);
 
     return NULL;
 }
@@ -199,8 +199,8 @@ hev_task_aide_destroy (HevTaskAide *self)
     if (!self->orphan)
         hev_sys_thread_join (self->thread);
 
-    close (self->ctrl_fd);
-    close (self->ctrl_work.fd);
+    hev_task_io_close (self->ctrl_fd);
+    hev_task_io_close (self->ctrl_work.fd);
     hev_task_aide_reactor_destroy (self);
     hev_memory_allocator_unref (self->allocator);
     free (self);

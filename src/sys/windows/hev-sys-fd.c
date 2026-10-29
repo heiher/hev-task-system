@@ -101,7 +101,7 @@ reg_grow_locked (size_t need_idx)
     return 0;
 }
 
-EXPORT_SYMBOL SOCKET
+SOCKET
 hev_sys_fd_to_socket (int fd)
 {
     SOCKET s = INVALID_SOCKET;
@@ -160,7 +160,7 @@ hev_sys_token_to_socket (uintptr_t token)
     return s;
 }
 
-EXPORT_SYMBOL int
+int
 hev_sys_socket_to_fd (SOCKET s)
 {
     size_t i;

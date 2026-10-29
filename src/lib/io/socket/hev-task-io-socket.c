@@ -33,7 +33,7 @@ hev_task_io_socket_socket (int domain, int type, int protocol)
         int nonblock = 1;
 
         if (ioctl (fd, FIONBIO, (char *)&nonblock) < 0) {
-            close (fd);
+            hev_task_io_close (fd);
             return -2;
         }
     }
@@ -59,14 +59,14 @@ hev_task_io_socket_socketpair (int domain, int type, int protocol,
         int nonblock = 1;
 
         if (ioctl (socket_vector[0], FIONBIO, (char *)&nonblock) < 0) {
-            close (socket_vector[0]);
-            close (socket_vector[1]);
+            hev_task_io_close (socket_vector[0]);
+            hev_task_io_close (socket_vector[1]);
             return -2;
         }
 
         if (ioctl (socket_vector[1], FIONBIO, (char *)&nonblock) < 0) {
-            close (socket_vector[0]);
-            close (socket_vector[1]);
+            hev_task_io_close (socket_vector[0]);
+            hev_task_io_close (socket_vector[1]);
             return -3;
         }
     }
@@ -128,7 +128,7 @@ retry:
         int nonblock = 1;
 
         if (ioctl (new_fd, FIONBIO, (char *)&nonblock) < 0) {
-            close (new_fd);
+            hev_task_io_close (new_fd);
             return -3;
         }
     }

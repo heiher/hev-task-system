@@ -38,8 +38,8 @@ task_entry (void *data)
     assert (size >= 0);
 
     assert (hev_task_del_fd (task, fds[0]) == 0);
-    close (fds[0]);
-    close (fds[1]);
+    hev_task_io_close (fds[0]);
+    hev_task_io_close (fds[1]);
 }
 
 int

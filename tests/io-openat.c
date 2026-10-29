@@ -31,14 +31,14 @@ task_entry (void *data)
     fd = hev_task_io_openat (AT_FDCWD, "zero", O_RDWR);
     assert (fd >= 0);
     assert ((fcntl (fd, F_GETFL) & O_NONBLOCK) == O_NONBLOCK);
-    close (fd);
+    hev_task_io_close (fd);
 
     assert (chdir ("/tmp") == 0);
     unlink (path);
     fd = hev_task_io_openat (AT_FDCWD, path, O_RDWR | O_CREAT, 0644);
     assert (fd >= 0);
     assert ((fcntl (fd, F_GETFL) & O_NONBLOCK) == O_NONBLOCK);
-    close (fd);
+    hev_task_io_close (fd);
     assert (unlink (path) == 0);
 
     assert (chdir (cwd) == 0);

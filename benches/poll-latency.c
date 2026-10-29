@@ -128,8 +128,8 @@ main (void)
             sorted[(NSAMPLES * 50) / 100], sorted[(NSAMPLES * 99) / 100],
             sorted[NSAMPLES - 1]);
 
-    close (pipe_fds[0]);
-    close (pipe_fds[1]);
+    hev_task_io_close (pipe_fds[0]);
+    hev_task_io_close (pipe_fds[1]);
     hev_task_unref (waiter);
     hev_task_unref (spin);
 

@@ -33,7 +33,7 @@ task1_entry (void *data)
     assert (val == 1);
     assert (pfds[0].revents & POLLIN);
 
-    close (fds[0]);
+    hev_task_io_close (fds[0]);
 }
 
 static void
@@ -53,7 +53,7 @@ task2_entry (void *data)
 
     assert (write (fds[1], &val, sizeof (val)) == sizeof (val));
 
-    close (fds[1]);
+    hev_task_io_close (fds[1]);
 }
 
 int

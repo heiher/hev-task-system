@@ -81,7 +81,7 @@ hev_sys_dup2 (int oldfd, int newfd)
     return newfd;
 }
 
-EXPORT_SYMBOL int
+int
 hev_sys_close (int fd)
 {
     SOCKET s = hev_sys_fd_close_socket (fd);

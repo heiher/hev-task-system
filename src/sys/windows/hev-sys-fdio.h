@@ -16,6 +16,7 @@ extern "C" {
 
 int hev_sys_dup (int oldfd);
 int hev_sys_dup2 (int oldfd, int newfd);
+int hev_sys_close (int fd);
 int hev_sys_pipe (int pipefd[2]);
 int hev_sys_fcntl (int fd, int cmd, ...);
 int hev_sys_openat (int dirfd, const char *pathname, int flags, ...);

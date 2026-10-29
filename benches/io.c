@@ -104,8 +104,8 @@ bench_pipe_io (HevTaskIOYielder yielder, const char *name)
 
     hev_task_del_fd (tasks[0], pipe_fds[0]);
     hev_task_del_fd (tasks[1], pipe_fds[1]);
-    close (pipe_fds[0]);
-    close (pipe_fds[1]);
+    hev_task_io_close (pipe_fds[0]);
+    hev_task_io_close (pipe_fds[1]);
     hev_task_unref (tasks[0]);
     hev_task_unref (tasks[1]);
 }
@@ -130,8 +130,8 @@ bench_fd_mod (void)
     report ("fd mod (epoll_ctl)", NOPS, t0, t1);
 
     hev_task_del_fd (task, pipe_fds[0]);
-    close (pipe_fds[0]);
-    close (pipe_fds[1]);
+    hev_task_io_close (pipe_fds[0]);
+    hev_task_io_close (pipe_fds[1]);
     hev_task_unref (task);
 }
 
