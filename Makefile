@@ -148,19 +148,13 @@ $(BINDIR)/bench-%$(EXEEXT) : $(BENCHDIR)/%.c $(STATIC_TARGET)
 	$(ECHO_PREFIX) $(CC) -o $@ $^ $(APP_CCFLAGS) $(APP_LDFLAGS)
 	@printf $(LINKMSG) $@
 
-ifeq ($(WIN_NATIVE),1)
-APPS_EXTRA=$(BINDIR)/call$(EXEEXT)
-else
-APPS_EXTRA=$(BINDIR)/curl $(BINDIR)/gtk
-endif
-
 apps : \
 	$(BINDIR)/simple$(EXEEXT) \
 	$(BINDIR)/wakeup$(EXEEXT) \
 	$(BINDIR)/channel$(EXEEXT) \
 	$(BINDIR)/timeout$(EXEEXT) \
 	$(BINDIR)/echo-server$(EXEEXT) \
-	$(APPS_EXTRA)
+	$(BINDIR)/call$(EXEEXT)
 
 $(BINDIR)/simple$(EXEEXT) : $(APPDIR)/simple.c $(STATIC_TARGET)
 	$(ECHO_PREFIX) $(CC) -o $@ $^ $(APP_CCFLAGS) $(APP_LDFLAGS)
@@ -182,22 +176,6 @@ $(BINDIR)/echo-server$(EXEEXT) : $(APPDIR)/echo-server.c $(STATIC_TARGET)
 	$(ECHO_PREFIX) $(CC) -o $@ $^ $(APP_CCFLAGS) $(APP_LDFLAGS)
 	@printf $(LINKMSG) $@
 
-ifeq ($(WIN_NATIVE),1)
-
 $(BINDIR)/call$(EXEEXT) : $(APPDIR)/call.c $(STATIC_TARGET)
 	$(ECHO_PREFIX) $(CC) -o $@ $^ $(APP_CCFLAGS) $(APP_LDFLAGS)
 	@printf $(LINKMSG) $@
-
-else
-
-$(BINDIR)/curl : $(APPDIR)/curl.c $(STATIC_TARGET)
-	$(ECHO_PREFIX) $(CC) -o $@ $^ $(APP_CCFLAGS) $(APP_LDFLAGS) \
-		`pkg-config --cflags --libs libcurl` -ldl
-	@printf $(LINKMSG) $@
-
-$(BINDIR)/gtk : $(APPDIR)/gtk.c $(STATIC_TARGET)
-	$(ECHO_PREFIX) $(CC) -o $@ $^ $(APP_CCFLAGS) $(APP_LDFLAGS) \
-		`pkg-config --cflags --libs gtk+-3.0`
-	@printf $(LINKMSG) $@
-
-endif

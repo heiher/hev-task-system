@@ -19,7 +19,7 @@ call_entry (HevTaskCall *call)
     void *ptr;
 
     printf ("call %p on stack %p\n", call, &ptr);
-    hev_task_call_set_retval (call, &ptr);
+    hev_task_call_set_retval (call, ptr);
 }
 
 static void

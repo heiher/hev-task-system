@@ -123,8 +123,6 @@ make
 1. [wakeup](https://gitlab.com/hev/hev-task-system/blob/main/apps/wakeup.c)
 1. [echo-server](https://gitlab.com/hev/hev-task-system/blob/main/apps/echo-server.c)
 1. [call](https://gitlab.com/hev/hev-task-system/blob/main/apps/call.c)
-1. [gtk](https://gitlab.com/hev/hev-task-system/blob/main/apps/gtk.c)
-1. [curl](https://gitlab.com/hev/hev-task-system/blob/main/apps/curl.c)
 
 ## Contributors
 
