@@ -22,8 +22,29 @@ struct _HevSysTaskStack
     void *limit;
 };
 
-void hev_sys_task_stack_enter (HevSysTaskStack *self, void *base, void *limit);
-void hev_sys_task_stack_leave (HevSysTaskStack *self);
+static inline void
+hev_sys_task_stack_enter (HevSysTaskStack *self, void *base, void *limit)
+{
+    NT_TIB *tib = (NT_TIB *)NtCurrentTeb ();
+
+    self->base = tib->StackBase;
+    self->limit = tib->StackLimit;
+
+    tib->StackBase = base;
+    tib->StackLimit = limit;
+}
+
+static inline void
+hev_sys_task_stack_leave (HevSysTaskStack *self)
+{
+    NT_TIB *tib = (NT_TIB *)NtCurrentTeb ();
+
+    if (!self->base)
+        return;
+
+    tib->StackBase = self->base;
+    tib->StackLimit = self->limit;
+}
 
 #ifdef __cplusplus
 }
