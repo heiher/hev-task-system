@@ -7,9 +7,6 @@
  ============================================================================
  */
 
-#include <unistd.h>
-#include <sys/mman.h>
-
 #include <hev-memory-allocator.h>
 
 #include "lib/misc/hev-compiler.h"
@@ -17,6 +14,9 @@
 #include "hev-task-stack.h"
 
 #if CONFIG_STACK_BACKEND == STACK_MMAP
+
+#include <unistd.h>
+#include <sys/mman.h>
 
 #ifndef MAP_STACK
 #define MAP_STACK (0)
