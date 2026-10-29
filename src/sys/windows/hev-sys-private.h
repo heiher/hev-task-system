@@ -97,6 +97,9 @@ extern "C" {
 #define CLOCK_REALTIME 0
 #endif
 
+int hev_sys_init (void);
+void hev_sys_fini (void);
+
 __declspec (noreturn) void hev_task_longjmp (void *env, int value);
 
 #ifndef HEV_SYS_RAW

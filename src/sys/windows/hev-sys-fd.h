@@ -16,6 +16,8 @@ extern "C" {
 
 int hev_sys_wsa_init (void);
 void hev_sys_wsa_fini (void);
+int hev_sys_socket_to_fd (SOCKET s);
+SOCKET hev_sys_fd_to_socket (int fd);
 
 SOCKET hev_sys_fd_socket (int fd);
 uintptr_t hev_sys_fd_to_token (int fd);

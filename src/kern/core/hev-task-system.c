@@ -35,6 +35,9 @@ hev_task_system_init (void)
     if (hev_task_system_get_context ())
         return -1;
 
+    if (hev_sys_init () < 0)
+        return -1;
+
 #ifdef ENABLE_MEMALLOC_SLICE
     allocator = hev_memory_allocator_slice_new ();
 #endif
@@ -76,6 +79,7 @@ exit:
     allocator = hev_memory_allocator_set_default (NULL);
     if (allocator)
         hev_memory_allocator_unref (allocator);
+    hev_sys_fini ();
     return -1;
 }
 
@@ -108,6 +112,8 @@ hev_task_system_fini (void)
     allocator = hev_memory_allocator_set_default (NULL);
     if (allocator)
         hev_memory_allocator_unref (allocator);
+
+    hev_sys_fini ();
 }
 
 EXPORT_SYMBOL void

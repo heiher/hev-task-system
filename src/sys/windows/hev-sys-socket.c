@@ -16,17 +16,9 @@ int
 hev_sys_socket (int domain, int type, int protocol)
 {
     SOCKET s;
-    int fd;
-
-    if (hev_sys_wsa_init () < 0)
-        return -1;
 
     s = WSASocketW (domain, type, protocol, NULL, 0, WSA_FLAG_OVERLAPPED);
-    fd = hev_sys_fd_register (s);
-    if (fd < 0)
-        hev_sys_wsa_fini ();
-
-    return fd;
+    return hev_sys_fd_register (s);
 }
 
 int
@@ -48,22 +40,15 @@ hev_sys_accept (int fd, struct sockaddr *addr, socklen_t *addrlen)
         return -1;
     }
 
-    if (hev_sys_wsa_init () < 0) {
-        closesocket (c);
-        return -1;
-    }
-
     if (ioctlsocket (c, FIONBIO, &nonblock) != 0) {
         hev_sys_set_errno_from_wsa ();
         closesocket (c);
-        hev_sys_wsa_fini ();
         return -1;
     }
 
     new_fd = hev_sys_socket_to_fd (c);
     if (new_fd < 0) {
         closesocket (c);
-        hev_sys_wsa_fini ();
         errno = EMFILE;
         return -1;
     }
@@ -79,7 +64,6 @@ hev_sys_socketpair (int domain, int type, int protocol, int sv[2])
     SOCKET peer = INVALID_SOCKET;
     struct sockaddr_in addr;
     int addrlen;
-    int refs = 0;
     int fd0 = -1;
     int fd1 = -1;
     u_long nonblock = 1;
@@ -94,10 +78,6 @@ hev_sys_socketpair (int domain, int type, int protocol, int sv[2])
 
     sv[0] = -1;
     sv[1] = -1;
-
-    if (hev_sys_wsa_init () < 0)
-        return -1;
-    refs = 1;
 
     listener = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (listener == INVALID_SOCKET)
@@ -135,10 +115,6 @@ hev_sys_socketpair (int domain, int type, int protocol, int sv[2])
         goto fail;
     if (ioctlsocket (peer, FIONBIO, &nonblock) != 0)
         goto fail;
-
-    if (hev_sys_wsa_init () < 0)
-        goto fail;
-    refs = 2;
 
     WSASetLastError (0);
     fd0 = hev_sys_socket_to_fd (conn);
@@ -180,9 +156,6 @@ fail:
         closesocket (peer);
     if (listener != INVALID_SOCKET)
         closesocket (listener);
-
-    while (refs-- > 0)
-        hev_sys_wsa_fini ();
 
     return -1;
 }

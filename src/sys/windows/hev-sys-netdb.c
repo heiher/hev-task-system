@@ -18,14 +18,9 @@ hev_sys_getaddrinfo (const char *node, const char *service,
 {
     int ret;
 
-    if (hev_sys_wsa_init () < 0)
-        return EAI_FAIL;
-
     ret = getaddrinfo (node, service, hints, res);
     if (ret != 0)
         hev_sys_set_errno_from_wsa_code (ret);
-
-    hev_sys_wsa_fini ();
 
     return ret;
 }
@@ -37,15 +32,10 @@ hev_sys_getnameinfo (const struct sockaddr *addr, socklen_t addrlen, char *node,
 {
     int ret;
 
-    if (hev_sys_wsa_init () < 0)
-        return EAI_FAIL;
-
     ret =
         getnameinfo (addr, addrlen, node, nodelen, service, servicelen, flags);
     if (ret != 0)
         hev_sys_set_errno_from_wsa_code (ret);
-
-    hev_sys_wsa_fini ();
 
     return ret;
 }

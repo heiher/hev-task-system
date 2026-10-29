@@ -31,4 +31,15 @@
 
 #define hev_longjmp(env, val) _longjmp ((env), (val))
 
+static inline int
+hev_sys_init (void)
+{
+    return 0;
+}
+
+static inline void
+hev_sys_fini (void)
+{
+}
+
 #endif /* __HEV_SYS_UNIX_PRIVATE_H__ */

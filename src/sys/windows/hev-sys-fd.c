@@ -33,9 +33,6 @@ static RegSlot *reg_slots;
 static size_t reg_capacity;
 static volatile LONG reg_state;
 
-static SRWLOCK wsa_lock = SRWLOCK_INIT;
-static LONG wsa_refs;
-
 static void
 reg_init (void)
 {
@@ -283,48 +280,6 @@ hev_sys_fd_register (SOCKET s)
     }
 
     return fd;
-}
-
-int
-hev_sys_wsa_init (void)
-{
-    int res = 0;
-
-    reg_init ();
-    AcquireSRWLockExclusive (&wsa_lock);
-
-    if (wsa_refs == 0) {
-        WSADATA data;
-
-        res = WSAStartup (MAKEWORD (2, 2), &data);
-        if (res != 0) {
-            WSASetLastError (res);
-            ReleaseSRWLockExclusive (&wsa_lock);
-            return -1;
-        }
-    }
-
-    wsa_refs++;
-    ReleaseSRWLockExclusive (&wsa_lock);
-
-    return 0;
-}
-
-void
-hev_sys_wsa_fini (void)
-{
-    AcquireSRWLockExclusive (&wsa_lock);
-
-    if (wsa_refs <= 0) {
-        ReleaseSRWLockExclusive (&wsa_lock);
-        return;
-    }
-
-    wsa_refs--;
-    if (wsa_refs == 0)
-        WSACleanup ();
-
-    ReleaseSRWLockExclusive (&wsa_lock);
 }
 
 #endif /* defined(_WIN32) && !defined(__MSYS__) && !defined(__CYGWIN__) */

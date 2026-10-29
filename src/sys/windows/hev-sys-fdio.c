@@ -31,26 +31,17 @@ hev_sys_dup (int oldfd)
 {
     SOCKET s = hev_sys_fd_to_socket (oldfd);
     SOCKET copy;
-    int fd;
 
     if (s == INVALID_SOCKET)
         return _dup (oldfd);
 
-    if (hev_sys_wsa_init () < 0)
-        return -1;
-
     copy = hev_sys_duplicate_socket_handle (s);
     if (copy == INVALID_SOCKET) {
         hev_sys_set_errno_from_wsa ();
-        hev_sys_wsa_fini ();
         return -1;
     }
 
-    fd = hev_sys_fd_register (copy);
-    if (fd < 0)
-        hev_sys_wsa_fini ();
-
-    return fd;
+    return hev_sys_fd_register (copy);
 }
 
 int
@@ -67,33 +58,25 @@ hev_sys_dup2 (int oldfd, int newfd)
     if (oldfd == newfd)
         return newfd;
 
-    if (hev_sys_wsa_init () < 0)
-        return -1;
-
     copy = hev_sys_duplicate_socket_handle (s);
     if (copy == INVALID_SOCKET) {
         hev_sys_set_errno_from_wsa ();
-        hev_sys_wsa_fini ();
         return -1;
     }
 
     if (ioctlsocket (copy, FIONBIO, &nonblock) != 0) {
         hev_sys_set_errno_from_wsa ();
         closesocket (copy);
-        hev_sys_wsa_fini ();
         return -1;
     }
 
     if (hev_sys_fd_replace (newfd, copy, &replaced) < 0) {
         closesocket (copy);
-        hev_sys_wsa_fini ();
         return -1;
     }
 
-    if (replaced != INVALID_SOCKET) {
+    if (replaced != INVALID_SOCKET)
         closesocket (replaced);
-        hev_sys_wsa_fini ();
-    }
 
     return newfd;
 }
@@ -109,7 +92,6 @@ hev_sys_close (int fd)
         if (res != 0)
             hev_sys_set_errno_from_wsa ();
 
-        hev_sys_wsa_fini ();
         return res == 0 ? 0 : -1;
     }
 
