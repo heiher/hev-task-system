@@ -27,8 +27,8 @@ task_entry (void *data)
     assert (fds[0] >= 0);
     assert (fds[1] >= 0);
 
-    assert ((fcntl (fds[0], F_GETFL) & O_NONBLOCK) == O_NONBLOCK);
-    assert ((fcntl (fds[1], F_GETFL) & O_NONBLOCK) == O_NONBLOCK);
+    assert ((hev_task_io_fcntl (fds[0], F_GETFL) & O_NONBLOCK) == O_NONBLOCK);
+    assert ((hev_task_io_fcntl (fds[1], F_GETFL) & O_NONBLOCK) == O_NONBLOCK);
 
     hev_task_io_close (fds[0]);
     hev_task_io_close (fds[1]);

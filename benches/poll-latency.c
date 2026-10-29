@@ -102,8 +102,8 @@ main (void)
 
     if (pipe (pipe_fds) < 0)
         return 1;
-    fcntl (pipe_fds[0], F_SETFL, O_NONBLOCK);
-    fcntl (pipe_fds[1], F_SETFL, O_NONBLOCK);
+    hev_task_io_fcntl (pipe_fds[0], F_SETFL, O_NONBLOCK);
+    hev_task_io_fcntl (pipe_fds[1], F_SETFL, O_NONBLOCK);
 
     waiter = hev_task_new (-1);
     hev_task_add_fd (waiter, pipe_fds[0], POLLIN);

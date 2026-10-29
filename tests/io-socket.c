@@ -37,7 +37,7 @@ task_tcp_server_entry (void *data)
     /* socket */
     fd = hev_task_io_socket_socket (AF_INET, SOCK_STREAM, 0);
     assert (fd >= 0);
-    assert ((fcntl (fd, F_GETFL) & O_NONBLOCK) == O_NONBLOCK);
+    assert ((hev_task_io_fcntl (fd, F_GETFL) & O_NONBLOCK) == O_NONBLOCK);
 
     memset (&addr, 0, sizeof (addr));
     addr.sin_family = AF_INET;
@@ -55,7 +55,7 @@ task_tcp_server_entry (void *data)
     /* accept */
     cfd = hev_task_io_socket_accept (fd, NULL, NULL, NULL, NULL);
     assert (cfd >= 0);
-    assert ((fcntl (cfd, F_GETFL) & O_NONBLOCK) == O_NONBLOCK);
+    assert ((hev_task_io_fcntl (cfd, F_GETFL) & O_NONBLOCK) == O_NONBLOCK);
 
     assert (hev_task_add_fd (task, cfd, POLLIN | POLLOUT) == 0);
 
@@ -102,7 +102,7 @@ task_tcp_client_entry (void *data)
     /* socket */
     fd = hev_task_io_socket_socket (AF_INET, SOCK_STREAM, 0);
     assert (fd >= 0);
-    assert ((fcntl (fd, F_GETFL) & O_NONBLOCK) == O_NONBLOCK);
+    assert ((hev_task_io_fcntl (fd, F_GETFL) & O_NONBLOCK) == O_NONBLOCK);
 
     assert (hev_task_add_fd (task, fd, POLLIN | POLLOUT) == 0);
 

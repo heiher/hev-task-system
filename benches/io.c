@@ -87,8 +87,8 @@ bench_pipe_io (HevTaskIOYielder yielder, const char *name)
     bench_yielder = yielder;
     if (pipe (pipe_fds) < 0)
         return;
-    fcntl (pipe_fds[0], F_SETFL, O_NONBLOCK);
-    fcntl (pipe_fds[1], F_SETFL, O_NONBLOCK);
+    hev_task_io_fcntl (pipe_fds[0], F_SETFL, O_NONBLOCK);
+    hev_task_io_fcntl (pipe_fds[1], F_SETFL, O_NONBLOCK);
 
     tasks[0] = hev_task_new (-1);
     hev_task_add_fd (tasks[0], pipe_fds[0], POLLIN);
@@ -118,7 +118,7 @@ bench_fd_mod (void)
 
     if (pipe (pipe_fds) < 0)
         return;
-    fcntl (pipe_fds[0], F_SETFL, O_NONBLOCK);
+    hev_task_io_fcntl (pipe_fds[0], F_SETFL, O_NONBLOCK);
 
     task = hev_task_new (-1);
     hev_task_add_fd (task, pipe_fds[0], POLLIN);

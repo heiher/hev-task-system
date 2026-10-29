@@ -10,6 +10,7 @@
 #ifndef __HEV_SYS_UNIX_H__
 #define __HEV_SYS_UNIX_H__
 
+#include <fcntl.h>
 #include <poll.h>
 #include <netdb.h>
 #include <unistd.h>

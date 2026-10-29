@@ -13,6 +13,7 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <basetsd.h>
+#include <fcntl.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -38,6 +39,27 @@ typedef unsigned int mode_t;
 
 #ifndef PF_LOCAL
 #define PF_LOCAL AF_INET
+#endif
+
+#ifndef O_NONBLOCK
+#define O_NONBLOCK 0
+#endif
+
+#ifndef FD_CLOEXEC
+#define FD_CLOEXEC 1
+#endif
+
+#ifndef F_GETFD
+#define F_GETFD 1
+#endif
+#ifndef F_SETFD
+#define F_SETFD 2
+#endif
+#ifndef F_GETFL
+#define F_GETFL 3
+#endif
+#ifndef F_SETFL
+#define F_SETFL 4
 #endif
 
 struct iovec

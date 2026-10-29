@@ -107,6 +107,21 @@ int hev_task_io_dup2 (int oldfd, int newfd);
 int hev_task_io_close (int fd);
 
 /**
+ * hev_task_io_fcntl:
+ * @fd: a file descriptor
+ * @cmd: the command, one of F_GETFD, F_SETFD, F_GETFL and F_SETFL
+ * @...: an optional int argument required by F_SETFD and F_SETFL
+ *
+ * The fcntl function shall perform the operations described below on the
+ * file descriptor @fd, which was returned by the hev_task_io_* functions.
+ *
+ * Returns: the value depends on @cmd, or -1 if an error occurred.
+ *
+ * Since: 5.12
+ */
+int hev_task_io_fcntl (int fd, int cmd, ...);
+
+/**
  * hev_task_io_read:
  * @fd: a file descriptor
  * @buf: buffer

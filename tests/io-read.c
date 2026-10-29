@@ -27,9 +27,9 @@ task_entry (void *data)
 
     assert (hev_task_io_socket_socketpair (PF_LOCAL, SOCK_STREAM, 0, fds) == 0);
 
-    flags = fcntl (fds[1], F_GETFL);
+    flags = hev_task_io_fcntl (fds[1], F_GETFL);
     assert (flags >= 0);
-    assert (fcntl (fds[1], F_SETFL, flags & ~O_NONBLOCK) == 0);
+    assert (hev_task_io_fcntl (fds[1], F_SETFL, flags & ~O_NONBLOCK) == 0);
     assert (write (fds[1], buf, 4) == 4);
 
     assert (hev_task_add_fd (task, fds[0], POLLIN) == 0);

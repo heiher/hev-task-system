@@ -28,7 +28,7 @@ count_fds (void)
     int fd, count = 0;
 
     for (fd = 0; fd < MAX_FD; fd++)
-        if (fcntl (fd, F_GETFD) >= 0)
+        if (hev_task_io_fcntl (fd, F_GETFD) >= 0)
             count++;
 
     return count;

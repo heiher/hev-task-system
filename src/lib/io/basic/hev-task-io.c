@@ -123,6 +123,28 @@ hev_task_io_dup2 (int oldfd, int newfd)
     return newfd;
 }
 
+EXPORT_SYMBOL int
+hev_task_io_fcntl (int fd, int cmd, ...)
+{
+    va_list ap;
+    int arg;
+
+    switch (cmd) {
+    case F_GETFD:
+    case F_GETFL:
+        return fcntl (fd, cmd);
+    case F_SETFD:
+    case F_SETFL:
+        va_start (ap, cmd);
+        arg = va_arg (ap, int);
+        va_end (ap);
+        return fcntl (fd, cmd, arg);
+    default:
+        errno = EINVAL;
+        return -1;
+    }
+}
+
 EXPORT_SYMBOL ssize_t
 hev_task_io_read (int fd, void *buf, size_t count, HevTaskIOYielder yielder,
                   void *yielder_data)

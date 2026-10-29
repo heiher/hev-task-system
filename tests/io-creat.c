@@ -27,7 +27,7 @@ task_entry (void *data)
     unlink (path);
     fd = hev_task_io_creat (path, 0644);
     assert (fd >= 0);
-    assert ((fcntl (fd, F_GETFL) & O_NONBLOCK) == O_NONBLOCK);
+    assert ((hev_task_io_fcntl (fd, F_GETFL) & O_NONBLOCK) == O_NONBLOCK);
     hev_task_io_close (fd);
     assert (unlink (path) == 0);
 }
