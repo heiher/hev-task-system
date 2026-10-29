@@ -195,10 +195,11 @@ test_accept (void)
     addr.sin_family = AF_INET;
     addr.sin_addr.s_addr = htonl (INADDR_LOOPBACK);
     addr.sin_port = htons (38211);
-    assert (setsockopt (lfd, SOL_SOCKET, SO_REUSEADDR, (void *)&one,
-                        sizeof (one)) == 0);
-    assert (bind (lfd, (struct sockaddr *)&addr, sizeof (addr)) == 0);
-    assert (listen (lfd, 4) == 0);
+    assert (hev_task_io_socket_setsockopt (lfd, SOL_SOCKET, SO_REUSEADDR,
+                                           (void *)&one, sizeof (one)) == 0);
+    assert (hev_task_io_socket_bind (lfd, (struct sockaddr *)&addr,
+                                     sizeof (addr)) == 0);
+    assert (hev_task_io_socket_listen (lfd, 4) == 0);
     assert (hev_task_add_fd (hev_task_self (), lfd, POLLIN) == 0);
     hev_task_sleep (20);
 

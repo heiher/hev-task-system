@@ -59,6 +59,87 @@ int hev_task_io_socket_socketpair (int domain, int type, int protocol,
                                    int socket_vector[2]);
 
 /**
+ * hev_task_io_socket_bind:
+ * @fd: a file descriptor
+ * @addr: socket address
+ * @addr_len: socket address length
+ *
+ * The bind function shall assign a local socket address @addr to a socket
+ * identified by file descriptor @fd that has no local socket address assigned.
+ *
+ * Returns: the status of bind
+ *
+ * Since: 5.12
+ */
+int hev_task_io_socket_bind (int fd, const struct sockaddr *addr,
+                             socklen_t addr_len);
+
+/**
+ * hev_task_io_socket_listen:
+ * @fd: a file descriptor
+ * @backlog: the length of the queue of pending connections
+ *
+ * The listen function shall mark a connection-mode socket, specified by the
+ * file descriptor @fd, as accepting connections.
+ *
+ * Returns: the status of listen
+ *
+ * Since: 5.12
+ */
+int hev_task_io_socket_listen (int fd, int backlog);
+
+/**
+ * hev_task_io_socket_setsockopt:
+ * @fd: a file descriptor
+ * @level: the protocol level at which the option resides
+ * @optname: the option name
+ * @optval: the option value
+ * @optlen: the length of @optval
+ *
+ * The setsockopt function shall set the option specified by the @optname, at
+ * the protocol level specified by the @level, to the value pointed to by the
+ * @optval for the socket associated with the file descriptor @fd.
+ *
+ * Returns: the status of setsockopt
+ *
+ * Since: 5.12
+ */
+int hev_task_io_socket_setsockopt (int fd, int level, int optname,
+                                   const void *optval, socklen_t optlen);
+
+/**
+ * hev_task_io_socket_getsockname:
+ * @fd: a file descriptor
+ * @addr: socket address buffer
+ * @addr_len: socket address buffer length, updated on return
+ *
+ * The getsockname function shall retrieve the locally-bound name of the
+ * specified socket.
+ *
+ * Returns: the status of getsockname
+ *
+ * Since: 5.12
+ */
+int hev_task_io_socket_getsockname (int fd, struct sockaddr *addr,
+                                    socklen_t *addr_len);
+
+/**
+ * hev_task_io_socket_getpeername:
+ * @fd: a file descriptor
+ * @addr: socket address buffer
+ * @addr_len: socket address buffer length, updated on return
+ *
+ * The getpeername function shall retrieve the peer address of the specified
+ * socket.
+ *
+ * Returns: the status of getpeername
+ *
+ * Since: 5.12
+ */
+int hev_task_io_socket_getpeername (int fd, struct sockaddr *addr,
+                                    socklen_t *addr_len);
+
+/**
  * hev_task_io_socket_connect:
  * @fd: a file descriptor
  * @addr: socket address

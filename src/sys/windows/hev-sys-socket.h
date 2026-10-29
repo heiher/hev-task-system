@@ -23,6 +23,8 @@ int hev_sys_listen (int s, int backlog);
 int hev_sys_shutdown (int s, int how);
 int hev_sys_setsockopt (int s, int level, int optname, const void *optval,
                         int optlen);
+int hev_sys_getsockname (int s, struct sockaddr *addr, socklen_t *addrlen);
+int hev_sys_getpeername (int s, struct sockaddr *addr, socklen_t *addrlen);
 int hev_sys_ioctl (int fd, long request, void *argp);
 
 #ifdef __cplusplus

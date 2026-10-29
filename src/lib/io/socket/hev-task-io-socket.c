@@ -76,6 +76,40 @@ hev_task_io_socket_socketpair (int domain, int type, int protocol,
 }
 
 EXPORT_SYMBOL int
+hev_task_io_socket_bind (int fd, const struct sockaddr *addr,
+                         socklen_t addr_len)
+{
+    return bind (fd, addr, addr_len);
+}
+
+EXPORT_SYMBOL int
+hev_task_io_socket_listen (int fd, int backlog)
+{
+    return listen (fd, backlog);
+}
+
+EXPORT_SYMBOL int
+hev_task_io_socket_setsockopt (int fd, int level, int optname,
+                               const void *optval, socklen_t optlen)
+{
+    return setsockopt (fd, level, optname, optval, optlen);
+}
+
+EXPORT_SYMBOL int
+hev_task_io_socket_getsockname (int fd, struct sockaddr *addr,
+                                socklen_t *addr_len)
+{
+    return getsockname (fd, addr, addr_len);
+}
+
+EXPORT_SYMBOL int
+hev_task_io_socket_getpeername (int fd, struct sockaddr *addr,
+                                socklen_t *addr_len)
+{
+    return getpeername (fd, addr, addr_len);
+}
+
+EXPORT_SYMBOL int
 hev_task_io_socket_connect (int fd, const struct sockaddr *addr,
                             socklen_t addr_len, HevTaskIOYielder yielder,
                             void *yielder_data)

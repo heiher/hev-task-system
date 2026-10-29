@@ -112,6 +112,8 @@ __declspec (noreturn) void hev_task_longjmp (void *env, int value);
 #define listen hev_sys_listen
 #define shutdown hev_sys_shutdown
 #define setsockopt hev_sys_setsockopt
+#define getsockname hev_sys_getsockname
+#define getpeername hev_sys_getpeername
 #define recv hev_sys_recv
 #define send hev_sys_send
 #define recvfrom hev_sys_recvfrom

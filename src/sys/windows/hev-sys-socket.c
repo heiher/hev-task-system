@@ -250,6 +250,40 @@ hev_sys_setsockopt (int fd, int level, int optname, const void *optval,
 }
 
 int
+hev_sys_getsockname (int fd, struct sockaddr *addr, socklen_t *addrlen)
+{
+    SOCKET s = hev_sys_fd_socket (fd);
+
+    if (s == INVALID_SOCKET) {
+        hev_sys_set_errno_from_wsa ();
+        return -1;
+    }
+    if (getsockname (s, addr, addrlen) != 0) {
+        hev_sys_set_errno_from_wsa ();
+        return -1;
+    }
+
+    return 0;
+}
+
+int
+hev_sys_getpeername (int fd, struct sockaddr *addr, socklen_t *addrlen)
+{
+    SOCKET s = hev_sys_fd_socket (fd);
+
+    if (s == INVALID_SOCKET) {
+        hev_sys_set_errno_from_wsa ();
+        return -1;
+    }
+    if (getpeername (s, addr, addrlen) != 0) {
+        hev_sys_set_errno_from_wsa ();
+        return -1;
+    }
+
+    return 0;
+}
+
+int
 hev_sys_ioctl (int fd, long request, void *argp)
 {
     SOCKET s = hev_sys_fd_to_socket (fd);

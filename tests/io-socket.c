@@ -44,10 +44,11 @@ task_tcp_server_entry (void *data)
     addr.sin_addr.s_addr = INADDR_ANY;
     for (port = 1024; port < 65536; port++) {
         addr.sin_port = htons (port);
-        if (bind (fd, (struct sockaddr *)&addr, sizeof (addr)) == 0)
+        if (hev_task_io_socket_bind (fd, (struct sockaddr *)&addr,
+                                     sizeof (addr)) == 0)
             break;
     }
-    assert (listen (fd, 5) == 0);
+    assert (hev_task_io_socket_listen (fd, 5) == 0);
 
     assert (hev_task_add_fd (task, fd, POLLIN) == 0);
 
