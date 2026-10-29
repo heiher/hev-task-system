@@ -16,6 +16,7 @@
 #include <hev-task.h>
 #include <hev-task-system.h>
 
+#include "sys/hev-sys-private.h"
 #include "kern/task/hev-task-private.h"
 #include "kern/time/hev-task-timer.h"
 #include "kern/io/hev-task-io-reactor.h"
@@ -52,9 +53,9 @@ struct _HevTaskSystemContext
     HevRBTreeCached running_tasks;
 
     struct timespec sched_time;
-
     jmp_buf kernel_context;
 
+    HevSysTaskStack sys_task_stack;
     HevList all_tasks;
 };
 

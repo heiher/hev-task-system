@@ -10,9 +10,8 @@
 #ifndef __HEV_TASK_DNS_H__
 #define __HEV_TASK_DNS_H__
 
-#include <netdb.h>
 #include <sys/types.h>
-#include <sys/socket.h>
+#include <hev-sys.h>
 
 #ifdef __cplusplus
 extern "C" {

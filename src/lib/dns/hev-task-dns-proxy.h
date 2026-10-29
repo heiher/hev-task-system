@@ -10,9 +10,7 @@
 #ifndef __HEV_TASK_DNS_PROXY_H__
 #define __HEV_TASK_DNS_PROXY_H__
 
-#include <netdb.h>
-#include <sys/types.h>
-#include <sys/socket.h>
+#include "sys/hev-sys-private.h"
 
 typedef struct _HevTaskDNSProxy HevTaskDNSProxy;
 

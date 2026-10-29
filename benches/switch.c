@@ -29,7 +29,7 @@ get_time (void)
 static void
 ping_entry (void *data)
 {
-    int i = (int)(long)data;
+    int i = (int)(intptr_t)data;
 
     for (; i > 0; i--) {
         hev_task_wakeup (task_peer);
@@ -40,7 +40,7 @@ ping_entry (void *data)
 static void
 pong_entry (void *data)
 {
-    int i = (int)(long)data;
+    int i = (int)(intptr_t)data;
 
     for (; i > 0; i--) {
         hev_task_wakeup (task_peer);
@@ -59,8 +59,8 @@ main (void)
 
     task = hev_task_new (-1);
     task_peer = hev_task_new (-1);
-    hev_task_run (task, ping_entry, (void *)(long)NCALLS);
-    hev_task_run (task_peer, pong_entry, (void *)(long)NCALLS);
+    hev_task_run (task, ping_entry, (void *)(intptr_t)NCALLS);
+    hev_task_run (task_peer, pong_entry, (void *)(intptr_t)NCALLS);
 
     t0 = get_time ();
     hev_task_system_run ();

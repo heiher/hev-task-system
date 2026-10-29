@@ -11,6 +11,7 @@
 #define __HEV_TASK_CHANNEL_H__
 
 #include <sys/types.h>
+#include <hev-sys.h>
 
 #ifdef __cplusplus
 extern "C" {

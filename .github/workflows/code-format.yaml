@@ -16,7 +16,7 @@ jobs:
           fetch-depth: 1
       - name: Prepare
         run: |
-          sudo apt install -y clang-format
+          pip install --user "clang-format==21.1.*"
       - name: Format
         run: |
           find apps benches include src tests -iname "*.[h,c]" -exec clang-format -i {} \;

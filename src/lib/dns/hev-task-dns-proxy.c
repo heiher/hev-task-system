@@ -7,17 +7,14 @@
  ============================================================================
  */
 
-#include <poll.h>
-#include <fcntl.h>
 #include <errno.h>
-#include <unistd.h>
 
+#include "sys/hev-sys-private.h"
 #include <hev-task.h>
 #include <hev-task-io.h>
 #include <hev-task-mutex.h>
 #include <hev-task-io-socket.h>
 #include <hev-memory-allocator.h>
-
 #include "kern/aide/hev-task-aide.h"
 #include "kern/core/hev-task-system-private.h"
 

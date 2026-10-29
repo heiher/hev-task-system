@@ -7,9 +7,10 @@
  ============================================================================
  */
 
-#if defined(__MSYS__)
+#if defined(__MSYS__) || (defined(_WIN32) && !defined(__CYGWIN__))
 
 #include <assert.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdatomic.h>
 
@@ -27,8 +28,9 @@ struct _HevTaskIOReactorIOCPNode
 
     int ref_count;
     int events;
+    int queued;
 
-    long handle;
+    uintptr_t handle;
     void *data;
 
     void *ihandle;
@@ -75,6 +77,32 @@ hev_task_io_reactor_iocp_node_unref (HevTaskIOReactorIOCPNode *node)
 }
 
 static int
+hev_task_io_reactor_iocp_node_detach (HevTaskIOReactorIOCP *self,
+                                      HevTaskIOReactorIOCPNode *node)
+{
+    if (node->whandle) {
+        if (!UnregisterWaitEx (node->whandle, INVALID_HANDLE_VALUE))
+            return -1;
+        node->whandle = NULL;
+    }
+
+    if (node->ehandle && node->handle != (uintptr_t)node->ehandle) {
+        uintptr_t sock = hev_sys_handle_to_socket (node->handle);
+
+        /* The owner may have closed the socket without deleting it. */
+        if (sock != HEV_SYS_INVALID_SOCKET)
+            WSAEventSelect (sock, NULL, 0);
+        WSACloseEvent (node->ehandle);
+    }
+    node->ehandle = NULL;
+
+    hev_rbtree_erase (&self->tree, &node->base);
+    hev_task_io_reactor_iocp_node_unref (node);
+
+    return 0;
+}
+
+static int
 hev_task_io_reactor_iocp_insert (HevTaskIOReactorIOCP *self,
                                  HevTaskIOReactorIOCPNode *node)
 {
@@ -101,7 +129,7 @@ hev_task_io_reactor_iocp_insert (HevTaskIOReactorIOCP *self,
 }
 
 static HevTaskIOReactorIOCPNode *
-hev_task_io_reactor_iocp_lookup (HevTaskIOReactorIOCP *self, long handle)
+hev_task_io_reactor_iocp_lookup (HevTaskIOReactorIOCP *self, uintptr_t handle)
 {
     HevRBTreeNode *node = self->tree.root;
 
@@ -130,19 +158,73 @@ hev_task_io_reactor_iocp_handler (void *data, BOOLEAN fired)
     if (fired)
         return;
 
-    if (node->handle != (long)node->ehandle) {
+    if (node->handle != (uintptr_t)node->ehandle) {
         WSANETWORKEVENTS events;
+        uintptr_t sock = hev_sys_handle_to_socket (node->handle);
 
-        res = WSAEnumNetworkEvents (node->handle, node->ehandle, &events);
+        if (sock == HEV_SYS_INVALID_SOCKET) {
+            ResetEvent (node->ehandle);
+            return;
+        }
+
+        res = WSAEnumNetworkEvents (sock, node->ehandle, &events);
         if (res || !events.lNetworkEvents)
             return;
-        node->events = events.lNetworkEvents;
+        atomic_fetch_or_explicit ((atomic_int *)&node->events,
+                                  events.lNetworkEvents, memory_order_acq_rel);
     }
+
+    /* One pending completion per node, further events merge into it. */
+    if (atomic_exchange_explicit ((atomic_int *)&node->queued, 1,
+                                  memory_order_acq_rel))
+        return;
 
     hev_task_io_reactor_iocp_node_ref (node);
     res = PostQueuedCompletionStatus (node->ihandle, 1, 0, (LPOVERLAPPED)node);
-    if (!res)
+    if (!res) {
+        atomic_store_explicit ((atomic_int *)&node->queued, 0,
+                               memory_order_release);
         hev_task_io_reactor_iocp_node_unref (node);
+    }
+}
+
+/*
+ * A socket event is reset by WSAEnumNetworkEvents, so its wait is persistent
+ * and fires once per edge. A waitable handle can stay signaled (a process, a
+ * manual-reset event), so its wait is one-shot: it fires once and stays idle
+ * until the handle is added again, or it would spin the reactor.
+ */
+static BOOL
+hev_task_io_reactor_iocp_register (HevTaskIOReactorIOCPNode *node)
+{
+    ULONG flags = WT_EXECUTEINPERSISTENTTHREAD;
+
+    if (node->handle == (uintptr_t)node->ehandle)
+        flags |= WT_EXECUTEONLYONCE;
+
+    return RegisterWaitForSingleObject (&node->whandle, node->ehandle,
+                                        hev_task_io_reactor_iocp_handler, node,
+                                        INFINITE, flags);
+}
+
+static int
+hev_task_io_reactor_iocp_rearm (HevTaskIOReactorIOCPNode *node,
+                                HevTaskIOReactorSetupEvent *event)
+{
+    if (node->handle != (uintptr_t)node->ehandle || event->events)
+        return -1;
+
+    if (node->whandle) {
+        if (!UnregisterWaitEx (node->whandle, INVALID_HANDLE_VALUE))
+            return -1;
+        node->whandle = NULL;
+    }
+
+    node->data = event->data;
+    if (!hev_task_io_reactor_iocp_register (node))
+        return -1;
+
+    return 0;
 }
 
 static int
@@ -154,21 +236,25 @@ hev_task_io_reactor_iocp_add (HevTaskIOReactorIOCP *self,
 
     node = hev_task_io_reactor_iocp_lookup (self, event->handle);
     if (node)
-        goto exit;
+        return hev_task_io_reactor_iocp_rearm (node, event);
 
     node = hev_task_io_reactor_iocp_node_new ();
     if (!node)
         goto exit;
 
     if (event->events) {
+        uintptr_t sock = hev_sys_handle_to_socket (event->handle);
         long events;
 
-        node->ehandle = CreateEventA (NULL, FALSE, FALSE, NULL);
+        if (sock == HEV_SYS_INVALID_SOCKET)
+            goto free_node;
+
+        node->ehandle = CreateEventA (NULL, TRUE, FALSE, NULL);
         if (!node->ehandle)
             goto free_node;
 
         events = event->events | HEV_TASK_IO_REACTOR_EV_ER;
-        res = WSAEventSelect (event->handle, node->ehandle, events);
+        res = WSAEventSelect (sock, node->ehandle, events);
         if (res)
             goto free_event;
     } else {
@@ -179,9 +265,7 @@ hev_task_io_reactor_iocp_add (HevTaskIOReactorIOCP *self,
     node->handle = event->handle;
     node->ihandle = self->base.handle;
 
-    res = RegisterWaitForSingleObject (&node->whandle, node->ehandle,
-                                       hev_task_io_reactor_iocp_handler, node,
-                                       INFINITE, WT_EXECUTEINPERSISTENTTHREAD);
+    res = hev_task_io_reactor_iocp_register (node);
     if (!res)
         goto free_event;
 
@@ -190,8 +274,10 @@ hev_task_io_reactor_iocp_add (HevTaskIOReactorIOCP *self,
     return 0;
 
 free_event:
-    if (event->handle != (long)node->ehandle)
+    if (event->handle != (uintptr_t)node->ehandle) {
+        WSAEventSelect (hev_sys_handle_to_socket (event->handle), NULL, 0);
         WSACloseEvent (node->ehandle);
+    }
 free_node:
     hev_task_io_reactor_iocp_node_unref (node);
 exit:
@@ -208,9 +294,15 @@ hev_task_io_reactor_iocp_mod (HevTaskIOReactorIOCP *self,
     if (!node)
         return -1;
 
-    if (node->handle != (long)node->ehandle && event->events) {
+    if (node->handle != (uintptr_t)node->ehandle && event->events) {
+        uintptr_t sock = hev_sys_handle_to_socket (node->handle);
         long events = event->events | HEV_TASK_IO_REACTOR_EV_ER;
-        int res = WSAEventSelect (node->handle, node->ehandle, events);
+        int res;
+
+        if (sock == HEV_SYS_INVALID_SOCKET)
+            return -1;
+
+        res = WSAEventSelect (sock, node->ehandle, events);
         if (res)
             return -1;
     }
@@ -223,24 +315,12 @@ hev_task_io_reactor_iocp_del (HevTaskIOReactorIOCP *self,
                               HevTaskIOReactorSetupEvent *event)
 {
     HevTaskIOReactorIOCPNode *node;
-    int res;
 
     node = hev_task_io_reactor_iocp_lookup (self, event->handle);
     if (!node)
         return -1;
 
-    res = UnregisterWaitEx (node->whandle, INVALID_HANDLE_VALUE);
-    if (node->handle != (long)node->ehandle)
-        res &= WSACloseEvent (node->ehandle);
-    if (!res)
-        return -1;
-
-    node->ehandle = NULL;
-    node->whandle = NULL;
-    hev_rbtree_erase (&self->tree, &node->base);
-    hev_task_io_reactor_iocp_node_unref (node);
-
-    return 0;
+    return hev_task_io_reactor_iocp_node_detach (self, node);
 }
 
 HevTaskIOReactor *
@@ -259,7 +339,7 @@ hev_task_io_reactor_new (void)
         return NULL;
     }
 
-    pthread_mutex_init (&self->mutex, NULL);
+    hev_sys_mutex_init (&self->mutex);
     self->base.handle = handle;
 
     return &self->base;
@@ -270,8 +350,35 @@ hev_task_io_reactor_destroy (HevTaskIOReactor *_self)
 {
     HevTaskIOReactorIOCP *self = (HevTaskIOReactorIOCP *)_self;
 
+    hev_sys_mutex_lock (&self->mutex);
+    while (self->tree.root) {
+        HevTaskIOReactorIOCPNode *node;
+
+        node = container_of (self->tree.root, HevTaskIOReactorIOCPNode, base);
+        if (hev_task_io_reactor_iocp_node_detach (self, node) < 0) {
+            hev_sys_mutex_unlock (&self->mutex);
+            return;
+        }
+    }
+    hev_sys_mutex_unlock (&self->mutex);
+
+    for (;;) {
+        OVERLAPPED *overlap = NULL;
+        ULONG_PTR key = 0;
+        DWORD bytes = 0;
+        BOOL ok;
+
+        ok = GetQueuedCompletionStatus (_self->handle, &bytes, &key, &overlap,
+                                        0);
+        if (overlap)
+            hev_task_io_reactor_iocp_node_unref (
+                (HevTaskIOReactorIOCPNode *)overlap);
+        else if (!ok)
+            break;
+    }
+
     CloseHandle (_self->handle);
-    pthread_mutex_destroy (&self->mutex);
+    hev_sys_mutex_fini (&self->mutex);
     hev_free (self);
 }
 
@@ -287,7 +394,7 @@ hev_task_io_reactor_setup (HevTaskIOReactor *_self,
     if (!events || count <= 0)
         return res;
 
-    pthread_mutex_lock (&self->mutex);
+    hev_sys_mutex_lock (&self->mutex);
 
     switch (events->op) {
     case HEV_TASK_IO_REACTOR_OP_ADD:
@@ -302,7 +409,7 @@ hev_task_io_reactor_setup (HevTaskIOReactor *_self,
         break;
     }
 
-    pthread_mutex_unlock (&self->mutex);
+    hev_sys_mutex_unlock (&self->mutex);
 
     return res;
 }
@@ -331,9 +438,15 @@ retry:
     }
 
     node = (HevTaskIOReactorIOCPNode *)overlap;
-    events->events = node->events;
+    atomic_store_explicit ((atomic_int *)&node->queued, 0,
+                           memory_order_release);
+    events->events = atomic_exchange_explicit ((atomic_int *)&node->events, 0,
+                                               memory_order_acq_rel);
     events->data = node->data;
     res = node->ehandle && node->whandle;
+    /* A socket node without events was merged into an earlier wakeup. */
+    if (node->handle != (uintptr_t)node->ehandle && !events->events)
+        res = 0;
     hev_task_io_reactor_iocp_node_unref (node);
 
     if (!res)
@@ -342,4 +455,4 @@ retry:
     return 1;
 }
 
-#endif /* defined(__MSYS__) */
+#endif /* defined(__MSYS__) || (defined(_WIN32) && !defined(__CYGWIN__)) */

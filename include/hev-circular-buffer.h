@@ -10,8 +10,8 @@
 #ifndef __HEV_CIRCULAR_BUFFER_H__
 #define __HEV_CIRCULAR_BUFFER_H__
 
-#include <sys/uio.h>
 #include <sys/types.h>
+#include <hev-sys.h>
 
 #ifdef __cplusplus
 extern "C" {

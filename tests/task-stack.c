@@ -11,9 +11,8 @@
 #include <stdint.h>
 #include <string.h>
 #include <assert.h>
-#include <unistd.h>
-#include <alloca.h>
 
+#include <hev-sys.h>
 #include <hev-task.h>
 #include <hev-task-call.h>
 #include <hev-task-system.h>
@@ -34,6 +33,7 @@ touch_stack (int fill)
     memset ((void *)buf, fill, BUF_SIZE);
 }
 
+#ifdef __linux__
 static __attribute__ ((noinline)) void
 check_zero (void)
 {
@@ -47,6 +47,7 @@ check_zero (void)
     for (p = (unsigned char *)start; (uintptr_t)p < end; p++)
         assert (*p == 0);
 }
+#endif
 
 static void
 call_entry (HevTaskCall *call)

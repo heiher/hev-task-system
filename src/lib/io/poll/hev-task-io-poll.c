@@ -7,6 +7,7 @@
  ============================================================================
  */
 
+#include "sys/hev-sys-private.h"
 #include <hev-task.h>
 
 #include <hev-task-io-poll.h>

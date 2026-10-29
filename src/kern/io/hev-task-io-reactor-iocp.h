@@ -10,12 +10,8 @@
 #ifndef __HEV_TASK_IO_REACTOR_IOCP_H__
 #define __HEV_TASK_IO_REACTOR_IOCP_H__
 
-#include <io.h>
-#include <poll.h>
-#include <pthread.h>
-
+#include "sys/hev-sys-private.h"
 #include "lib/rbtree/hev-rbtree.h"
-#include "lib/misc/hev-windows-api.h"
 
 #define HEV_TASK_IO_REACTOR_EVENT_GEN_MAX (1)
 
@@ -28,7 +24,7 @@ struct _HevTaskIOReactorIOCP
     HevTaskIOReactor base;
 
     HevRBTree tree;
-    pthread_mutex_t mutex;
+    HevSysMutex mutex;
 };
 
 enum _HevTaskIOReactorEvents
@@ -49,7 +45,7 @@ struct _HevTaskIOReactorSetupEvent
 {
     HevTaskIOReactorOperation op;
 
-    long handle;
+    uintptr_t handle;
     int events;
     void *data;
 };
@@ -66,7 +62,8 @@ int hev_task_io_reactor_wait (HevTaskIOReactor *self,
 
 static inline void
 hev_task_io_reactor_setup_event_set (HevTaskIOReactorSetupEvent *event,
-                                     long handle, HevTaskIOReactorOperation op,
+                                     uintptr_t handle,
+                                     HevTaskIOReactorOperation op,
                                      unsigned int events, void *data)
 {
     event->op = op;
@@ -89,7 +86,7 @@ hev_task_io_reactor_setup_event_fd_gen (HevTaskIOReactorSetupEvent *events,
     if (poll_events & POLLERR)
         reactor_events |= HEV_TASK_IO_REACTOR_EV_ER;
 
-    hev_task_io_reactor_setup_event_set (events, get_osfhandle (fd), op,
+    hev_task_io_reactor_setup_event_set (events, hev_sys_fd_to_handle (fd), op,
                                          reactor_events, data);
 
     return 1;
@@ -101,7 +98,8 @@ hev_task_io_reactor_setup_event_whandle_gen (HevTaskIOReactorSetupEvent *events,
                                              HevTaskIOReactorOperation op,
                                              void *data)
 {
-    hev_task_io_reactor_setup_event_set (events, (long)handle, op, 0, data);
+    hev_task_io_reactor_setup_event_set (events, (uintptr_t)handle, op, 0,
+                                         data);
 
     return 1;
 }

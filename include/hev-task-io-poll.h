@@ -10,7 +10,7 @@
 #ifndef __HEV_TASK_IO_POLL_H__
 #define __HEV_TASK_IO_POLL_H__
 
-#include <poll.h>
+#include <hev-sys.h>
 
 #ifdef __cplusplus
 extern "C" {

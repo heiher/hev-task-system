@@ -1,0 +1,36 @@
+/*
+ ============================================================================
+ Name        : hev-sys-time.c
+ Author      : Heiher <r@hev.cc>
+ Copyright   : Copyright (c) 2026 everyone.
+ Description : clock_gettime() on top of QueryPerformanceCounter
+ ============================================================================
+ */
+
+#if defined(_WIN32) && !defined(__MSYS__) && !defined(__CYGWIN__)
+
+#define HEV_SYS_RAW
+#include "sys/hev-sys-private.h"
+
+int
+hev_sys_clock_gettime (int clock_id, struct timespec *ts)
+{
+    LARGE_INTEGER freq, counter;
+
+    (void)clock_id;
+
+    if (!ts)
+        return -1;
+
+    if (!QueryPerformanceFrequency (&freq) ||
+        !QueryPerformanceCounter (&counter))
+        return -1;
+
+    ts->tv_sec = (time_t)(counter.QuadPart / freq.QuadPart);
+    ts->tv_nsec = (long)((counter.QuadPart % freq.QuadPart) * 1000000000LL /
+                         freq.QuadPart);
+
+    return 0;
+}
+
+#endif /* defined(_WIN32) && !defined(__MSYS__) && !defined(__CYGWIN__) */

@@ -14,6 +14,7 @@
 #define __HEV_RBTREE_H__
 
 #include <stddef.h>
+#include <stdint.h>
 
 typedef struct _HevRBTree HevRBTree;
 typedef struct _HevRBTreeNode HevRBTreeNode;
@@ -25,15 +26,15 @@ struct _HevRBTree
 
 struct _HevRBTreeNode
 {
-    unsigned long __parent_color;
+    uintptr_t __parent_color;
     HevRBTreeNode *right;
     HevRBTreeNode *left;
-} __attribute__ ((aligned (sizeof (long))));
+} __attribute__ ((aligned (sizeof (uintptr_t))));
 
 static inline int
 hev_rbtree_node_empty (HevRBTreeNode *node)
 {
-    return node->__parent_color == (unsigned long)node;
+    return node->__parent_color == (uintptr_t)node;
 }
 
 static inline HevRBTreeNode *
@@ -46,7 +47,7 @@ static inline void
 hev_rbtree_node_link (HevRBTreeNode *node, HevRBTreeNode *parent,
                       HevRBTreeNode **link)
 {
-    node->__parent_color = (unsigned long)parent;
+    node->__parent_color = (uintptr_t)parent;
     node->left = node->right = NULL;
 
     *link = node;

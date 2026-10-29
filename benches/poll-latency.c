@@ -8,14 +8,13 @@
  */
 
 #include <fcntl.h>
-#include <poll.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <unistd.h>
 
+#include <hev-sys.h>
 #include <hev-task-system.h>
 #include <hev-task.h>
 #include <hev-task-io.h>

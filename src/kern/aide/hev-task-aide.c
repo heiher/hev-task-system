@@ -7,18 +7,14 @@
  ============================================================================
  */
 
-#include <poll.h>
-#include <fcntl.h>
 #include <stdlib.h>
 #include <errno.h>
-#include <unistd.h>
-#include <pthread.h>
 
+#include "sys/hev-sys-private.h"
 #include <hev-task.h>
 #include <hev-task-io.h>
 #include <hev-task-io-socket.h>
 #include <hev-memory-allocator.h>
-
 #include "kern/task/hev-task-private.h"
 #include "kern/io/hev-task-io-reactor.h"
 #include "mem/simple/hev-memory-allocator-simple.h"
@@ -27,7 +23,7 @@
 
 struct _HevTaskAide
 {
-    pthread_t thread;
+    HevSysThread thread;
     HevTaskIOReactor *reactor;
     HevMemoryAllocator *allocator;
     HevTaskAideWork ctrl_work;
@@ -43,8 +39,8 @@ struct _HevTaskAide
  * default allocator.
  */
 static HevTaskAide *aide;
-static pthread_once_t once = PTHREAD_ONCE_INIT;
-static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+static HevSysOnce once = HEV_SYS_ONCE_INITIALIZER;
+static HevSysMutex mutex = HEV_SYS_MUTEX_INITIALIZER;
 
 static void
 hev_task_aide_quit_handler (unsigned int revents, void *data)
@@ -157,7 +153,7 @@ hev_task_aide_new (void)
     if (0 > res)
         goto free_reactor;
 
-    res = pthread_create (&self->thread, NULL, hev_task_aide_entry, self);
+    res = hev_sys_thread_create (&self->thread, hev_task_aide_entry, self);
     if (res != 0)
         goto free_reactor;
 
@@ -201,7 +197,7 @@ hev_task_aide_destroy (HevTaskAide *self)
     }
 
     if (!self->orphan)
-        pthread_join (self->thread, NULL);
+        hev_sys_thread_join (self->thread);
 
     close (self->ctrl_fd);
     close (self->ctrl_work.fd);
@@ -213,13 +209,13 @@ hev_task_aide_destroy (HevTaskAide *self)
 static void
 hev_task_aide_fork_prepare (void)
 {
-    pthread_mutex_lock (&mutex);
+    hev_sys_mutex_lock (&mutex);
 }
 
 static void
 hev_task_aide_fork_parent (void)
 {
-    pthread_mutex_unlock (&mutex);
+    hev_sys_mutex_unlock (&mutex);
 }
 
 static void
@@ -234,13 +230,13 @@ hev_task_aide_fork_child (void)
         aide = NULL;
     }
 
-    pthread_mutex_unlock (&mutex);
+    hev_sys_mutex_unlock (&mutex);
 }
 
 static void
 hev_task_aide_once (void)
 {
-    pthread_atfork (hev_task_aide_fork_prepare, hev_task_aide_fork_parent,
+    hev_sys_atfork (hev_task_aide_fork_prepare, hev_task_aide_fork_parent,
                     hev_task_aide_fork_child);
 }
 
@@ -249,15 +245,15 @@ hev_task_aide_get (void)
 {
     HevTaskAide *self;
 
-    pthread_once (&once, hev_task_aide_once);
+    hev_sys_once (&once, hev_task_aide_once);
 
-    pthread_mutex_lock (&mutex);
+    hev_sys_mutex_lock (&mutex);
     if (!aide)
         aide = hev_task_aide_new ();
     self = aide;
     if (self)
         self->ref_count++;
-    pthread_mutex_unlock (&mutex);
+    hev_sys_mutex_unlock (&mutex);
 
     return self;
 }
@@ -271,11 +267,11 @@ hev_task_aide_put (HevTaskAide *self)
      * so that the join does not block other users, a new user creates a
      * new aide meanwhile.
      */
-    pthread_mutex_lock (&mutex);
+    hev_sys_mutex_lock (&mutex);
     ref_count = --self->ref_count;
     if ((0 == ref_count) && (aide == self))
         aide = NULL;
-    pthread_mutex_unlock (&mutex);
+    hev_sys_mutex_unlock (&mutex);
 
     if (0 == ref_count)
         hev_task_aide_destroy (self);

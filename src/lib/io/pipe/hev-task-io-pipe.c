@@ -7,9 +7,7 @@
  ============================================================================
  */
 
-#include <unistd.h>
-#include <sys/ioctl.h>
-
+#include "sys/hev-sys-private.h"
 #include <hev-task-io-pipe.h>
 
 #include "lib/misc/hev-compiler.h"

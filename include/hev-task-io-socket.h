@@ -10,7 +10,7 @@
 #ifndef __HEV_TASK_IO_SOCKET_H__
 #define __HEV_TASK_IO_SOCKET_H__
 
-#include <sys/socket.h>
+#include <hev-sys.h>
 
 #ifdef __cplusplus
 extern "C" {

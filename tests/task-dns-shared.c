@@ -12,9 +12,8 @@
 #include <string.h>
 #include <dirent.h>
 #include <pthread.h>
-#include <arpa/inet.h>
-#include <netinet/in.h>
 
+#include <hev-sys.h>
 #include <hev-task.h>
 #include <hev-task-dns.h>
 #include <hev-task-system.h>

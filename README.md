@@ -88,6 +88,25 @@ cd hev-task-system
 ./build-apple.sh
 ```
 
+### Native Windows (clang, MSVC target)
+
+The same `Makefile` builds natively with clang targeting MSVC. Open a Visual
+Studio developer prompt (clang from the VS LLVM component or `PATH`), make
+sure GNU make and a POSIX `sh.exe` (for example the one of Git for Windows,
+`C:\Program Files\Git\usr\bin`) are on `PATH`, then:
+
+```bat
+make
+make tests
+make ARCH=x86 tests
+make ARCH=arm64 static apps
+```
+
+`ARCH` is `x64` (default), `x86` or `arm64` and must match the developer
+prompt architecture. The static library is `bin/hev-task-system.lib`; link
+programs with `/CETCOMPAT:NO` on x86/x64, since coroutine switching is
+incompatible with the CET shadow stack.
+
 ### Windows (MSYS2)
 
 ```bash
@@ -117,4 +136,3 @@ make
 ## License
 
 MIT
-

@@ -14,9 +14,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/time.h>
-#include <arpa/inet.h>
-#include <netinet/in.h>
 
+#include <hev-sys.h>
 #include <hev-task.h>
 #include <hev-task-dns.h>
 #include <hev-task-system.h>

@@ -40,6 +40,13 @@ CONFIG_SCHED_CLOCK := CLOCK_NONE
 # 0 polls on every schedule pass (previous behavior).
 CONFIG_SCHED_IO_POLL_INTERVAL := 50000
 
+# Native Windows has no mmap, splice(2) or SIGBUS/SIGSEGV handling.
+ifeq ($(WIN_NATIVE),1)
+CONFIG_STACK_BACKEND := STACK_HEAP
+ENABLE_IO_SPLICE_SYSCALL := 0
+ENABLE_STACK_OVERFLOW_DETECTOR := 0
+endif
+
 CONFIG_CFLAGS :=
 
 ifeq ($(ENABLE_DEBUG),1)

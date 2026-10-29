@@ -10,12 +10,10 @@
 #include <assert.h>
 #include <stddef.h>
 #include <string.h>
-#include <unistd.h>
 #include <pthread.h>
 #include <sys/wait.h>
-#include <arpa/inet.h>
-#include <netinet/in.h>
 
+#include <hev-sys.h>
 #include <hev-task.h>
 #include <hev-task-dns.h>
 #include <hev-task-system.h>

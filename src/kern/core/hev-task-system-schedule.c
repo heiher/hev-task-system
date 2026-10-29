@@ -226,7 +226,8 @@ hev_task_system_schedule (HevTaskYieldType type)
             return; /* resume to task context */
 
         /* resume to kernel context */
-        _longjmp (ctx->kernel_context, type);
+        hev_sys_task_stack_leave (&ctx->sys_task_stack);
+        hev_longjmp (ctx->kernel_context, type);
     }
 
     /* NOTE: in kernel context */
@@ -259,7 +260,10 @@ hev_task_system_schedule (HevTaskYieldType type)
     hev_task_system_update_sched_time (ctx);
 
     /* switch to task */
-    _longjmp (ctx->current_task->context, 1);
+    hev_sys_task_stack_enter (
+        &ctx->sys_task_stack, ctx->current_task->stack_bottom,
+        hev_task_stack_get_base (ctx->current_task->stack));
+    hev_longjmp (ctx->current_task->context, 1);
 }
 
 void
@@ -276,7 +280,9 @@ hev_task_system_run_new_task (HevTask *task)
 {
     HevTaskSystemContext *ctx = hev_task_system_get_context ();
 
-    hev_task_execute (task, hev_task_executer);
+    hev_sys_task_execute (task, task->stack_bottom,
+                          hev_task_stack_get_base (task->stack),
+                          hev_task_executer);
 
     if (ctx->current_task)
         task->sched_key += hev_task_system_get_min_sched_key (ctx);
@@ -294,5 +300,6 @@ hev_task_system_kill_current_task (void)
      * NOTE: remove current task in kernel context, because current
      * task stack may be freed.
      */
-    _longjmp (ctx->kernel_context, HEV_TASK_SCHED_REMOVE);
+    hev_sys_task_stack_leave (&ctx->sys_task_stack);
+    hev_longjmp (ctx->kernel_context, HEV_TASK_SCHED_REMOVE);
 }

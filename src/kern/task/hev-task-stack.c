@@ -8,9 +8,8 @@
  */
 
 #include <stdint.h>
-#include <unistd.h>
-#include <sys/mman.h>
 
+#include "sys/hev-sys-private.h"
 #include "lib/misc/hev-compiler.h"
 
 #include "hev-task-stack.h"
