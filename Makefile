@@ -47,7 +47,6 @@ SHARED_IMPLIB=$(BINDIR)/$(PROJECT).dll.lib
 EXPORT_SYMBOL=
 CCFLAGS+=-DEXPORT_SYMBOL="$(EXPORT_SYMBOL)" -D_CRT_SECURE_NO_WARNINGS \
          -D_WINSOCK_DEPRECATED_NO_WARNINGS -Wno-microsoft-enum-forward-reference
-APP_CCFLAGS+=-include sys/hev-sys-private.h
 APP_LDFLAGS=$(LDFLAGS) -L $(BINDIR) -l $(PROJECT) -lkernel32 -lws2_32
 ifneq ($(ARCH),arm64)
 # Coroutine switching is incompatible with the CET shadow stack.

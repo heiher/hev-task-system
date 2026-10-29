@@ -39,9 +39,9 @@ task_entry11 (void *data)
 
     assert (counter == 2);
     counter++;
-    clock_gettime (CLOCK_MONOTONIC, &sp1);
+    timespec_get (&sp1, TIME_UTC);
     assert (hev_task_sleep (30) == 0);
-    clock_gettime (CLOCK_MONOTONIC, &sp2);
+    timespec_get (&sp2, TIME_UTC);
     assert (time_diff (&sp1, &sp2) >= 30);
 }
 
@@ -52,9 +52,9 @@ task_entry10 (void *data)
 
     assert (counter == 1);
     counter++;
-    clock_gettime (CLOCK_MONOTONIC, &sp1);
+    timespec_get (&sp1, TIME_UTC);
     assert (hev_task_sleep (20) == 0);
-    clock_gettime (CLOCK_MONOTONIC, &sp2);
+    timespec_get (&sp2, TIME_UTC);
     assert (time_diff (&sp1, &sp2) >= 20);
 }
 
@@ -64,9 +64,9 @@ task_entry9 (void *data)
     struct timespec sp1, sp2;
 
     counter++;
-    clock_gettime (CLOCK_MONOTONIC, &sp1);
+    timespec_get (&sp1, TIME_UTC);
     assert (hev_task_sleep (10) == 0);
-    clock_gettime (CLOCK_MONOTONIC, &sp2);
+    timespec_get (&sp2, TIME_UTC);
     assert (time_diff (&sp1, &sp2) >= 10);
 }
 
@@ -93,12 +93,12 @@ task_entry7 (void *data)
 
     assert (counter == 1);
     counter++;
-    clock_gettime (CLOCK_MONOTONIC, &sp1);
+    timespec_get (&sp1, TIME_UTC);
     remaining = hev_task_sleep (20);
     assert (remaining >= 0);
     assert (remaining <= 20);
     assert (hev_task_sleep (remaining) == 0);
-    clock_gettime (CLOCK_MONOTONIC, &sp2);
+    timespec_get (&sp2, TIME_UTC);
     assert (time_diff (&sp1, &sp2) >= 20);
 }
 
@@ -108,9 +108,9 @@ task_entry6 (void *data)
     struct timespec sp1, sp2;
 
     counter++;
-    clock_gettime (CLOCK_MONOTONIC, &sp1);
+    timespec_get (&sp1, TIME_UTC);
     assert (hev_task_sleep (10) == 0);
-    clock_gettime (CLOCK_MONOTONIC, &sp2);
+    timespec_get (&sp2, TIME_UTC);
     assert (time_diff (&sp1, &sp2) >= 10);
 }
 
@@ -120,9 +120,9 @@ task_entry5 (void *data)
     struct timespec sp1, sp2;
 
     counter++;
-    clock_gettime (CLOCK_MONOTONIC, &sp1);
+    timespec_get (&sp1, TIME_UTC);
     assert (hev_task_sleep (20) == 0);
-    clock_gettime (CLOCK_MONOTONIC, &sp2);
+    timespec_get (&sp2, TIME_UTC);
     assert (time_diff (&sp1, &sp2) >= 20);
 }
 
@@ -132,9 +132,9 @@ task_entry4 (void *data)
     struct timespec sp1, sp2;
 
     assert (counter == 1);
-    clock_gettime (CLOCK_MONOTONIC, &sp1);
+    timespec_get (&sp1, TIME_UTC);
     assert (hev_task_sleep (10) == 0);
-    clock_gettime (CLOCK_MONOTONIC, &sp2);
+    timespec_get (&sp2, TIME_UTC);
     assert (time_diff (&sp1, &sp2) >= 10);
 }
 
@@ -144,9 +144,9 @@ task_entry3 (void *data)
     struct timespec sp1, sp2;
 
     assert (counter == 1);
-    clock_gettime (CLOCK_MONOTONIC, &sp1);
+    timespec_get (&sp1, TIME_UTC);
     assert (hev_task_sleep (20) == 0);
-    clock_gettime (CLOCK_MONOTONIC, &sp2);
+    timespec_get (&sp2, TIME_UTC);
     assert (time_diff (&sp1, &sp2) >= 20);
 }
 
@@ -156,9 +156,9 @@ task_entry2 (void *data)
     struct timespec sp1, sp2;
 
     counter++;
-    clock_gettime (CLOCK_MONOTONIC, &sp1);
+    timespec_get (&sp1, TIME_UTC);
     assert (hev_task_sleep (10) == 0);
-    clock_gettime (CLOCK_MONOTONIC, &sp2);
+    timespec_get (&sp2, TIME_UTC);
     assert (time_diff (&sp1, &sp2) >= 10);
 }
 
@@ -167,14 +167,14 @@ task_entry1 (void *data)
 {
     struct timespec sp1, sp2;
 
-    clock_gettime (CLOCK_MONOTONIC, &sp1);
+    timespec_get (&sp1, TIME_UTC);
     assert (hev_task_sleep (10) == 0);
-    clock_gettime (CLOCK_MONOTONIC, &sp2);
+    timespec_get (&sp2, TIME_UTC);
     assert (time_diff (&sp1, &sp2) >= 10);
 
-    clock_gettime (CLOCK_MONOTONIC, &sp1);
+    timespec_get (&sp1, TIME_UTC);
     assert (hev_task_sleep (100) == 0);
-    clock_gettime (CLOCK_MONOTONIC, &sp2);
+    timespec_get (&sp2, TIME_UTC);
     assert (time_diff (&sp1, &sp2) >= 100);
 }
 

@@ -122,9 +122,7 @@ __declspec (noreturn) void hev_task_longjmp (void *env, int value);
 #define freeaddrinfo hev_sys_freeaddrinfo
 #define clock_gettime hev_sys_clock_gettime
 
-#define alloca _alloca
 #define strdup _strdup
-#define getpagesize() 4096
 
 #endif /* HEV_SYS_RAW */
 

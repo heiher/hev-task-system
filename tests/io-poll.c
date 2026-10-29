@@ -51,7 +51,8 @@ task2_entry (void *data)
     assert (val == 1);
     assert (pfds[0].revents & POLLOUT);
 
-    assert (write (fds[1], &val, sizeof (val)) == sizeof (val));
+    assert (hev_task_io_write (fds[1], &val, sizeof (val), NULL, NULL) ==
+            sizeof (val));
 
     hev_task_io_close (fds[1]);
 }

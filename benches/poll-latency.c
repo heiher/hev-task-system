@@ -18,6 +18,7 @@
 #include <hev-task-system.h>
 #include <hev-task.h>
 #include <hev-task-io.h>
+#include <hev-task-io-pipe.h>
 
 /* A compute task spins to keep the scheduler busy with runnable work
  * while a peer thread writes to a pipe every few ms. The reported
@@ -37,7 +38,7 @@ get_time (void)
 {
     struct timespec ts;
 
-    clock_gettime (CLOCK_MONOTONIC, &ts);
+    timespec_get (&ts, TIME_UTC);
     return ts.tv_sec * 1000.0 + ts.tv_nsec / 1e6;
 }
 
@@ -100,10 +101,8 @@ main (void)
     if (hev_task_system_init () < 0)
         return 1;
 
-    if (pipe (pipe_fds) < 0)
+    if (hev_task_io_pipe_pipe (pipe_fds) < 0)
         return 1;
-    hev_task_io_fcntl (pipe_fds[0], F_SETFL, O_NONBLOCK);
-    hev_task_io_fcntl (pipe_fds[1], F_SETFL, O_NONBLOCK);
 
     waiter = hev_task_new (-1);
     hev_task_add_fd (waiter, pipe_fds[0], POLLIN);

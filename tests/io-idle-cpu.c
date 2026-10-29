@@ -86,6 +86,13 @@ make_pair (int fds[2])
     hev_task_sleep (20);
 }
 
+/* Fail instead of waiting when the operation would block. */
+static int
+no_wait (HevTaskYieldType type, void *data)
+{
+    return -1;
+}
+
 static void
 test_empty (void)
 {
@@ -96,7 +103,7 @@ test_empty (void)
     idle ("empty socket");
 
     /* still works after the idle period */
-    assert (write (fds[1], "x", 1) == 1);
+    assert (hev_task_io_write (fds[1], "x", 1, NULL, NULL) == 1);
     assert (hev_task_io_read (fds[0], buf, sizeof (buf), NULL, NULL) == 1);
 
     hev_task_io_close (fds[0]);
@@ -110,7 +117,7 @@ test_unread (void)
     char buf[16];
 
     make_pair (fds);
-    assert (write (fds[1], "hello", 5) == 5);
+    assert (hev_task_io_write (fds[1], "hello", 5, NULL, NULL) == 5);
     hev_task_sleep (20);
     /* data is pending and never read: edge-triggered, wake once at most */
     idle ("unread data");
@@ -127,12 +134,12 @@ test_partial (void)
     char buf[16];
 
     make_pair (fds);
-    assert (write (fds[1], "hello world", 11) == 11);
+    assert (hev_task_io_write (fds[1], "hello world", 11, NULL, NULL) == 11);
     hev_task_sleep (20);
-    assert (read (fds[0], buf, 5) == 5);
+    assert (hev_task_io_read (fds[0], buf, 5, NULL, NULL) == 5);
     /* some data left behind a partial read */
     idle ("partially read data");
-    assert (read (fds[0], buf, sizeof (buf)) == 6);
+    assert (hev_task_io_read (fds[0], buf, sizeof (buf), NULL, NULL) == 6);
 
     hev_task_io_close (fds[0]);
     hev_task_io_close (fds[1]);
@@ -148,7 +155,7 @@ test_closed (void)
     hev_task_io_close (fds[1]);
     hev_task_sleep (20);
     idle ("peer closed (EOF unread)");
-    assert (read (fds[0], buf, sizeof (buf)) == 0);
+    assert (hev_task_io_read (fds[0], buf, sizeof (buf), NULL, NULL) == 0);
     idle ("peer closed (EOF read)");
 
     hev_task_io_close (fds[0]);
@@ -164,7 +171,7 @@ test_full (void)
     make_pair (fds);
     memset (buf, 'a', sizeof (buf));
     for (;;) {
-        s = write (fds[0], buf, sizeof (buf));
+        s = hev_task_io_write (fds[0], buf, sizeof (buf), no_wait, NULL);
         if (s < 0)
             break;
     }
@@ -173,7 +180,7 @@ test_full (void)
     idle ("send buffer full");
 
     /* drain, writable edge must come back */
-    while (read (fds[1], buf, sizeof (buf)) > 0)
+    while (hev_task_io_read (fds[1], buf, sizeof (buf), no_wait, NULL) > 0)
         ;
     s = hev_task_io_write (fds[0], buf, sizeof (buf), NULL, NULL);
     assert (s > 0);
@@ -216,7 +223,7 @@ test_accept (void)
     hev_task_sleep (20);
 
     idle ("connected tcp, both idle");
-    assert (write (cfd, "x", 1) == 1);
+    assert (hev_task_io_write (cfd, "x", 1, NULL, NULL) == 1);
     assert (hev_task_io_read (afd, buf, sizeof (buf), NULL, NULL) == 1);
 
     hev_task_io_close (afd);

@@ -13,6 +13,7 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <basetsd.h>
+#include <malloc.h>
 #include <fcntl.h>
 
 #ifdef __cplusplus
@@ -60,6 +61,14 @@ typedef unsigned int mode_t;
 #endif
 #ifndef F_SETFL
 #define F_SETFL 4
+#endif
+
+#ifndef alloca
+#define alloca _alloca
+#endif
+
+#ifndef getpagesize
+#define getpagesize() 4096
 #endif
 
 struct iovec

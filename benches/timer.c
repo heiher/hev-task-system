@@ -21,7 +21,7 @@ get_time (void)
 {
     struct timespec ts;
 
-    clock_gettime (CLOCK_MONOTONIC, &ts);
+    timespec_get (&ts, TIME_UTC);
     return ts.tv_sec * 1000.0 + ts.tv_nsec / 1e6;
 }
 
