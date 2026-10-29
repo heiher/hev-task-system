@@ -88,7 +88,7 @@ cd hev-task-system
 ./build-apple.sh
 ```
 
-### Native Windows (clang, MSVC target)
+### Windows (MSVC + Clang)
 
 The same `Makefile` builds natively with clang targeting MSVC. Open a Visual
 Studio developer prompt (clang from the VS LLVM component or `PATH`), make
