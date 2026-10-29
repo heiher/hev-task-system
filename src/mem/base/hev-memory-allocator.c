@@ -17,7 +17,7 @@
 
 static __thread HevMemoryAllocator *tls_default_allocator;
 
-EXPORT_SYMBOL HevMemoryAllocator *
+HevMemoryAllocator *
 hev_memory_allocator_default (void)
 {
     HevMemoryAllocator *allocator;
@@ -32,7 +32,7 @@ hev_memory_allocator_default (void)
     return allocator;
 }
 
-EXPORT_SYMBOL HevMemoryAllocator *
+HevMemoryAllocator *
 hev_memory_allocator_set_default (HevMemoryAllocator *allocator)
 {
     HevMemoryAllocator *old_allocator;
@@ -43,14 +43,14 @@ hev_memory_allocator_set_default (HevMemoryAllocator *allocator)
     return old_allocator;
 }
 
-EXPORT_SYMBOL HevMemoryAllocator *
+HevMemoryAllocator *
 hev_memory_allocator_ref (HevMemoryAllocator *self)
 {
     self->ref_count++;
     return self;
 }
 
-EXPORT_SYMBOL void
+void
 hev_memory_allocator_unref (HevMemoryAllocator *self)
 {
     self->ref_count--;
@@ -62,19 +62,19 @@ hev_memory_allocator_unref (HevMemoryAllocator *self)
     free (self);
 }
 
-EXPORT_SYMBOL void *
+void *
 hev_memory_allocator_alloc (HevMemoryAllocator *self, size_t size)
 {
     return self->alloc (self, size);
 }
 
-EXPORT_SYMBOL void *
+void *
 hev_memory_allocator_realloc (HevMemoryAllocator *self, void *ptr, size_t size)
 {
     return self->realloc (self, ptr, size);
 }
 
-EXPORT_SYMBOL void
+void
 hev_memory_allocator_free (HevMemoryAllocator *self, void *ptr)
 {
     return self->free (self, ptr);

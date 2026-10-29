@@ -100,11 +100,13 @@ make
 make tests
 make ARCH=x86 tests
 make ARCH=arm64 static apps
+make shared
 ```
 
 `ARCH` is `x64` (default), `x86` or `arm64` and must match the developer
-prompt architecture. The static library is `bin/hev-task-system.lib`; link
-programs with `/CETCOMPAT:NO` on x86/x64, since coroutine switching is
+prompt architecture. The static library is `bin/hev-task-system.lib`; the
+shared library is `bin/hev-task-system.dll` with the import library
+`bin/hev-task-system.dll.lib`. Link programs with `/CETCOMPAT:NO` on x86/x64, since coroutine switching is
 incompatible with the CET shadow stack.
 
 ### Windows (MSYS2)

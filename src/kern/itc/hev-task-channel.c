@@ -17,12 +17,6 @@
 #include "hev-task-channel-private.h"
 
 EXPORT_SYMBOL int
-hev_task_channel_new (HevTaskChannel **chan1, HevTaskChannel **chan2)
-{
-    return hev_task_channel_new_with_buffers (chan1, chan2, 0, 0);
-}
-
-EXPORT_SYMBOL int
 hev_task_channel_new_with_buffers (HevTaskChannel **chan1,
                                    HevTaskChannel **chan2, unsigned int size,
                                    unsigned int buffers)
@@ -76,6 +70,12 @@ err1:
     hev_free (c1);
 err0:
     return -1;
+}
+
+EXPORT_SYMBOL int
+hev_task_channel_new (HevTaskChannel **chan1, HevTaskChannel **chan2)
+{
+    return hev_task_channel_new_with_buffers (chan1, chan2, 0, 0);
 }
 
 static void

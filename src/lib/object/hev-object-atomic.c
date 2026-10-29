@@ -14,20 +14,6 @@
 
 #include "lib/misc/hev-compiler.h"
 
-EXPORT_SYMBOL int
-hev_object_atomic_construct (HevObjectAtomic *self)
-{
-    int res;
-
-    res = hev_object_construct (&self->base);
-    if (res < 0)
-        return res;
-
-    HEV_OBJECT (self)->klass = HEV_OBJECT_ATOMIC_TYPE;
-
-    return 0;
-}
-
 static void
 _hev_object_atomic_destruct (HevObject *base)
 {
@@ -70,4 +56,18 @@ hev_object_atomic_class (void)
     }
 
     return okptr;
+}
+
+EXPORT_SYMBOL int
+hev_object_atomic_construct (HevObjectAtomic *self)
+{
+    int res;
+
+    res = hev_object_construct (&self->base);
+    if (res < 0)
+        return res;
+
+    HEV_OBJECT (self)->klass = HEV_OBJECT_ATOMIC_TYPE;
+
+    return 0;
 }

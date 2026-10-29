@@ -11,15 +11,6 @@
 
 #include "lib/misc/hev-compiler.h"
 
-EXPORT_SYMBOL int
-hev_object_construct (HevObject *self)
-{
-    self->klass = HEV_OBJECT_TYPE;
-    self->ref_count = 1;
-
-    return 0;
-}
-
 static void
 _hev_object_destruct (HevObject *self)
 {
@@ -55,4 +46,13 @@ hev_object_class (void)
     }
 
     return kptr;
+}
+
+EXPORT_SYMBOL int
+hev_object_construct (HevObject *self)
+{
+    self->klass = HEV_OBJECT_TYPE;
+    self->ref_count = 1;
+
+    return 0;
 }

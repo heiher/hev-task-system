@@ -42,7 +42,10 @@ PP=$(CC)
 AR=llvm-ar
 EXEEXT=.exe
 STATIC_TARGET=$(BINDIR)/$(PROJECT).lib
-CCFLAGS+=-DEXPORT_SYMBOL= -D_CRT_SECURE_NO_WARNINGS \
+SHARED_TARGET=$(BINDIR)/$(PROJECT).dll
+SHARED_IMPLIB=$(BINDIR)/$(PROJECT).dll.lib
+EXPORT_SYMBOL=
+CCFLAGS+=-DEXPORT_SYMBOL="$(EXPORT_SYMBOL)" -D_CRT_SECURE_NO_WARNINGS \
          -D_WINSOCK_DEPRECATED_NO_WARNINGS -Wno-microsoft-enum-forward-reference
 APP_CCFLAGS+=-include sys/hev-sys-private.h
 APP_LDFLAGS=$(LDFLAGS) -L $(BINDIR) -l $(PROJECT) -lkernel32 -lws2_32
@@ -53,8 +56,19 @@ endif
 endif
 endif
 
+ifneq ($(WIN_NATIVE),1)
 $(SHARED_TARGET) : CCFLAGS+=-fPIC -fvisibility=hidden
 $(SHARED_TARGET) : LDFLAGS+=-shared -pthread
+else
+# The DLL exports what EXPORT_SYMBOL marks.
+$(SHARED_TARGET) : EXPORT_SYMBOL=__declspec(dllexport)
+$(SHARED_TARGET) : CCFLAGS+=-Wno-dll-attribute-on-redeclaration
+$(SHARED_TARGET) : LDFLAGS+=-shared -lkernel32 -lws2_32 \
+                    -Wl,/IMPLIB:$(SHARED_IMPLIB)
+ifneq ($(ARCH),arm64)
+$(SHARED_TARGET) : LDFLAGS+=-Wl,/CETCOMPAT:NO
+endif
+endif
 
 -include build.mk
 -include configs.mk
