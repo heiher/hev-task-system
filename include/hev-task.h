@@ -190,7 +190,8 @@ int hev_task_del_fd (HevTask *self, int fd);
  * @handle: a waitable handle
  *
  * Add a waitable handle to I/O reactor of task system. The task system will
- * wake up the task when signaled.
+ * wake up the task when signaled. The wait is one-shot: it fires once, then
+ * stays idle until the handle is added again, so call this again to re-arm.
  *
  * Returns: When successful, returns zero. When an error occurs, returns -1.
  *

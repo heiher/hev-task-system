@@ -67,10 +67,9 @@ int WINAPI WSAEventSelect (UINT_PTR, HANDLE, long);
 
 int WINAPI WSAEnumNetworkEvents (UINT_PTR, HANDLE, LPWSANETWORKEVENTS);
 
-BOOL RegisterWaitForSingleObject (PHANDLE, HANDLE, WAITORTIMERCALLBACK, PVOID,
-                                  ULONG, ULONG);
+PVOID GetModuleHandleA (LPCSTR);
 
-BOOL UnregisterWaitEx (HANDLE, HANDLE);
+PVOID GetProcAddress (PVOID, LPCSTR);
 
 #ifdef __cplusplus
 }
