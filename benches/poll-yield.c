@@ -76,7 +76,7 @@ compute_entry (void *data)
         hev_task_yield (HEV_TASK_YIELD);
 
     /* release the waiter */
-    if (mode != MODE_SOLO && write (sk[1], "x", 1) < 0)
+    if (mode != MODE_SOLO && hev_task_io_write (sk[1], "x", 1, NULL, NULL) < 0)
         _exit (1);
 }
 
