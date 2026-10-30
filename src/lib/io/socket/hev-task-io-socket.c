@@ -110,6 +110,12 @@ hev_task_io_socket_getpeername (int fd, struct sockaddr *addr,
 }
 
 EXPORT_SYMBOL int
+hev_task_io_socket_shutdown (int fd, int how)
+{
+    return shutdown (fd, how);
+}
+
+EXPORT_SYMBOL int
 hev_task_io_socket_connect (int fd, const struct sockaddr *addr,
                             socklen_t addr_len, HevTaskIOYielder yielder,
                             void *yielder_data)

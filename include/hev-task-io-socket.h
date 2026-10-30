@@ -140,6 +140,20 @@ int hev_task_io_socket_getpeername (int fd, struct sockaddr *addr,
                                     socklen_t *addr_len);
 
 /**
+ * hev_task_io_socket_shutdown:
+ * @fd: a file descriptor
+ * @how: SHUT_RD, SHUT_WR or SHUT_RDWR
+ *
+ * The shutdown function shall cause all or part of a full-duplex connection on
+ * the socket associated with the file descriptor @fd to be shut down.
+ *
+ * Returns: the status of shutdown
+ *
+ * Since: 5.12
+ */
+int hev_task_io_socket_shutdown (int fd, int how);
+
+/**
  * hev_task_io_socket_connect:
  * @fd: a file descriptor
  * @addr: socket address
