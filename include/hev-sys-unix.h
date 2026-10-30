@@ -10,11 +10,10 @@
 #ifndef __HEV_SYS_UNIX_H__
 #define __HEV_SYS_UNIX_H__
 
-#include <fcntl.h>
 #include <poll.h>
+#include <fcntl.h>
 #include <netdb.h>
 #include <unistd.h>
-#include <alloca.h>
 #include <sys/uio.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
