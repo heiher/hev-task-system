@@ -101,6 +101,12 @@ reg_grow_locked (size_t need_idx)
     return 0;
 }
 
+int
+hev_sys_fd_is_virtual (int fd)
+{
+    return reg_index_from_fd (fd) >= 0;
+}
+
 SOCKET
 hev_sys_fd_to_socket (int fd)
 {

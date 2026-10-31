@@ -22,6 +22,7 @@ uintptr_t hev_sys_fd_to_token (int fd);
 SOCKET hev_sys_token_to_socket (uintptr_t token);
 SOCKET hev_sys_fd_close_socket (int fd);
 int hev_sys_fd_register (SOCKET s);
+int hev_sys_fd_is_virtual (int fd);
 int hev_sys_fd_replace (int fd, SOCKET s, SOCKET *old);
 
 #define HEV_SYS_INVALID_SOCKET ((uintptr_t)INVALID_SOCKET)

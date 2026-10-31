@@ -115,6 +115,16 @@ hev_task_io_socket_shutdown (int fd, int how)
     return shutdown (fd, how);
 }
 
+EXPORT_SYMBOL uintptr_t
+hev_task_io_socket_get_handle (int fd)
+{
+#if defined(_WIN32) && !defined(__MSYS__) && !defined(__CYGWIN__)
+    return (uintptr_t)hev_sys_fd_to_socket (fd);
+#else
+    return fd >= 0 ? (uintptr_t)fd : (uintptr_t)-1;
+#endif
+}
+
 EXPORT_SYMBOL int
 hev_task_io_socket_connect (int fd, const struct sockaddr *addr,
                             socklen_t addr_len, HevTaskIOYielder yielder,

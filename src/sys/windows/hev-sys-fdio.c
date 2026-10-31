@@ -84,7 +84,15 @@ hev_sys_dup2 (int oldfd, int newfd)
 int
 hev_sys_close (int fd)
 {
-    SOCKET s = hev_sys_fd_close_socket (fd);
+    SOCKET s;
+
+    /* The CRT aborts on a descriptor that is not open. */
+    if (fd < 0) {
+        errno = EBADF;
+        return -1;
+    }
+
+    s = hev_sys_fd_close_socket (fd);
 
     if (s != INVALID_SOCKET) {
         int res = closesocket (s);
@@ -93,6 +101,12 @@ hev_sys_close (int fd)
             hev_sys_set_errno_from_wsa ();
 
         return res == 0 ? 0 : -1;
+    }
+
+    /* Closed already. */
+    if (hev_sys_fd_is_virtual (fd)) {
+        errno = EBADF;
+        return -1;
     }
 
     return _close (fd);

@@ -10,6 +10,7 @@
 #ifndef __HEV_TASK_IO_SOCKET_H__
 #define __HEV_TASK_IO_SOCKET_H__
 
+#include <stdint.h>
 #include <hev-sys.h>
 
 #ifdef __cplusplus
@@ -152,6 +153,20 @@ int hev_task_io_socket_getpeername (int fd, struct sockaddr *addr,
  * Since: 5.12
  */
 int hev_task_io_socket_shutdown (int fd, int how);
+
+/**
+ * hev_task_io_socket_get_handle:
+ * @fd: a file descriptor
+ *
+ * Get the native socket behind the file descriptor @fd, which is a SOCKET on
+ * Windows and @fd itself elsewhere. The descriptor still owns the socket, do
+ * not close it. For use in other threads that need blocking I/O on it.
+ *
+ * Returns: the native socket, or (uintptr_t)-1 if @fd is not a socket
+ *
+ * Since: 5.12
+ */
+uintptr_t hev_task_io_socket_get_handle (int fd);
 
 /**
  * hev_task_io_socket_connect:
