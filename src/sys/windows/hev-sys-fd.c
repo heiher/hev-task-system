@@ -31,6 +31,8 @@ struct _RegSlot
 static SRWLOCK reg_lock = SRWLOCK_INIT;
 static RegSlot *reg_slots;
 static size_t reg_capacity;
+/* Every slot below the hint is in use, so allocation resumes from here. */
+static size_t reg_hint;
 static volatile LONG reg_state;
 
 static void
@@ -179,14 +181,17 @@ hev_sys_socket_to_fd (SOCKET s)
 
     AcquireSRWLockExclusive (&reg_lock);
 
-    for (i = 0; i < reg_capacity; i++) {
+    for (i = reg_hint; i < reg_capacity; i++) {
         if (reg_slots[i].socket == INVALID_SOCKET) {
             reg_slots[i].socket = s;
             reg_slots[i].gen = (reg_slots[i].gen + 1) & REG_GEN_MASK;
             fd = REG_FD_BASE + (int)i;
+            reg_hint = i + 1;
             break;
         }
     }
+    if (fd < 0)
+        reg_hint = reg_capacity;
 
     if (fd < 0) {
         size_t old_cap = reg_capacity;
@@ -196,6 +201,7 @@ hev_sys_socket_to_fd (SOCKET s)
             reg_slots[old_cap].gen = (reg_slots[old_cap].gen + 1) &
                                      REG_GEN_MASK;
             fd = REG_FD_BASE + (int)old_cap;
+            reg_hint = old_cap + 1;
         }
     }
 
@@ -219,6 +225,8 @@ hev_sys_fd_close_socket (int fd)
     if ((size_t)idx < reg_capacity) {
         s = reg_slots[idx].socket;
         reg_slots[idx].socket = INVALID_SOCKET;
+        if ((size_t)idx < reg_hint)
+            reg_hint = idx;
     }
     ReleaseSRWLockExclusive (&reg_lock);
 
