@@ -1,6 +1,6 @@
 # HevTaskSystem
 
-[![status](https://github.com/heiher/hev-task-system/actions/workflows/build.yaml/badge.svg?branch=main&event=push)](https://github.com/heiher/hev-task-system)
+[![status](https://github.com/heiher/hev-task-system/actions/workflows/ci.yml/badge.svg?branch=main&event=push)](https://github.com/heiher/hev-task-system)
 
 HevTaskSystem is a simple, lightweight multi-task system (coroutines) that
 runs on top of native threads.

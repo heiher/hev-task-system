@@ -1,4 +1,4 @@
-name: "Build"
+name: "CI"
 
 on:
   push:
@@ -8,6 +8,26 @@ on:
   workflow_dispatch:
 
 jobs:
+  format:
+    name: Code format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - name: Prepare
+        run: |
+          pip install --user "clang-format==21.1.*"
+      - name: Format
+        run: |
+          find apps benches include src tests -iname "*.[h,c]" -exec clang-format -i {} \;
+          git checkout src/arch/arm/asm.h src/arch/x86/asm.h
+      - name: Check
+        run: |
+          git status
+          git diff --quiet
+
   linux:
     name: Linux
     runs-on: ubuntu-latest
