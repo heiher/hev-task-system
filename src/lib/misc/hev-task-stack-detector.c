@@ -7,7 +7,7 @@
  ============================================================================
  */
 
-#if !defined(_WIN32) || defined(__MSYS__) || defined(__CYGWIN__)
+#if !defined(_WIN32)
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -122,4 +122,4 @@ hev_task_stack_detector_destroy (HevTaskStackDetector *self)
     free (self);
 }
 
-#endif /* !defined(_WIN32) || defined(__MSYS__) || defined(__CYGWIN__) */
+#endif /* !defined(_WIN32) */

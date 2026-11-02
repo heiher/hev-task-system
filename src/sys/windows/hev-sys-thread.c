@@ -7,7 +7,7 @@
  ============================================================================
  */
 
-#if defined(_WIN32) && !defined(__MSYS__) && !defined(__CYGWIN__)
+#if defined(_WIN32)
 
 #define HEV_SYS_RAW
 #include "sys/hev-sys-private.h"
@@ -84,4 +84,4 @@ hev_sys_once (HevSysOnce *once, void (*func) (void))
     InitOnceExecuteOnce (once, hev_sys_once_entry, (PVOID)func, NULL);
 }
 
-#endif /* defined(_WIN32) && !defined(__MSYS__) && !defined(__CYGWIN__) */
+#endif /* defined(_WIN32) */

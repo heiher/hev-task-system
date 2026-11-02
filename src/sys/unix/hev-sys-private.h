@@ -18,11 +18,6 @@
 
 #include <hev-sys.h>
 
-#if defined(__MSYS__)
-#include <io.h>
-#include "hev-sys-msys-api.h"
-#endif
-
 #include "hev-sys-task-stack.h"
 #include "hev-sys-task-execute.h"
 #include "hev-sys-thread.h"

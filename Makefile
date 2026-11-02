@@ -31,7 +31,6 @@ SHARED_TARGET=$(BINDIR)/lib$(PROJECT).so
 # a POSIX sh.exe on PATH, e.g. Git for Windows:
 #   make ARCH=x64 tests
 ifeq ($(OS),Windows_NT)
-ifeq ($(MSYSTEM),)
 WIN_NATIVE=1
 ARCH?=x64
 CROSS_TARGET_x64=x86_64
@@ -51,7 +50,6 @@ APP_LDFLAGS=$(LDFLAGS) -L $(BINDIR) -l $(PROJECT) -lkernel32 -lws2_32
 ifneq ($(ARCH),arm64)
 # Coroutine switching is incompatible with the CET shadow stack.
 APP_LDFLAGS+=-Wl,/CETCOMPAT:NO
-endif
 endif
 endif
 
@@ -84,10 +82,6 @@ LINKMSG="\e[1;34mLINK\e[0m  \e[1;32m%s\e[0m\n"
 CLEANMSG="\e[1;34mCLEAN\e[0m %s\n"
 TESTMSG="\e[1;34mTEST\e[0m  \e[1;32m%s\e[0m\n"
 BENCHMSG="\e[1;35mBENCH\e[0m \e[1;32m%s\e[0m\n"
-
-ifeq ($(MSYSTEM),MSYS)
-	LDFLAGS+=-lmsys-2.0 -lws2_32
-endif
 
 V:=
 ECHO_PREFIX:=@

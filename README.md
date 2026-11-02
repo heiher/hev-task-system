@@ -109,14 +109,6 @@ shared library is `bin/hev-task-system.dll` with the import library
 `bin/hev-task-system.dll.lib`. Link programs with `/CETCOMPAT:NO` on x86/x64, since coroutine switching is
 incompatible with the CET shadow stack.
 
-### Windows (MSYS2)
-
-```bash
-git clone https://gitlab.com/hev/hev-task-system
-cd hev-task-system
-make
-```
-
 ## Demos
 
 1. [simple](https://gitlab.com/hev/hev-task-system/blob/main/apps/simple.c)

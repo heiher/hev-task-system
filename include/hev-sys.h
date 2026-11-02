@@ -10,7 +10,7 @@
 #ifndef __HEV_SYS_H__
 #define __HEV_SYS_H__
 
-#if defined(_WIN32) && !defined(__MSYS__) && !defined(__CYGWIN__)
+#if defined(_WIN32)
 #include <hev-sys-windows.h>
 #else
 #include <hev-sys-unix.h>

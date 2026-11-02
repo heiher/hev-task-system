@@ -7,7 +7,7 @@
  ============================================================================
  */
 
-#if defined(_WIN32) && !defined(__MSYS__) && !defined(__CYGWIN__)
+#if defined(_WIN32)
 
 #define HEV_SYS_RAW
 #include "sys/hev-sys-private.h"
@@ -365,4 +365,4 @@ hev_sys_sendmmsg (int fd, struct mmsghdr *msgv, unsigned int vlen, int flags)
     return (ssize_t)vlen;
 }
 
-#endif /* defined(_WIN32) && !defined(__MSYS__) && !defined(__CYGWIN__) */
+#endif /* defined(_WIN32) */

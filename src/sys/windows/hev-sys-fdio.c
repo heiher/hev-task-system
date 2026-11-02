@@ -7,7 +7,7 @@
  ============================================================================
  */
 
-#if defined(_WIN32) && !defined(__MSYS__) && !defined(__CYGWIN__)
+#if defined(_WIN32)
 
 #define HEV_SYS_RAW
 #include "sys/hev-sys-private.h"
@@ -155,4 +155,4 @@ hev_sys_openat (int dirfd, const char *pathname, int flags, ...)
     return _open (pathname, flags, mode);
 }
 
-#endif /* defined(_WIN32) && !defined(__MSYS__) && !defined(__CYGWIN__) */
+#endif /* defined(_WIN32) */

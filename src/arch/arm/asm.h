@@ -23,7 +23,7 @@ _##symbol:
 
 # define END(symbol)
 
-#elif defined(_WIN32) && !defined(__MSYS__) && !defined(__CYGWIN__)
+#elif defined(_WIN32)
 
 # define NESTED(symbol)          .globl symbol;          .p2align 2;      symbol:
 

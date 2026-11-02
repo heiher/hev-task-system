@@ -7,7 +7,7 @@
  ============================================================================
  */
 
-#if defined(__MSYS__) || (defined(_WIN32) && !defined(__CYGWIN__))
+#if defined(_WIN32)
 
 #include <assert.h>
 #include <stdint.h>
@@ -404,4 +404,4 @@ hev_task_io_reactor_wait (HevTaskIOReactor *self,
     }
 }
 
-#endif /* defined(__MSYS__) || (defined(_WIN32) && !defined(__CYGWIN__)) */
+#endif /* defined(_WIN32) */

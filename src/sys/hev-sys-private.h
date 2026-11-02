@@ -10,7 +10,7 @@
 #ifndef __HEV_SYS_PRIVATE_H__
 #define __HEV_SYS_PRIVATE_H__
 
-#if defined(_WIN32) && !defined(__MSYS__) && !defined(__CYGWIN__)
+#if defined(_WIN32)
 #include "sys/windows/hev-sys-private.h"
 #else
 #include "sys/unix/hev-sys-private.h"

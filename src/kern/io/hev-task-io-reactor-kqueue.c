@@ -7,7 +7,7 @@
  ============================================================================
  */
 
-#if !defined(__linux__) && !defined(__MSYS__) && !defined(_WIN32)
+#if !defined(__linux__) && !defined(_WIN32)
 
 #include <fcntl.h>
 #include <unistd.h>
@@ -73,4 +73,4 @@ hev_task_io_reactor_setup (HevTaskIOReactor *self,
     return res;
 }
 
-#endif /* !defined(__linux__) && !defined(__MSYS__) && !defined(_WIN32) */
+#endif /* !defined(__linux__) && !defined(_WIN32) */
