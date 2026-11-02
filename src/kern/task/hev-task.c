@@ -42,7 +42,6 @@ hev_task_new (int stack_size)
     }
 
     self->stack_bottom = hev_task_stack_get_bottom (self->stack);
-    self->sched_entity.task = self;
 
     hev_list_add_tail (&hev_task_system_get_context ()->all_tasks,
                        &self->list_node);
@@ -86,7 +85,7 @@ hev_task_self (void)
 EXPORT_SYMBOL HevTaskState
 hev_task_get_state (HevTask *self)
 {
-    return self->state;
+    return (HevTaskState)self->state;
 }
 
 EXPORT_SYMBOL void
@@ -114,8 +113,10 @@ hev_task_add_fd (HevTask *self, int fd, unsigned int events)
     int count;
 
     reactor = hev_task_system_get_context ()->reactor;
-    count = hev_task_io_reactor_setup_event_fd_gen (
-        revents, fd, HEV_TASK_IO_REACTOR_OP_ADD, events, &self->sched_entity);
+    count = hev_task_io_reactor_setup_event_fd_gen (revents, fd,
+                                                    HEV_TASK_IO_REACTOR_OP_ADD,
+                                                    events,
+                                                    hev_task_to_data (self));
     return hev_task_io_reactor_setup (reactor, revents, count);
 }
 
@@ -127,8 +128,10 @@ hev_task_mod_fd (HevTask *self, int fd, unsigned int events)
     int count;
 
     reactor = hev_task_system_get_context ()->reactor;
-    count = hev_task_io_reactor_setup_event_fd_gen (
-        revents, fd, HEV_TASK_IO_REACTOR_OP_MOD, events, &self->sched_entity);
+    count = hev_task_io_reactor_setup_event_fd_gen (revents, fd,
+                                                    HEV_TASK_IO_REACTOR_OP_MOD,
+                                                    events,
+                                                    hev_task_to_data (self));
     return hev_task_io_reactor_setup (reactor, revents, count);
 }
 
@@ -154,7 +157,7 @@ hev_task_add_whandle (HevTask *self, void *handle)
 
     reactor = hev_task_system_get_context ()->reactor;
     count = hev_task_io_reactor_setup_event_whandle_gen (
-        revents, handle, HEV_TASK_IO_REACTOR_OP_ADD, &self->sched_entity);
+        revents, handle, HEV_TASK_IO_REACTOR_OP_ADD, hev_task_to_data (self));
     if (count < 0)
         return -1;
     return hev_task_io_reactor_setup (reactor, revents, count);

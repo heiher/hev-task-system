@@ -19,12 +19,7 @@
 #include "lib/list/hev-list.h"
 #include "lib/rbtree/hev-rbtree.h"
 
-typedef struct _HevTaskSchedEntity HevTaskSchedEntity;
-
-struct _HevTaskSchedEntity
-{
-    HevTask *task;
-};
+#define HEV_TASK_SCHED_SLOT_TAG ((uintptr_t)1)
 
 struct _HevTask
 {
@@ -34,20 +29,42 @@ struct _HevTask
 
     uint64_t sched_key;
     HevRBTreeNode sched_node;
-    HevTaskSchedEntity sched_entity;
 
     HevTaskStack *stack;
     HevTask *joiner;
 
     int ref_count;
-    int priority;
-    int next_priority;
-    HevTaskState state;
+    uint8_t priority;
+    uint8_t next_priority;
+    uint8_t state;
 
     jmp_buf context;
 
     HevListNode list_node;
 };
+
+static inline void *
+hev_task_to_data (HevTask *task)
+{
+    return task;
+}
+
+static inline void *
+hev_task_slot_to_data (HevTask **slot)
+{
+    return (void *)((uintptr_t)slot | HEV_TASK_SCHED_SLOT_TAG);
+}
+
+static inline HevTask *
+hev_task_from_data (void *data)
+{
+    uintptr_t v = (uintptr_t)data;
+
+    if (v & HEV_TASK_SCHED_SLOT_TAG)
+        return *(HevTask **)(v & ~HEV_TASK_SCHED_SLOT_TAG);
+
+    return (HevTask *)v;
+}
 
 void hev_task_destroy (HevTask *self);
 

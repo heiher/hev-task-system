@@ -38,7 +38,7 @@ struct _HevTaskDNSProxy
     HevTaskAide *aide;
     HevTaskAideWork work;
     HevTaskDNSCall *call;
-    HevTaskSchedEntity sched_entity;
+    HevTask *sched_task;
 };
 
 struct _HevTaskDNSCall
@@ -171,10 +171,10 @@ hev_task_dns_proxy_new (void)
         (0 > fcntl (fds[1], F_SETFD, FD_CLOEXEC)))
         goto close;
 
-    count = hev_task_io_reactor_setup_event_fd_gen (revents, fds[0],
-                                                    HEV_TASK_IO_REACTOR_OP_ADD,
-                                                    POLLIN | POLLOUT,
-                                                    &self->sched_entity);
+    self->sched_task = &dummy_task;
+    count = hev_task_io_reactor_setup_event_fd_gen (
+        revents, fds[0], HEV_TASK_IO_REACTOR_OP_ADD, POLLIN | POLLOUT,
+        hev_task_slot_to_data (&self->sched_task));
     res = hev_task_io_reactor_setup (context->reactor, revents, count);
     if (0 > res)
         goto close;
@@ -266,7 +266,7 @@ hev_task_dns_proxy_call (HevTaskDNSProxy *self, HevTaskDNSCall *call)
     hev_task_mutex_lock (&self->mutex);
 
     self->call = call;
-    self->sched_entity.task = hev_task_self ();
+    self->sched_task = hev_task_self ();
 
     for (;;) {
         char sync = 's';
@@ -294,7 +294,7 @@ hev_task_dns_proxy_call (HevTaskDNSProxy *self, HevTaskDNSCall *call)
         hev_task_yield (HEV_TASK_WAITIO);
     }
 
-    self->sched_entity.task = &dummy_task;
+    self->sched_task = &dummy_task;
 
     hev_task_mutex_unlock (&self->mutex);
 }
